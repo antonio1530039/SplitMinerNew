@@ -1,6 +1,5 @@
 package Controlador;
 
-import splitminer.*;
 import Modelo.BPMNModel;
 import java.util.ArrayList;
 import java.util.HashSet;

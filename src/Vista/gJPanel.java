@@ -3,13 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Interfaz;
+package Vista;
 
-import splitminer.*;
 import Modelo.BPMNModel;
 import Modelo.Element;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.awt.event.MouseEvent;
@@ -19,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 /**
  *
@@ -101,6 +98,8 @@ public class gJPanel extends JPanel {
                 g.drawOval(e.cPosX, e.cPosY, radio, radio);
                 g.drawString(e.Name, e.cPosX + (radio / 2), e.cPosY + (radio / 2));
             } else {
+                
+                //obtencion de color de compuerta
                 Color color = null;
                 String name = ( (e.Name.charAt(0)=='O') ? e.Name.substring(1, e.Name.indexOf("C")) : e.Name.substring(0, e.Name.length() - 1) );
                 if (!gatewaysColors.containsKey(name)) {
@@ -109,12 +108,12 @@ public class gJPanel extends JPanel {
                 } else {
                     color = gatewaysColors.get(name);
                 }
-                g.setColor(color);
+                g.setColor(color); //se asigna el color a la compuerta
                 g.fillRoundRect(e.cPosX, e.cPosY, radio, radio, radio / 2, radio / 2);
                 //drawDiamond(g, e.cPosX + (radio / 2), e.cPosY + (radio / 2));
+                //Obtencion de color de texto de la compuerta (para colores fuertes se utiliza color blanco de texto, en caso contrario negro)
                 if (color.getRed() <= 255 / 2 && color.getGreen() <= 255 / 2 && color.getBlue() <= 255 / 2) {
                     g.setColor(Color.white);
-                    
                 } else {
                     g.setColor(Color.black);
                 }

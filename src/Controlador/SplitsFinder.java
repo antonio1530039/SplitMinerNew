@@ -18,7 +18,7 @@ import java.util.Map;
  *
  * @author Antonio
  */
-public class CrearModeloBPMN {
+public class SplitsFinder {
 
     int numberGatewaysXor = 1;
     int numberGatewaysAnd = 1;
@@ -27,7 +27,7 @@ public class CrearModeloBPMN {
 
     LinkedHashMap<String, Integer> WFG;
 
-    public CrearModeloBPMN(BPMNModel BPMN, LinkedHashSet<Character> firsts, LinkedHashSet<Character> lasts, LinkedHashMap<String, Integer> wfg, LinkedHashMap<Character, LinkedList<Character>> parallelRelations) {
+    public SplitsFinder(BPMNModel BPMN, LinkedHashSet<Character> firsts, LinkedHashSet<Character> lasts, LinkedHashMap<String, Integer> wfg, LinkedHashMap<Character, LinkedList<Character>> parallelRelations) {
         BPMN.i = (Character) firsts.toArray()[0];
         BPMN.o = (Character) lasts.toArray()[0];
 

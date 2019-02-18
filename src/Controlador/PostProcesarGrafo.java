@@ -1,6 +1,6 @@
 package Controlador;
 
-import Interfaz.gBuildGraphicModel;
+import Vista.gBuildGraphicModel;
 import Modelo.BPMNModel;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,176 +16,167 @@ import java.util.Map;
  * @author Antonio
  */
 public class PostProcesarGrafo {
-    
+
     LinkedHashMap<String, Integer> WFG;
     BPMNModel BPMN;
     List<Character> autoLoops = new LinkedList<Character>();
     public String notation = "";
-    
-    public PostProcesarGrafo(BPMNModel bpmn, LinkedHashMap<String, Integer> wfg, List<Character> autoLoops){
+
+    public PostProcesarGrafo(BPMNModel bpmn, LinkedHashMap<String, Integer> wfg, List<Character> autoLoops) {
         WFG = wfg;
         BPMN = bpmn;
         this.autoLoops = autoLoops;
-        
-      //OCTAVO, SE REMUEVEN COMPUERTAS DUPLICADAS 
-      //todas las compuertas XOR y AND se han detectado. Ahora, eliminar compuertas repetidas.
-      System.out.println("\n\t1.Remover compuertas duplicadas ANDs");
-      removeDuplicateGates();
-      System.out.println("\t  Resultado:");
-      Utils.mostrarGrafo(2, WFG);
-   
-      System.out.println("\n\t1.Remover compuertas duplicadas XORs");
-      removeDuplicateGatesXOR();
-      System.out.println("\t  Resultado:");
-      Utils.mostrarGrafo(2, WFG);
-   
-      //Y SE DETECTAN 'JOINS'
-      System.out.println("\n\t2.Detectar JOINS (pendiente de realizar)");
-      detectarJoins();
-      // System.out.println("\t  Resultado:");
-      Utils.mostrarGrafo(2, WFG);
-      
-      gBuildGraphicModel c = new gBuildGraphicModel(BPMN, WFG, "Model's notation: " + notation);
-   
-      //Y SE REINTEGRAN 'AUTOLOPS'
-      System.out.println("\n\t3.Re-integrar autolops al modelo final");
-      reintegraALoops();
-      System.out.println("\t  Resultado:");
-      Utils.mostrarGrafo(2, WFG);
+
+        //OCTAVO, SE REMUEVEN COMPUERTAS DUPLICADAS 
+        //todas las compuertas XOR y AND se han detectado. Ahora, eliminar compuertas repetidas.
+        System.out.println("\n\t1.Remover compuertas duplicadas ANDs");
+        removeDuplicateGates();
+        System.out.println("\t  Resultado:");
+        Utils.mostrarGrafo(2, WFG);
+
+        System.out.println("\n\t1.Remover compuertas duplicadas XORs");
+        removeDuplicateGatesXOR();
+        System.out.println("\t  Resultado:");
+        Utils.mostrarGrafo(2, WFG);
+
+        //Y SE DETECTAN 'JOINS'
+        System.out.println("\n\t2.Detectar JOINS (pendiente de realizar)");
+        detectarJoins();
+        // System.out.println("\t  Resultado:");
+        Utils.mostrarGrafo(2, WFG);
+
+        gBuildGraphicModel c = new gBuildGraphicModel(BPMN, WFG, "Model's notation: " + notation);
+
+        //Y SE REINTEGRAN 'AUTOLOPS'
+        System.out.println("\n\t3.Re-integrar autolops al modelo final");
+        reintegraALoops();
+        System.out.println("\t  Resultado:");
+        Utils.mostrarGrafo(2, WFG);
     }
-    
+
     public void removeDuplicateGates() {
-   
-      //para dos símbolos de compuerta, revisar si sus conjuntos son iguales
-      Collection<Map.Entry<String, HashSet<String>>> list2 = BPMN.ANDs.entrySet();
-      //Collection<HashSet<Character>> list = BPMN.ANDs.values();
-   
-      // System.out.println("***LISTA 2:"+BPMN.ANDs.entrySet());
-      List<Map.Entry<String, HashSet<String>>> list = new ArrayList<Map.Entry<String, HashSet<String>>>(list2);
-      int i = 0;
-      while (i < list.size()) {
-         Map.Entry<String, HashSet<String>> entry1 = list.get(i);
-         //ver si hay alguna repetida
-         int j = i + 1;
-         while (j < list.size()) {
-            Map.Entry<String, HashSet<String>> entry2 = list.get(j);
-         
-            if (Utils.igualesString(entry1.getValue(), entry2.getValue())) {
-               //compuertas repetidas, 'c' y 'cr'eliminar una de ellas del grafo
-            
-               //1. remueve todos los arcos 'cr'*
-               Utils.removerEdges(entry2.getKey(), WFG);
-               //2. en todos los arcos *'cr', reemplaza 'cr' por 'c'
-               Utils.remplazarEdges(entry2.getKey(), entry1.getKey(), WFG);
-            
-               list.remove(j);
-            } 
-            else {
-               j++;
+
+        //para dos símbolos de compuerta, revisar si sus conjuntos son iguales
+        Collection<Map.Entry<String, HashSet<String>>> list2 = BPMN.ANDs.entrySet();
+        //Collection<HashSet<Character>> list = BPMN.ANDs.values();
+
+        // System.out.println("***LISTA 2:"+BPMN.ANDs.entrySet());
+        List<Map.Entry<String, HashSet<String>>> list = new ArrayList<Map.Entry<String, HashSet<String>>>(list2);
+        int i = 0;
+        while (i < list.size()) {
+            Map.Entry<String, HashSet<String>> entry1 = list.get(i);
+            //ver si hay alguna repetida
+            int j = i + 1;
+            while (j < list.size()) {
+                Map.Entry<String, HashSet<String>> entry2 = list.get(j);
+
+                if (Utils.igualesString(entry1.getValue(), entry2.getValue())) {
+                    //compuertas repetidas, 'c' y 'cr'eliminar una de ellas del grafo
+
+                    //1. remueve todos los arcos 'cr'*
+                    Utils.removerEdges(entry2.getKey(), WFG);
+                    //2. en todos los arcos *'cr', reemplaza 'cr' por 'c'
+                    Utils.remplazarEdges(entry2.getKey(), entry1.getKey(), WFG);
+
+                    list.remove(j);
+                } else {
+                    j++;
+                }
+
             }
-         
-         }
-         i++;
-      }
-   
-   }
-    
-   
-   
-   public void removeDuplicateGatesXOR() {
-   
-      //para dos símbolos de compuerta, revisar si sus conjuntos son iguales
-      Collection<Map.Entry<String, HashSet<String>>> list2 = BPMN.XORs.entrySet();
-      //Collection<HashSet<Character>> list = BPMN.ANDs.values();
-   
-      // System.out.println("***LISTA 2:"+BPMN.ANDs.entrySet());
-      List<Map.Entry<String, HashSet<String>>> list = new ArrayList<Map.Entry<String, HashSet<String>>>(list2);
-      int i = 0;
-      while (i < list.size()) {
-         Map.Entry<String, HashSet<String>> entry1 = list.get(i);
-         //ver si hay alguna repetida
-         int j = i + 1;
-         while (j < list.size()) {
-            Map.Entry<String, HashSet<String>> entry2 = list.get(j);
-         
-            if (Utils.igualesString(entry1.getValue(), entry2.getValue())) {
-               //compuertas repetidas, 'c' y 'cr'eliminar una de ellas del grafo
-            
-               //1. remueve todos los arcos 'cr'*
-               Utils.removerEdges(entry2.getKey(), WFG);
-               //2. en todos los arcos *'cr', reemplaza 'cr' por 'c'
-               Utils.remplazarEdges(entry2.getKey(), entry1.getKey(), WFG);
-            
-               list.remove(j);
-            } 
-            else {
-               j++;
+            i++;
+        }
+
+    }
+
+    public void removeDuplicateGatesXOR() {
+
+        //para dos símbolos de compuerta, revisar si sus conjuntos son iguales
+        Collection<Map.Entry<String, HashSet<String>>> list2 = BPMN.XORs.entrySet();
+        //Collection<HashSet<Character>> list = BPMN.ANDs.values();
+
+        // System.out.println("***LISTA 2:"+BPMN.ANDs.entrySet());
+        List<Map.Entry<String, HashSet<String>>> list = new ArrayList<Map.Entry<String, HashSet<String>>>(list2);
+        int i = 0;
+        while (i < list.size()) {
+            Map.Entry<String, HashSet<String>> entry1 = list.get(i);
+            //ver si hay alguna repetida
+            int j = i + 1;
+            while (j < list.size()) {
+                Map.Entry<String, HashSet<String>> entry2 = list.get(j);
+
+                if (Utils.igualesString(entry1.getValue(), entry2.getValue())) {
+                    //compuertas repetidas, 'c' y 'cr'eliminar una de ellas del grafo
+
+                    //1. remueve todos los arcos 'cr'*
+                    Utils.removerEdges(entry2.getKey(), WFG);
+                    //2. en todos los arcos *'cr', reemplaza 'cr' por 'c'
+                    Utils.remplazarEdges(entry2.getKey(), entry1.getKey(), WFG);
+
+                    list.remove(j);
+                } else {
+                    j++;
+                }
+
             }
-         
-         }
-         i++;
-      }
-   
-   }
-   
-   
-   
-   public void reintegraALoops() {
-      ArrayList<String> keys = new ArrayList<String>();
-      Iterator<Map.Entry<String, Integer>> iter = WFG.entrySet().iterator();
-      try {
-         while (iter.hasNext()) {
-            Map.Entry<String, Integer> entry = iter.next();
-            String key = entry.getKey();
-         
-            if (autoLoops.size() > 0) {
-            
-               for (Character car : autoLoops) {
-               
-                  String first = "" + key.charAt(0);
-                  String second = "" + key.charAt(2);
-                  String clave = "";
-               
-                  if (first.indexOf("" + car) > -1) {
-                     iter.remove();
-                     first = "@" + first;
-                     clave = first + "," + second;
-                     keys.add(clave);
-                     break;
-                  } 
-                  else {
-                     if (second.indexOf("" + car) > -1) {
-                        iter.remove();
-                        second = "@" + second;
-                        clave = first + "," + second;
-                        keys.add(clave);
-                        break;
-                     }
-                  
-                  }
-               
-               }
+            i++;
+        }
+
+    }
+
+    public void reintegraALoops() {
+        ArrayList<String> keys = new ArrayList<String>();
+        Iterator<Map.Entry<String, Integer>> iter = WFG.entrySet().iterator();
+        try {
+            while (iter.hasNext()) {
+                Map.Entry<String, Integer> entry = iter.next();
+                String key = entry.getKey();
+
+                if (autoLoops.size() > 0) {
+
+                    for (Character car : autoLoops) {
+
+                        String first = "" + key.charAt(0);
+                        String second = "" + key.charAt(2);
+                        String clave = "";
+
+                        if (first.indexOf("" + car) > -1) {
+                            iter.remove();
+                            first = "@" + first;
+                            clave = first + "," + second;
+                            keys.add(clave);
+                            break;
+                        } else {
+                            if (second.indexOf("" + car) > -1) {
+                                iter.remove();
+                                second = "@" + second;
+                                clave = first + "," + second;
+                                keys.add(clave);
+                                break;
+                            }
+
+                        }
+
+                    }
+                }
             }
-         }
-      } 
-      catch (IllegalStateException exeption) {
-         System.out.println(" Error de indice en un array");
-      }
-      for (String cl : keys) {
-      
-         WFG.put(cl, 1);
-      
-      }
-   
-   }
-   
-   
-   public void detectarJoins() {
-   
-      System.out.println("\t\tDetectando joins y creando noatación...");
-               //Lo siguiente es a manera de prueba.....................
-      
-      /*
+        } catch (IllegalStateException exeption) {
+            System.out.println(" Error de indice en un array");
+        }
+        for (String cl : keys) {
+
+            WFG.put(cl, 1);
+
+        }
+
+    }
+
+    public void detectarJoins() {
+
+        System.out.println("\t\tDetectando joins y creando noatación...");
+        //Lo siguiente es a manera de prueba.....................
+
+        /*
       WFG.clear();
       
       
@@ -232,11 +223,8 @@ public class PostProcesarGrafo {
    	[c,2] - 1
    	[d,2] - 1
    	[2,e] - 1
-      */
-   
-     
-      
-      /*
+         */
+ /*
      
       //Modelo 2
       WFG.put("A1A,b", 1);
@@ -281,17 +269,8 @@ public class PostProcesarGrafo {
    	[B,d] - 1
       
       
-      */
-   
-   
-   
-   
-   
-   
-      
-      
-      
-       /*
+         */
+ /*
       //Modelo 3
       WFG.put("a,b", 1);
       WFG.put("b,c", 1);
@@ -342,16 +321,8 @@ public class PostProcesarGrafo {
    	[B,D] - 1
    	[g,D] - 1
    	[D,f] - 1        
-      */
-   
-   
-      
-      
-      
-      
-      
-      
-      /*
+         */
+ /*
       //Modelo 4
       WFG.put("a,b", 1);
       WFG.put("X1A,c", 1);
@@ -406,9 +377,8 @@ public class PostProcesarGrafo {
    	[g,D] - 1
    	[D,f] - 1
       
-      */
-   
-      /*
+         */
+ /*
       //Modelo 5 - ciclos
       WFG.put("1,b", 1);
       WFG.put("1,c", 1);
@@ -438,21 +408,13 @@ public class PostProcesarGrafo {
       BPMN.T.add('e');
       BPMN.T.add('f');
       BPMN.i = 'a';
-      */
-      
-      
-      //.....................
-      ///
-      
-      
-      JoinsFinder jf = new JoinsFinder(BPMN, WFG);
-      
-      notation = jf.findNotation();
-      System.out.println("Notation: " + notation);
-      
-    
-   
-   
-   
-   }
+         */
+        //.....................
+        ///
+        JoinsFinder jf = new JoinsFinder(BPMN, WFG);
+
+        notation = jf.findNotation();
+        System.out.println("Notation: " + notation);
+
+    }
 }

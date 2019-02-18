@@ -5,13 +5,8 @@
  */
 package splitminer;
 
-import Controlador.CrearModeloBPMN;
-import Controlador.FilesManagement;
-import Controlador.Filtering;
-import Controlador.GenerarGrafo;
-import Controlador.PostProcesarGrafo;
-import Controlador.PreProcesarGrafo;
-import Interfaz.gBuildGraphicModel;
+import Controlador.*;
+import Vista.gBuildGraphicModel;
 import Modelo.BPMNModel;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -30,8 +25,8 @@ public class SplitMiner {
         //P1.txt NOTATION: a AND{  XOR{  c, h}, b XOR{  e, g}} d f
         
         
-         final String filename = "Sepsis Cases.txt";
-        double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
+        final String filename = "Sepsis Case.csv";
+        double umbral = 0.5; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
         LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas
         LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>(); //Grafo
         BPMNModel BPMN = new BPMNModel(); //Modelo BPMN
@@ -83,7 +78,7 @@ public class SplitMiner {
         /////////
         System.out.println("\nPASO 4: CONSTRUCCION DEL MODELO BPMN");
 
-        CrearModeloBPMN crearModelo = new CrearModeloBPMN(BPMN, generarGrafo.firsts, generarGrafo.lasts, WFG, preprocesarGrafo.parallelRelations);
+        SplitsFinder crearModelo = new SplitsFinder(BPMN, generarGrafo.firsts, generarGrafo.lasts, WFG, preprocesarGrafo.parallelRelations);
         
         /////////
 
@@ -92,9 +87,6 @@ public class SplitMiner {
         //g1.postProcesamiento(BPMN);
         
         PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(BPMN, WFG, preprocesarGrafo.autoLoops);
-
-        System.out.println("\nPASO 6: Mostrando modelo grafico");
-        
         
         
         System.out.println("Notacion al final: " + postprocesamiento.notation);

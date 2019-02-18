@@ -3,9 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Interfaz;
+package Vista;
 
-import splitminer.*;
 import Modelo.BPMNModel;
 import Modelo.Element;
 import java.awt.Dimension;
