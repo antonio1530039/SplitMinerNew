@@ -8,6 +8,7 @@ package Controlador;
 import Modelo.BPMNModel;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ public class PreProcesarGrafo {
     public LinkedHashMap<Character, LinkedList<Character>> parallelRelations = new LinkedHashMap<Character, LinkedList<Character>>();
     public List<Character> autoLoops = new LinkedList<Character>();
 
-    public PreProcesarGrafo(BPMNModel BPMN, LinkedHashMap<String, Integer> wfg, LinkedHashMap tracesList) {
+    public PreProcesarGrafo(BPMNModel BPMN, LinkedHashMap<String, Integer> wfg, LinkedHashMap tracesList, LinkedHashSet<Character> firsts, LinkedHashSet<Character> lasts, double percentile) {
         
         WFG = wfg;
         
@@ -41,7 +42,10 @@ public class PreProcesarGrafo {
 
         System.out.println("\t Grafo actual con las modificaciones previas (AUTOLOOP, SHORTLOOP, PARALLEL RELATIONS):");
         Utils.mostrarGrafo(2, WFG);
-
+        
+        //NUEVOS CAMBIOS: FILTERING      
+        System.out.println("\n\t3.FILTERING: percentil = '" + percentile + "'.");
+        Filtering f = new Filtering(BPMN, percentile, wfg, firsts, lasts);
         
         //System.exit(0);
     }

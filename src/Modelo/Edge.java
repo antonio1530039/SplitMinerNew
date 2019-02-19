@@ -1,6 +1,5 @@
 package Modelo;
 
-import splitminer.*;
 
 public class Edge{
 

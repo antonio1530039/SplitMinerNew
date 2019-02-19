@@ -1,6 +1,4 @@
 package Modelo;
-import splitminer.*;
-import java.io.*;
 import java.util.*;
 
 

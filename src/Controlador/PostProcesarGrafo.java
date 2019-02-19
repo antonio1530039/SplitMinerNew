@@ -11,10 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-/**
- *
- * @author Antonio
- */
+
 public class PostProcesarGrafo {
 
     LinkedHashMap<String, Integer> WFG;

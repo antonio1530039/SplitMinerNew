@@ -22,9 +22,7 @@ public class Filtering {
         WFG = wfg;
         Firsts = firsts;
         Lasts = lasts;
-        //NUEVOS CAMBIOS: FILTERING      
-        System.out.println("\n\t3.FILTERING: percentil = '" + percentile + "'.");
-
+        
         int removed = filtering(BPMN, percentile);
         System.out.println("\n\t\t" + removed + " edges fueron removidos.");
 

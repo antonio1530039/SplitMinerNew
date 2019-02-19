@@ -22,11 +22,11 @@ public class SplitMiner {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        //P1.txt NOTATION: a AND{  XOR{  c, h}, b XOR{  e, g}} d f
+        /*//P1.txt NOTATION: a AND{  XOR{  c, h}, b XOR{  e, g}} d f
         
         
-        final String filename = "Sepsis Case.csv";
-        double umbral = 0.5; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
+        final String filename = "P1.txt";
+        double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
         LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas
         LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>(); //Grafo
         BPMNModel BPMN = new BPMNModel(); //Modelo BPMN
@@ -88,8 +88,11 @@ public class SplitMiner {
         
         PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(BPMN, WFG, preprocesarGrafo.autoLoops);
         
+        ProcessViewer processViewer = new ProcessViewer();
         
-        System.out.println("Notacion al final: " + postprocesamiento.notation);
+        System.out.println("Notacion al final: " + postprocesamiento.notation);*/
+        
+        ProcessViewer processViewer = new ProcessViewer();
 
     }
     
