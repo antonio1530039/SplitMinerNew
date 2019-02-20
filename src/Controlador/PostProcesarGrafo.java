@@ -128,13 +128,15 @@ public class PostProcesarGrafo {
             while (iter.hasNext()) {
                 Map.Entry<String, Integer> entry = iter.next();
                 String key = entry.getKey();
-
+                
+                String keySplit[] = key.split(",");
+                
                 if (autoLoops.size() > 0) {
 
                     for (Character car : autoLoops) {
 
-                        String first = "" + key.charAt(0);
-                        String second = "" + key.charAt(2);
+                        String first = "" + keySplit[0];
+                        String second = "" + keySplit[1];
                         String clave = "";
 
                         if (first.indexOf("" + car) > -1) {

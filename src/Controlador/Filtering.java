@@ -148,29 +148,17 @@ public class Filtering {
 
         return maxFreq;
     }
-
-    private int calcularNpercentile(Set F, double percentile) {
-
-        int n = F.size();
-        Object[] array = F.toArray();
-
-        double val = n * percentile;
-        double techo = Math.ceil(val);
-        double prom = 0.0;
-
-        if (val < techo) {
-            return (Integer) array[(int) techo - 1];
-        } else {
-
-            if (techo != 0) {
-                prom = ((Integer) array[(int) techo - 1] + (Integer) array[(int) techo]) / 2.0;
-            }
-
-            return (int) prom;
-
-        }
-
-    }
+    //nthpercentile es el valor del conjunto F por debajo del cual cae un %percentile de muestras
+   public static int calcularNpercentile(Set F, double percentile) {
+   
+      int n = F.size();
+      Object[] array = F.toArray();
+   
+      double val = n * percentile;
+      double techo = Math.ceil(val);
+      return (Integer) array[(int) techo - 1];
+      
+   }
 
     private void discoverBestIncomingEdges(BPMNModel BPMN, Map<Character, Integer> Cf, Map<Character, String> Ei) {
 

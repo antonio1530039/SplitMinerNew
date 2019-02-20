@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Controlador;
 
 import java.util.ArrayList;
@@ -12,10 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-/**
- *
- * @author Antonio
- */
+
 public class Utils {
     public static void mostrarGrafo(int numTabs, LinkedHashMap<String, Integer> WFG) {
       for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
