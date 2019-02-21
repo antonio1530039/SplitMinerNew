@@ -5,6 +5,7 @@ package splitminer;
  * @version 1
  * @since Diciembre 2018
  */
+import Controlador.BPMNFiles;
 import Controlador.FilesManagement;
 import Controlador.GenerarGrafo;
 import Controlador.PostProcesarGrafo;
@@ -76,8 +77,10 @@ class ProcessViewer {
     private ActionListener loadFile_btnAction, information_btnAction, traces_btnAction, activities_btnAction, exportAsCSV_btnAction, exportAsXES_btnAction, model_btnAction, deployment_btnAction;
     private boolean activitiesSelected, tracesSelected, informationSelected, modelSelected, deploymentSelected;
     private String deployment;
-    static BPMNModel BPMN = new BPMNModel();
     Dimension screenSize;
+    
+    BPMNModel BPMN;
+    LinkedHashMap<String, Integer> WFG;
 
     public ProcessViewer() {
         Toolkit t = Toolkit.getDefaultToolkit();
@@ -90,6 +93,7 @@ class ProcessViewer {
         deploymentSelected = true;
         deployment = "";
         fileName = null;
+        
 
         // Se generan las acciones
         initializeActions();
@@ -120,7 +124,7 @@ class ProcessViewer {
                 exportAsCSV_btn.addActionListener(exportAsCSV_btnAction);
                 loadFile_pnl.add(exportAsCSV_btn);
             } else if (fileName.getAbsolutePath().contains(".csv") || fileName.getAbsolutePath().contains(".txt")) {
-                exportAsXES_btn = new JButton("Export as XES");
+                exportAsXES_btn = new JButton("Export as BPMN 2.0");
                 exportAsXES_btn.addActionListener(exportAsXES_btnAction);
                 loadFile_pnl.add(exportAsXES_btn);
             }
@@ -499,89 +503,7 @@ class ProcessViewer {
                 }
 
                 if (filePath != null) {
-
-                    XFactoryBufferedImpl factory = new XFactoryBufferedImpl();
-
-                    try {
-
-                        BufferedReader br = new BufferedReader(new FileReader(fileName.getAbsolutePath()));
-
-                        String[] columnNames = br.readLine().split(";|,");
-
-                        // Se consigue el numero de columna de Case ID
-                        int caseIdColumn = -1;
-
-                        if (columnNames != null) {
-                            for (int i = 0; i < columnNames.length; i++) {
-                                if (columnNames[i].equals("Case ID")) {
-                                    caseIdColumn = i;
-                                }
-                                break;
-                            }
-                        }
-
-                        System.out.println("caseIdColumn : " + caseIdColumn);
-                        if (caseIdColumn != -1) {
-
-                            // Se cargan el resto de las filas
-                            ArrayList<String[]> data = new ArrayList<String[]>();
-                            String linea = br.readLine();
-                            while (linea != null) {
-                                String[] fila = linea.split(";|,");
-                                data.add(fila);
-                                linea = br.readLine();
-                            }
-
-                            //Se consiguen todos los id
-                            ArrayList<String> ids = new ArrayList<String>();
-
-                            for (int i = 0; i < data.size(); i++) {
-                                if (!ids.contains(data.get(i)[caseIdColumn])) {
-                                    ids.add(data.get(i)[caseIdColumn]);
-                                }
-                            }
-
-                            //Se crea el archivo xes
-                            XLog log = factory.createLog();
-                            for (int i = 0; i < ids.size(); i++) {
-                                // Atributo del trace
-                                XAttributeMap atmT = factory.createAttributeMap();
-                                atmT.put("Case ID", factory.createAttributeLiteral("Case ID", ids.get(i), null));
-                                XTrace trace = factory.createTrace(atmT);
-
-                                //Eventos del trace
-                                for (int j = 0; j < data.size(); j++) {
-                                    if (data.get(j)[caseIdColumn].equals(ids.get(i))) {
-
-                                        XAttributeMap atmE = factory.createAttributeMap();
-
-                                        for (int k = 0; k < columnNames.length; k++) {
-                                            if (k != caseIdColumn) {
-
-                                                atmE.put(columnNames[k], factory.createAttributeLiteral(columnNames[k], data.get(j)[k], null));
-
-                                            }
-                                        }
-                                        trace.add(factory.createEvent(atmE));
-                                    }
-                                }
-                                log.add(trace);
-                            }
-
-                            XesXmlSerializer xxs = new XesXmlSerializer();
-                            if (fileName.getName().contains(".csv")) {
-                                xxs.serialize(log, new FileOutputStream(filePath.getAbsolutePath() + "\\" + fileName.getName().replace(".csv", ".xes")));
-                            } else if (fileName.getName().contains(".txt")) {
-                                xxs.serialize(log, new FileOutputStream(filePath.getAbsolutePath() + "\\" + fileName.getName().replace(".txt", ".xes")));
-                            }
-
-                        } else {
-                            System.out.println("No se encontr� 'Case ID' en las columnas del archivo.");
-                        }
-
-                    } catch (Exception ex) {
-                        System.out.println(ex);
-                    }
+                    BPMNFiles bpmnFiles = new BPMNFiles(WFG, BPMN, filePath.getAbsolutePath() + "/"+ fileName.getName().substring(0, fileName.getName().indexOf(".")));
                 }
 
                 // Se reconstruye la ventana
@@ -841,7 +763,8 @@ class ProcessViewer {
         model_dtm = new DefaultTableModel(dataModel, columnNamesModel);
         ///////
         
-
+        this.WFG = WFG;
+        this.BPMN = BPMN;
     }
 
     void refreshWindow() {
