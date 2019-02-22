@@ -8,38 +8,41 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+
 public class PreProcesarGrafo {
     
-    public LinkedHashMap<String, Integer> WFG;
-    public LinkedHashMap<Character, LinkedList<Character>> parallelRelations = new LinkedHashMap<Character, LinkedList<Character>>();
-    public List<Character> autoLoops = new LinkedList<Character>();
+   public LinkedHashMap<String, Integer> WFG;
+   public LinkedHashMap<Character, LinkedList<Character>> parallelRelations = new LinkedHashMap<Character, LinkedList<Character>>();
+   public List<Character> autoLoops = new LinkedList<Character>();
 
-    public PreProcesarGrafo(BPMNModel BPMN, LinkedHashMap<String, Integer> wfg, LinkedHashMap tracesList, LinkedHashSet<Character> firsts, LinkedHashSet<Character> lasts, double percentile) {
+   public PreProcesarGrafo(BPMNModel BPMN, LinkedHashMap<String, Integer> wfg, LinkedHashMap tracesList, LinkedHashSet<Character> firsts, LinkedHashSet<Character> lasts, double percentile) {
         
-        WFG = wfg;
+      WFG = wfg;
+      double epsilon = 0.3;
+      
         
         //SEGUNDO se buscan y eliminan los auloLoops: (a,a) en el grafo
-        System.out.println("\n\t1.Removiendo AUTOLOOPS y SHORTLOOPS del grafo actual...");
-
-        int numLoops = removeAutoLoops(BPMN.T);
-
+      System.out.println("\n\t1.Removiendo AUTOLOOPS y SHORTLOOPS del grafo actual...");
+   
+      int numLoops = removeAutoLoops(BPMN.T);
+   
         //TERCERO se buscan y eliminan los shortLoops: (a,x), (x,a) en el grafo, para una misma traza
-        int shortLoops = removeShortLoops(tracesList);
-
+      int shortLoops = removeShortLoops(tracesList);
+   
         //CUARTO: CALCULAR LAS RELACIONES DE PARALELISMO
-        System.out.println("\n\t2.Identificar y remover RELACIONES de PARALELISMO...");
-
-        identifyParallelRelations();
-
-        System.out.println("\t Grafo actual con las modificaciones previas (AUTOLOOP, SHORTLOOP, PARALLEL RELATIONS):");
-        Utils.mostrarGrafo(2, WFG);
+      System.out.println("\n\t2.Identificar y remover RELACIONES de PARALELISMO...");
+   
+      identifyParallelRelations(epsilon);
+   
+      System.out.println("\t Grafo actual con las modificaciones previas (AUTOLOOP, SHORTLOOP, PARALLEL RELATIONS):");
+      Utils.mostrarGrafo(2, WFG);
         
         //NUEVOS CAMBIOS: FILTERING      
-        System.out.println("\n\t3.FILTERING: percentil = '" + percentile + "'.");
-        Filtering f = new Filtering(BPMN, percentile, wfg, firsts, lasts);
+      System.out.println("\n\t3.FILTERING: percentil = '" + percentile + "'.");
+      Filtering f = new Filtering(BPMN, percentile, wfg, firsts, lasts);
         
         //System.exit(0);
-    }
+   }
     
     
      /*
@@ -107,7 +110,7 @@ public class PreProcesarGrafo {
    
    
    
-    public int identifyParallelRelations() {
+   public int identifyParallelRelations(double epsilon) {
       //busca edges de la forma a,b y b,a, que cumplan con la relación: |a -> b| - |b -> a|
       //                                                                -------------------  < e
       //                                                                |a -> b| + |b -> a| 
@@ -116,13 +119,14 @@ public class PreProcesarGrafo {
       int numParallelRelations = 0;
    
       List<Map.Entry<String, Integer>> edges = new ArrayList(WFG.entrySet());
-      Map.Entry<String, Integer> entry = null;
       String edge = null;
       int freq1 = 0;
       int freq2 = 0;
    
-      for (int i = 0; i < edges.size();) {
-         entry = edges.get(i);
+      System.out.println("\n\t\t E = " + epsilon);
+               
+               
+      for(Map.Entry<String, Integer> entry : edges) {
          edge = entry.getKey();
          freq1 = entry.getValue();
       
@@ -132,60 +136,46 @@ public class PreProcesarGrafo {
       
          String edgeParalel = activity2 + "," + activity1;
       
-         if (WFG.containsKey(edgeParalel)) {
-            freq2 = WFG.get(edgeParalel);
+         if (!WFG.containsKey(edgeParalel))               
+            continue;
          
-            double div = (double) (freq1 - freq2) / (double) (freq1 + freq2);
+         freq2 = WFG.get(edgeParalel);
          
-            if (div < 0)//%%%%%agregado
-            {
-               div *= -1.0;
-            }
-         
-            //if(div < 0.3){
-            if (div < 0.3) {
-               System.out.println("\t\t....expresion DIV = " + div);
-               System.out.println("\t\tArco removido =" + edge);
-               WFG.remove(edgeParalel);
-               WFG.remove(edge);
-               // }
-               // else{//%%%%%agregado
+         double div = (double) (freq1 - freq2) / (double) (freq1 + freq2);
+         div = Math.abs(div);
+         System.out.println("\t\t(" + edge + ") y (" + edgeParalel + ") detectados. Div = " + div);
             
-               LinkedList<Character> values = null;
-               System.out.println("ACTIVIDAD 1:" + activity1 + "  ACTIVITY 2:" + activity2);
-               if (parallelRelations.containsKey(activity1)) {
-                  values = parallelRelations.get(activity1);
-               } 
-               else {
-                  values = new LinkedList<Character>();
-               }
-               values.add(activity2);
-               parallelRelations.put(activity1, values);
+         if ( div < epsilon) {
+            System.out.println("\t\t\tRemovidos...");
+            WFG.remove(edgeParalel);
+            WFG.remove(edge);
+               
+            LinkedList<Character> values = null;
+            if (parallelRelations.containsKey(activity1)) {
+               values = parallelRelations.get(activity1);
+            } 
+            else {
+               values = new LinkedList<Character>();
+            }
+            values.add(activity2);
+            parallelRelations.put(activity1, values);
             
                //al reves tambien aplica
-               if (parallelRelations.containsKey(activity2)) {
-                  values = parallelRelations.get(activity2);
-               } 
-               else {
-                  values = new LinkedList<Character>();
-               }
-               values.add(activity1);
-               parallelRelations.put(activity2, values);
+            if (parallelRelations.containsKey(activity2)) {
+               values = parallelRelations.get(activity2);
+            } 
+            else {
+               values = new LinkedList<Character>();
+            }
+            values.add(activity1);
+            parallelRelations.put(activity2, values);
             
-               numParallelRelations += 2;
-            
-               edges.remove(i);
-               continue;
-            }//%%%%%agregado
-            i++;//%%%%%agregado
-         
-         } 
-         else {
-            i++;
-         }
+            numParallelRelations += 2;
+                
+         }            
       }
    
-      System.out.println("\n\t\t" + numParallelRelations + " relaciones paralelas encontradas: " + parallelRelations);
+      System.out.println("\n\t\t'" + numParallelRelations + "' relaciones paralelas encontradas Y removidas: " + parallelRelations);
    
       return numParallelRelations;
    

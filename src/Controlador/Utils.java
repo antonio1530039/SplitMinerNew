@@ -2,15 +2,20 @@ package Controlador;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.TreeMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-
 public class Utils {
     public static void mostrarGrafo(int numTabs, LinkedHashMap<String, Integer> WFG) {
-      for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
+      
+      Map<String, Integer> treeMap = new TreeMap<String, Integer>(WFG);
+        
+      System.out.println("\n\t\tGrafo con '" + treeMap.size() + "' ARCOS.\n");
+             
+      for (Map.Entry<String, Integer> entry : treeMap.entrySet()) {
          for (int i = 0; i < numTabs; i++) {
             System.out.print("\t");
          }
