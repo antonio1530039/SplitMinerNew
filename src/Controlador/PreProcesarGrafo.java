@@ -15,10 +15,10 @@ public class PreProcesarGrafo {
    public LinkedHashMap<Character, LinkedList<Character>> parallelRelations = new LinkedHashMap<Character, LinkedList<Character>>();
    public List<Character> autoLoops = new LinkedList<Character>();
 
-   public PreProcesarGrafo(BPMNModel BPMN, LinkedHashMap<String, Integer> wfg, LinkedHashMap tracesList, LinkedHashSet<Character> firsts, LinkedHashSet<Character> lasts, double percentile) {
+   public PreProcesarGrafo(BPMNModel BPMN, LinkedHashMap<String, Integer> wfg, LinkedHashMap tracesList, LinkedHashSet<Character> firsts, LinkedHashSet<Character> lasts, double percentile, double epsilon) {
         
       WFG = wfg;
-      double epsilon = 0.3;
+      //double epsilon = 0.3;
       
         
         //SEGUNDO se buscan y eliminan los auloLoops: (a,a) en el grafo

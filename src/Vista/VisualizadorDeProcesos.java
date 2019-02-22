@@ -660,6 +660,7 @@ class ProcessViewer {
         //P1.txt NOTATION: a AND{  XOR{  c, h}, b XOR{  e, g}} d f
         //final String filename = "P1.txt";
         double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
+         double epsilon = 0.3;
         LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas
         LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>(); //Grafo
         BPMNModel BPMN = new BPMNModel(); //Modelo BPMN
@@ -731,7 +732,7 @@ class ProcessViewer {
         
         System.out.println("\nPASO 3: PREPROCESAMIENTO DEL GRAFO");
 
-        PreProcesarGrafo preprocesarGrafo = new PreProcesarGrafo(BPMN, WFG, tracesList, generarGrafo.firsts, generarGrafo.lasts, umbral);
+        PreProcesarGrafo preprocesarGrafo = new PreProcesarGrafo(BPMN, WFG, tracesList, generarGrafo.firsts, generarGrafo.lasts, umbral, epsilon);
 
         /////////
         System.out.println("\nPASO 4: CONSTRUCCION DEL MODELO BPMN");
