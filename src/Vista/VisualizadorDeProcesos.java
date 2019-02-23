@@ -11,7 +11,9 @@ import Controlador.GenerarGrafo;
 import Controlador.PostProcesarGrafo;
 import Controlador.PreProcesarGrafo;
 import Controlador.SplitsFinder;
+import Controlador.WFG;
 import Modelo.BPMNModel;
+import Vista.gBuildGraphicModel;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -39,6 +41,7 @@ import java.awt.event.ActionListener;
 import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import java.awt.TextField;
 import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -70,17 +73,18 @@ class ProcessViewer {
 
     private JFrame main_frm;
     private File fileName;
+    private TextField epsilon_textField = new TextField("0.3", 5), percentil_textField = new TextField("0.4", 5);
     private JPanel loadFile_pnl, menu_pnl, viewer_pnl, raw_pnl;
-    private JButton information_btn, traces_btn, activities_btn, loadFile_btn, exportAsCSV_btn, deployment_btn, model_btn, exportAsXES_btn;
-    private JLabel titulo_txt;
+    private JButton information_btn, traces_btn, activities_btn, loadFile_btn, exportAsCSV_btn, deployment_btn, model_btn, exportAsXES_btn, execute_btn;
+    private JLabel titulo_txt, epsilon_txt, percentil_txt;
     private DefaultTableModel traces_dtm, activities_dtm, information_dtm, model_dtm;
-    private ActionListener loadFile_btnAction, information_btnAction, traces_btnAction, activities_btnAction, exportAsCSV_btnAction, exportAsXES_btnAction, model_btnAction, deployment_btnAction;
+    private ActionListener loadFile_btnAction, information_btnAction, traces_btnAction, activities_btnAction, exportAsCSV_btnAction, exportAsXES_btnAction, model_btnAction, deployment_btnAction, execute_btnAction;
     private boolean activitiesSelected, tracesSelected, informationSelected, modelSelected, deploymentSelected;
     private String deployment;
     Dimension screenSize;
-    
+
     BPMNModel BPMN;
-    LinkedHashMap<String, Integer> WFG;
+    LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
 
     public ProcessViewer() {
         Toolkit t = Toolkit.getDefaultToolkit();
@@ -93,7 +97,6 @@ class ProcessViewer {
         deploymentSelected = true;
         deployment = "";
         fileName = null;
-        
 
         // Se generan las acciones
         initializeActions();
@@ -116,6 +119,21 @@ class ProcessViewer {
         titulo_txt = new JLabel();
         titulo_txt.setForeground(Color.white);
         titulo_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
+
+        epsilon_txt = new JLabel("Epsilon:");
+        epsilon_txt.setForeground(Color.white);
+        epsilon_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
+
+        percentil_txt = new JLabel("Percentil:");
+        percentil_txt.setForeground(Color.white);
+        percentil_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
+
+        loadFile_pnl.add(epsilon_txt);
+        loadFile_pnl.add(epsilon_textField);
+
+        loadFile_pnl.add(percentil_txt);
+        loadFile_pnl.add(percentil_textField);
+
         if (fileName != null) {
             titulo_txt.setText(fileName.getName());
             loadFile_pnl.add(titulo_txt);
@@ -123,19 +141,25 @@ class ProcessViewer {
                 exportAsCSV_btn = new JButton("Export as CSV");
                 exportAsCSV_btn.addActionListener(exportAsCSV_btnAction);
                 loadFile_pnl.add(exportAsCSV_btn);
-            } else if (fileName.getAbsolutePath().contains(".csv") || fileName.getAbsolutePath().contains(".txt")) {
-                exportAsXES_btn = new JButton("Export as BPMN 2.0");
-                exportAsXES_btn.addActionListener(exportAsXES_btnAction);
-                loadFile_pnl.add(exportAsXES_btn);
             }
         } else {
             titulo_txt.setText("No selected file");
             loadFile_pnl.add(titulo_txt);
         }
 
+        if (WFG.size()>0) {
+            exportAsXES_btn = new JButton("Export as BPMN 2.0");
+            exportAsXES_btn.addActionListener(exportAsXES_btnAction);
+            loadFile_pnl.add(exportAsXES_btn);
+        }
+
         loadFile_btn = new JButton("Load File");
         loadFile_btn.addActionListener(loadFile_btnAction);
         loadFile_pnl.add(loadFile_btn);
+
+        execute_btn = new JButton("Execute");
+        execute_btn.addActionListener(execute_btnAction);
+        loadFile_pnl.add(execute_btn);
 
     }
 
@@ -144,7 +168,6 @@ class ProcessViewer {
         menu_pnl = new JPanel();
 
         // Se inicializan los botones del menu
-        
         information_btn = new JButton("Description");
         traces_btn = new JButton("Traces");
         activities_btn = new JButton("Activities");
@@ -152,7 +175,6 @@ class ProcessViewer {
         model_btn = new JButton("Model");
 
         // Se asigan acciones a los botones
-       
         information_btn.addActionListener(information_btnAction);
         activities_btn.addActionListener(activities_btnAction);
         traces_btn.addActionListener(traces_btnAction);
@@ -160,7 +182,6 @@ class ProcessViewer {
         deployment_btn.addActionListener(deployment_btnAction);
 
         // Se le asignan el corresponediente color para identificar que los han seleccionado
-        
         if (informationSelected) {
             information_btn.setBackground(Color.LIGHT_GRAY);
         } else {
@@ -188,7 +209,6 @@ class ProcessViewer {
         }
 
         // Se asigna un tama�o
-        
         information_btn.setPreferredSize(new Dimension(150, 30));
         activities_btn.setPreferredSize(new Dimension(150, 30));
         traces_btn.setPreferredSize(new Dimension(150, 30));
@@ -203,7 +223,6 @@ class ProcessViewer {
         JPanel buttons_pnl = new JPanel(new GridBagLayout());
 
         // Se agregan los botones al contenedor
-       
         buttons_pnl.add(new JPanel(), gbc);
         buttons_pnl.add(information_btn, gbc);
         buttons_pnl.add(new JPanel(), gbc);
@@ -250,10 +269,10 @@ class ProcessViewer {
         raw_pnl = new JPanel();
 
         JPanel north = new JPanel();
-        
+
         if (informationSelected) {
-             JPanel j =buildTablePanel(information_dtm, "Description");
-            j.setPreferredSize(new Dimension(100, screenSize.height/6));
+            JPanel j = buildTablePanel(information_dtm, "Description");
+            j.setPreferredSize(new Dimension(100, screenSize.height / 6));
             north.add(j);
         }
         north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
@@ -261,7 +280,7 @@ class ProcessViewer {
         JPanel south = new JPanel();
         if (activitiesSelected) {
             JPanel j = buildTablePanel(activities_dtm, "Activities");
-            j.setPreferredSize(new Dimension(screenSize.width/10, 100));
+            j.setPreferredSize(new Dimension(screenSize.width / 10, 100));
             south.add(j);
         }
         if (tracesSelected) {
@@ -273,7 +292,7 @@ class ProcessViewer {
         south.setLayout(new BoxLayout(south, BoxLayout.X_AXIS));
         raw_pnl.add(north);
         raw_pnl.add(south);
-        
+
         if (deploymentSelected) {
             JPanel feet = new JPanel();
 
@@ -318,8 +337,6 @@ class ProcessViewer {
         main_frm.setLayout(new BorderLayout());
         main_frm.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-       
-
         main_frm.setSize(screenSize.width / 3 * 2, screenSize.height / 3 * 2);
         main_frm.setMaximumSize(new Dimension(screenSize.width, screenSize.height));
         main_frm.setMinimumSize(new Dimension(screenSize.width / 3 * 2, screenSize.height / 3 * 2));
@@ -335,6 +352,20 @@ class ProcessViewer {
     }
 
     private void initializeActions() {
+
+        execute_btnAction = new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                System.out.println("Clic en execute");
+
+                if (fileName != null) {
+                    execute(fileName.getAbsolutePath());
+                    refreshWindow();
+                } else {
+                    System.out.println("No file selected");
+                }
+
+            }
+        };
 
         /* Accion del boton LoadFile */
         loadFile_btnAction
@@ -372,37 +403,10 @@ class ProcessViewer {
                             System.out.println("El tipo de archivo de entrada no es valido.");
                         }
                     }
+                    refreshWindow();
                 }
                 if (fileName != null) {
-
-                    if (fileName.getName().endsWith(".txt") || fileName.getName().endsWith(".csv")) {
-                        /* Se Lee archivo */
-                        BufferedReader br = null;
-                        String[] columnNames = null;
-                        try {
-                            br = new BufferedReader(new FileReader(fileName.getAbsolutePath()));
-                            String line = br.readLine();
-                            
-                            
-                            ///////Se jacen los modelos de la informacion procesada
-                            // Se consigue la informacion
-                            readDataInput(fileName.getAbsolutePath());
-
-                            // Se reconstruye la ventana
-                            refreshWindow();
-
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        } finally {
-                            if (null != br) {
-                                try {
-                                    br.close();
-                                } catch (Exception e) {
-
-                                }
-                            }
-                        }
-                    } else if (fileName.getName().endsWith(".xes")) {
+                    if (fileName.getName().endsWith(".xes")) {
                         XFactoryBufferedImpl factory = new XFactoryBufferedImpl();
                         XesXmlParser xesXmlParser = new XesXmlParser();
 
@@ -459,15 +463,7 @@ class ProcessViewer {
                                     data[i][j] = filas.get(i)[j];
                                 }
                             }
-
-                            // Modelo para la table Raw
-                            //raw_dtm = new DefaultTableModel(data, columnNames);
-
-                            ///////Se jacen los modelos de la informacion procesada
-                            // Se consigue la informacion
-                            readDataInput(fileName.getAbsolutePath());
-
-                            // Se reconstruye la ventana
+                            
                             refreshWindow();
 
                         } catch (Exception ex) {
@@ -485,8 +481,6 @@ class ProcessViewer {
             public void actionPerformed(ActionEvent ae) {
 
                 /* Se escoge el directorio destino para el archivo */
-                
-                
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 fileChooser.setDialogTitle("Select the destination path");
@@ -503,80 +497,11 @@ class ProcessViewer {
                 }
 
                 if (filePath != null) {
-                    BPMNFiles bpmnFiles = new BPMNFiles(WFG, BPMN, filePath.getAbsolutePath() + "/"+ fileName.getName().substring(0, fileName.getName().indexOf(".")));
+                    BPMNFiles bpmnFiles = new BPMNFiles(WFG, BPMN, filePath.getAbsolutePath() + "/" + fileName.getName().substring(0, fileName.getName().indexOf(".")));
                 }
 
                 // Se reconstruye la ventana
                 refreshWindow();
-            }
-        };
-
-        exportAsCSV_btnAction
-                = new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                /* Se escoge el directorio destino para el archivo */
-                
-                /*
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                fileChooser.setDialogTitle("Select the destination path");
-                int result = fileChooser.showOpenDialog(fileChooser);
-
-                File filePath = null;
-
-                if (result != JFileChooser.CANCEL_OPTION) {
-                    filePath = fileChooser.getSelectedFile();
-                    if ((filePath == null) || (filePath.getAbsolutePath().equals(""))) {
-                        System.out.println("Error la ruta.");
-                    } else {
-                        System.out.println(filePath.getAbsolutePath());
-                    }
-                }
-
-                if (filePath != null) {
-
-                    FileWriter fileWriter = null;
-                    try {
-                        fileWriter = new FileWriter(filePath.getAbsolutePath() + "\\" + fileName.getName().replace(".xes", ".csv"));
-
-                        //Escribe el nombre de las columnas en el CSV
-                        for (int i = 0; i < raw_dtm.getColumnCount(); i++) {
-                            fileWriter.append(raw_dtm.getColumnName(i));
-                            if (i != raw_dtm.getColumnCount() - 1) {
-                                fileWriter.append(";");
-                            }
-                        }
-
-                        fileWriter.append("\n");
-
-                        //Escribe los datos en le csv
-                        for (int i = 0; i < raw_dtm.getRowCount(); i++) {
-                            for (int j = 0; j < raw_dtm.getColumnCount(); j++) {
-                                fileWriter.append(raw_dtm.getValueAt(i, j).toString());
-                                if (j != raw_dtm.getColumnCount() - 1) {
-                                    fileWriter.append(";");
-                                }
-                            }
-                            fileWriter.append("\n");
-                        }
-
-                        System.out.println("El archivo CSV fue creado con exito.");
-
-                    } catch (Exception e) {
-                        System.out.println("Error en el programa.");
-                        e.printStackTrace();
-                    } finally {
-                        try {
-                            fileWriter.flush();
-                            fileWriter.close();
-                        } catch (IOException ex) {
-                            System.out.println("Error al cerrar el frlujo del archivo.");
-                        }
-                    }
-                }
-
-                // Se reconstruye la ventana
-                refreshWindow();*/
             }
         };
 
@@ -593,8 +518,6 @@ class ProcessViewer {
                 refreshWindow();
             }
         };
-
-       
 
         information_btnAction
                 = new ActionListener() {
@@ -657,15 +580,39 @@ class ProcessViewer {
     // Funcion que procesa la informaci�n del Dataset 
     public void readDataInput(String filename) throws Exception {
 
+    }
+
+    public void execute(String filename) {
+        double epsilon = 0.0, umbral = 0.0;
+
+        //double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
+        //double epsilon = 0.3;
+        
+        
+        if (!epsilon_textField.getText().equals("") && !percentil_textField.getText().equals("")) {
+            try{
+                epsilon = Double.parseDouble(epsilon_textField.getText());
+                umbral = Double.parseDouble(percentil_textField.getText());
+            }catch(Exception e){
+                System.out.println("Epsilon o percentil inválidos! Ingrese números solamente. " + e.getMessage());
+                return;
+            }
+        }else{
+            System.out.println("Ingrese un número epsilon y percentil");
+        }
+
+        System.out.println("Epsilon: " + epsilon);
+        System.out.println("percentil: " + umbral);
+
         //P1.txt NOTATION: a AND{  XOR{  c, h}, b XOR{  e, g}} d f
         //final String filename = "P1.txt";
-        double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
-         double epsilon = 0.3;
-        LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas
-        LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>(); //Grafo
-        BPMNModel BPMN = new BPMNModel(); //Modelo BPMN
+        WFG wfg = new WFG(); //Modelo: grafo y modelo BPMN
+        gBuildGraphicModel view = new gBuildGraphicModel(); //Instancia de la vista
+        wfg.addObserver(view); //Agregar observador al modelo
 
-        FilesManagement f = new FilesManagement(BPMN);
+        LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas
+
+        FilesManagement f = new FilesManagement(wfg.BPMN);
         ///////
         System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
 
@@ -718,43 +665,38 @@ class ProcessViewer {
         information_dtm = new DefaultTableModel(columnNamesdataInfo, columnNamesInfo);
 
         ///////
-        
-        
-        
-        
-        
-        
         System.out.println("\n");
         System.out.println("PASO2: INCIANDO LA CONSTRUCCION DEL GRAFO QUE MODELA EL CONJUNTO DE TRAZAS.\n");
 
         GenerarGrafo generarGrafo = new GenerarGrafo();
-        generarGrafo.computeGraph(tracesList, WFG);
-        
+        generarGrafo.computeGraph(tracesList, wfg.WFG);
+
         System.out.println("\nPASO 3: PREPROCESAMIENTO DEL GRAFO");
 
-        PreProcesarGrafo preprocesarGrafo = new PreProcesarGrafo(BPMN, WFG, tracesList, generarGrafo.firsts, generarGrafo.lasts, umbral, epsilon);
+        PreProcesarGrafo preprocesarGrafo = new PreProcesarGrafo(wfg.BPMN, wfg.WFG, tracesList, generarGrafo.firsts, generarGrafo.lasts, umbral, epsilon);
 
         /////////
         System.out.println("\nPASO 4: CONSTRUCCION DEL MODELO BPMN");
 
-        SplitsFinder crearModelo = new SplitsFinder(BPMN, generarGrafo.firsts, generarGrafo.lasts, WFG, preprocesarGrafo.parallelRelations);
+        SplitsFinder crearModelo = new SplitsFinder(wfg.BPMN, generarGrafo.firsts, generarGrafo.lasts, wfg.WFG, preprocesarGrafo.parallelRelations);
 
         /////////
         System.out.println("\nPASO 5: POST-PROCESAMIENTO");
 
         //g1.postProcesamiento(BPMN);
-        PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(BPMN, WFG, preprocesarGrafo.autoLoops);
+        PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(wfg.BPMN, wfg.WFG, preprocesarGrafo.autoLoops);
 
-        System.out.println("Notacion al final: " + postprocesamiento.notation);
-        
-        deployment = postprocesamiento.notation;
-        
-        
+        wfg.Notation = postprocesamiento.notation;
+
+        System.out.println("Notacion al final: " + wfg.Notation);
+
+        deployment = wfg.Notation;
+
         // Se prepara la tabla Modelo
         String[] columnNamesModel = new String[]{"Key", "Value"};
-        String[][] dataModel = new String[WFG.size()][2];
+        String[][] dataModel = new String[wfg.WFG.size()][2];
         i = 0;
-        for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
+        for (Map.Entry<String, Integer> entry : wfg.WFG.entrySet()) {
             dataModel[i][0] = "[" + entry.getKey() + "]";
             dataModel[i][1] = String.valueOf(entry.getValue());
             i++;
@@ -763,9 +705,10 @@ class ProcessViewer {
         // Model para la tabla Modelo
         model_dtm = new DefaultTableModel(dataModel, columnNamesModel);
         ///////
-        
-        this.WFG = WFG;
-        this.BPMN = BPMN;
+
+        this.WFG = wfg.WFG; //asignar el valor actual del grafo (motivos de exportacion de modelo a archivo XML BPMN 2.0)
+        this.BPMN = wfg.BPMN;//asignar el valor actual del modelo BPMN (motivos de exportacion de modelo a archivo XML BPMN 2.0)
+        wfg.notifyAction(); //notificar que el modelo tuvo cambios
     }
 
     void refreshWindow() {

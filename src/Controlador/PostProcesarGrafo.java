@@ -42,8 +42,6 @@ public class PostProcesarGrafo {
         // System.out.println("\t  Resultado:");
         Utils.mostrarGrafo(2, WFG);
 
-        gBuildGraphicModel c = new gBuildGraphicModel(BPMN, WFG, "Model's notation: " + notation);
-
         //Y SE REINTEGRAN 'AUTOLOPS'
         System.out.println("\n\t3.Re-integrar autolops al modelo final");
         reintegraALoops();

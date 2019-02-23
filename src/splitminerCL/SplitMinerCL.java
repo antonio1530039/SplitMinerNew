@@ -1,5 +1,5 @@
 
-package splitminer;
+package splitminerCL;
 
 import Controlador.FilesManagement;
 import Controlador.GenerarGrafo;
@@ -23,7 +23,7 @@ public class SplitMinerCL {
             umbral = Double.parseDouble(args[1]);
             filename = args[2];
             System.out.println("Parametros ingresados:");
-            System.out.println("\tEpsilon: " + epsilon + "\nPercentil: " + umbral + "\nArchivo log: " + filename);
+            System.out.println("\tEpsilon: " + epsilon + "\n\tPercentil: " + umbral + "\n\tArchivo log: " + filename);
         }else{
             epsilon = 0.3;
             umbral = 0.4;
@@ -32,11 +32,8 @@ public class SplitMinerCL {
             System.out.println("\tEpsilon: " + epsilon + "\n\tPercentil: " + umbral + "\n\tArchivo log: " + filename);
         }
         
-        
-        
        //P1.txt NOTATION: a AND{  XOR{  c, h}, b XOR{  e, g}} d f
-        
-        
+
         LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas
         LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>(); //Grafo
         BPMNModel BPMN = new BPMNModel(); //Modelo BPMN
@@ -59,8 +56,6 @@ public class SplitMinerCL {
             return;
         }
 
-        
-        
         System.out.println("\n");
         System.out.println("PASO2: INCIANDO LA CONSTRUCCION DEL GRAFO QUE MODELA EL CONJUNTO DE TRAZAS.\n");
 
