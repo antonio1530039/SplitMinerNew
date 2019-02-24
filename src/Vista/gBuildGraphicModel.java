@@ -26,7 +26,6 @@ import javax.swing.event.ChangeListener;
 public class gBuildGraphicModel extends JFrame implements Observer, ActionListener {
 
     private JRadioButton antesSplitsRadio, splitsRadio, todoRadio;
-    private LinkedList<JCheckBox> Checks;
     private ButtonGroup bg;
 
     private LinkedHashMap<String, Integer> WFGantesSplits;
@@ -53,7 +52,6 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         ScreenHeight = (int) screenSize.getHeight();
         ElementsSaved = new HashMap<>();
         showTasks = new LinkedList<>();
-        Checks = new LinkedList<>();
 
         setTitle("Model");
         setSize(ScreenWidth, ScreenHeight);
@@ -86,7 +84,6 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
             add(ch);
             y += 30;
             showTasks.add(t.toString());
-            Checks.add(ch);
         }
 
     }
@@ -108,15 +105,8 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
             //posicion inicial del primer elemento en el canvas
             PosX = ScreenWidth / 15;
             PosY = ScreenHeight / 3;
-            //setDefaultCloseOperation(EXIT_ON_CLOSE);
             HashMap<String, Element> Elements = new HashMap<>();
-            /*LinkedList<String> cloneTasks = new LinkedList<>();
-
-            for (Character c : BPMN.T) {
-                cloneTasks.add(c.toString());
-            }*/
             Elements = new HashMap<>();
-            // HashMap<Character, Set<Character>> allSucesores = getAllSucesores();
             for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
                 String vals[] = entry.getKey().split(",");
 
@@ -133,7 +123,6 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                         PosX = ScreenWidth / 15; //posicion inicial de X
                     }
                 }
-
                 //procesar sucesor
                 if (!Elements.containsKey(sucesor)) {
                     Element Esucesor = new Element(sucesor);
@@ -169,7 +158,6 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         e.cPosY = PosY;
         if (tasks.contains(e.Name.charAt(0))) {
             e.type = "Task";
-            //cloneTasks.remove(e.Name);
         } else {
             e.type = "Gateway";
         }
@@ -207,22 +195,6 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 buildModel(BPMN, WFGSplits, Notation, "BeforeSplits");
             }
 
-            /*
-            for (JCheckBox c : Checks) {
-                if (c.isSelected() && !showTasks.contains(c.getText())) {
-                    showTasks.add(c.getText());
-                } else if(!c.isSelected()) {
-                    System.out.println("c.getText: " + c.getText().charAt(0));
-                    showTasks.remove(c.getText());
-                }
-            }
-            if (currentMode.equals("All")) {
-                buildModel(BPMN, WFG, Notation, "All");
-            } else if (currentMode.equals("Splits")) {
-                buildModel(BPMN, WFGSplits, Notation, "Splits");
-            } else {
-                buildModel(BPMN, WFGSplits, Notation, "BeforeSplits");
-            }*/
         } else {
             if (antesSplitsRadio.isSelected()) {
                 buildModel(BPMN, WFGantesSplits, Notation, "BeforeSplits");
