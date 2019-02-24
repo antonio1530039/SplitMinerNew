@@ -60,7 +60,6 @@ import org.deckfour.xes.model.XAttributeMap;
 import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
-import org.deckfour.xes.out.XesXmlSerializer;
 
 public class VisualizadorDeProcesos {
 
@@ -607,8 +606,6 @@ class ProcessViewer {
         //P1.txt NOTATION: a AND{  XOR{  c, h}, b XOR{  e, g}} d f
         //final String filename = "P1.txt";
         WFG wfg = new WFG(); //Modelo: grafo y modelo BPMN
-        gBuildGraphicModel view = new gBuildGraphicModel(); //Instancia de la vista
-        wfg.addObserver(view); //Agregar observador al modelo
 
         LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas
 
@@ -642,7 +639,6 @@ class ProcessViewer {
         }
         // Modelo para la table activities
         activities_dtm = new DefaultTableModel(data, columnNames);
-
         ////////
         // Se prepara la tabla traces
         String[] columnNamesTraces = new String[]{"ID", "Traces"};
@@ -674,12 +670,16 @@ class ProcessViewer {
         System.out.println("\nPASO 3: PREPROCESAMIENTO DEL GRAFO");
 
         PreProcesarGrafo preprocesarGrafo = new PreProcesarGrafo(wfg.BPMN, wfg.WFG, tracesList, generarGrafo.firsts, generarGrafo.lasts, umbral, epsilon);
-
+        
+        wfg.WFGantesSplits = (LinkedHashMap)wfg.WFG.clone();
+        
         /////////
         System.out.println("\nPASO 4: CONSTRUCCION DEL MODELO BPMN");
 
         SplitsFinder crearModelo = new SplitsFinder(wfg.BPMN, generarGrafo.firsts, generarGrafo.lasts, wfg.WFG, preprocesarGrafo.parallelRelations);
-
+        
+        wfg.WFGSplits = (LinkedHashMap) wfg.WFG.clone();
+        
         /////////
         System.out.println("\nPASO 5: POST-PROCESAMIENTO");
 
@@ -705,6 +705,11 @@ class ProcessViewer {
         // Model para la tabla Modelo
         model_dtm = new DefaultTableModel(dataModel, columnNamesModel);
         ///////
+        
+        System.out.println("BPMN T: " + wfg.BPMN.T.toString());
+        
+        gBuildGraphicModel view = new gBuildGraphicModel(wfg.BPMN.T); //Instancia de la vista
+        wfg.addObserver(view); //Agregar observador al modelo
 
         this.WFG = wfg.WFG; //asignar el valor actual del grafo (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         this.BPMN = wfg.BPMN;//asignar el valor actual del modelo BPMN (motivos de exportacion de modelo a archivo XML BPMN 2.0)

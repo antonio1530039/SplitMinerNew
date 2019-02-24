@@ -5,98 +5,235 @@ import Modelo.BPMNModel;
 import Modelo.Element;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-public class gBuildGraphicModel extends JFrame implements Observer{
+public class gBuildGraphicModel extends JFrame implements Observer, ActionListener {
 
-    public void buildModel(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG, String Text) {
-        
+    private JRadioButton antesSplitsRadio, splitsRadio, todoRadio;
+    private LinkedList<JCheckBox> Checks;
+    private ButtonGroup bg;
+
+    private LinkedHashMap<String, Integer> WFGantesSplits;
+    private LinkedHashMap<String, Integer> WFGSplits;
+    private LinkedHashMap<String, Integer> WFG;
+
+    private LinkedList<String> showTasks;
+
+    private HashMap<String, HashMap<String, Element>> ElementsSaved;
+
+    BPMNModel BPMN;
+    String Notation = "";
+    String currentMode = "";
+    int ScreenWidth;
+    int ScreenHeight;
+    int PosX;
+    int PosY;
+
+    JPanel panel = new JPanel();
+
+    public gBuildGraphicModel(LinkedList<Character> tasks) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int ScreenWidth = (int) screenSize.getWidth();
-        int ScreenHeight = (int) screenSize.getHeight();
-        
-        //posicion inicial del primer elemento en el canvas
-        int PosX = ScreenWidth / 15;
-        int PosY = ScreenHeight / 3;
+        ScreenWidth = (int) screenSize.getWidth();
+        ScreenHeight = (int) screenSize.getHeight();
+        ElementsSaved = new HashMap<>();
+        showTasks = new LinkedList<>();
+        Checks = new LinkedList<>();
+
         setTitle("Model");
         setSize(ScreenWidth, ScreenHeight);
         setVisible(true);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         
-        HashMap<String, Element> Elements = new HashMap<>();
-        LinkedList<String> cloneTasks = new LinkedList<>();
-        
-        for(Character c : BPMN.T){
-            cloneTasks.add(c.toString());
+        bg = new ButtonGroup();
+        int widthComponent = (ScreenWidth /15) - 10;
+        antesSplitsRadio = new JRadioButton("Antes de splits");
+        antesSplitsRadio.setBounds(10, 20, widthComponent, 30);
+        antesSplitsRadio.addActionListener(this);
+        add(antesSplitsRadio);
+        bg.add(antesSplitsRadio);
+        splitsRadio = new JRadioButton("Splits");
+        splitsRadio.setBounds(10, 50, widthComponent, 30);
+        splitsRadio.addActionListener(this);
+        add(splitsRadio);
+        bg.add(splitsRadio);
+        todoRadio = new JRadioButton("Todo");
+        todoRadio.setBounds(10, 80, widthComponent, 30);
+        todoRadio.setSelected(true);
+        todoRadio.addActionListener(this);
+        add(todoRadio);
+        bg.add(todoRadio);
+        int y = 110;
+        for (Character t : tasks) {
+            JCheckBox ch = new JCheckBox(t.toString());
+            ch.setBounds(10, y, widthComponent, 30);
+            ch.setSelected(true);
+            ch.addActionListener(this);
+            add(ch);
+            y += 30;
+            showTasks.add(t.toString());
+            Checks.add(ch);
         }
-         Elements = new HashMap<>();
-       // HashMap<Character, Set<Character>> allSucesores = getAllSucesores();
-        for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
-            String vals[] = entry.getKey().split(",");
-            
-            String actual = vals[0];
-            String sucesor = vals[1];
-            
-            //Procesar nodo actual
-            if (!Elements.containsKey(actual)) {
-                processElement(new Element(actual), PosX, PosY, cloneTasks, Elements, ScreenWidth, ScreenHeight);
-                 PosX += ScreenWidth / 15;
-        
-                if(PosX >= ScreenWidth - (ScreenWidth/15)){
-                    PosY += ScreenHeight / 10; //salto en caso de exceder el limite del ancho de la pantalla
-                    PosX = ScreenWidth / 15; //posicion inicial de X
-                }
-            }
-            
-            //procesar sucesor
-            if(!Elements.containsKey(sucesor)){
-                Element Esucesor = new Element(sucesor);
-                Esucesor.Antecesores.add(actual);
-                processElement(Esucesor,  PosX, PosY, cloneTasks, Elements, ScreenWidth, ScreenHeight);
-                 PosX += ScreenWidth / 15;
-        
-                if(PosX >= ScreenWidth - (ScreenWidth/15)){
-                    PosY += ScreenHeight / 10; //salto en caso de exceder el limite del ancho de la pantalla
-                    PosX = ScreenWidth / 15; //posicion inicial de X
-                }
-            }else{
-                Elements.get(sucesor).Antecesores.add(actual);
-            } 
-        }
-        add(new gJPanel(ScreenWidth, ScreenHeight, Elements, BPMN,Text)); //Agregar el JPanel, mandando en su contructor los elementos necesarios para la graficacion de los elementos (Elements)
+
     }
 
-    public void processElement(Element e, int PosX, int PosY, LinkedList<String> cloneTasks, HashMap<String, Element> Elements, int ScreenWidth, int ScreenHeight) {
+    public void buildModel(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG, String Text, String mode) {
+        this.remove(panel);
+        currentMode = mode;
+        if (ElementsSaved.containsKey(mode)) {
+            HashMap<String, Element> elements = (HashMap<String, Element>) ElementsSaved.get(mode).clone();
+            List<Map.Entry<String, Element>> elems = new ArrayList(elements.entrySet());
+            for (Map.Entry<String, Element> entry : elems) {
+                String key = entry.getKey();
+                if (!showTasks.contains(key) && key.length() == 1) {
+                    elements.remove(entry.getKey());
+                }
+            }
+            panel = new gJPanel(ScreenWidth, ScreenHeight, elements, BPMN, Text);
+        } else {
+            //posicion inicial del primer elemento en el canvas
+            PosX = ScreenWidth / 15;
+            PosY = ScreenHeight / 3;
+            //setDefaultCloseOperation(EXIT_ON_CLOSE);
+            HashMap<String, Element> Elements = new HashMap<>();
+            /*LinkedList<String> cloneTasks = new LinkedList<>();
+
+            for (Character c : BPMN.T) {
+                cloneTasks.add(c.toString());
+            }*/
+            Elements = new HashMap<>();
+            // HashMap<Character, Set<Character>> allSucesores = getAllSucesores();
+            for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
+                String vals[] = entry.getKey().split(",");
+
+                String actual = vals[0];
+                String sucesor = vals[1];
+
+                //Procesar nodo actual
+                if (!Elements.containsKey(actual)) {
+                    processElement(new Element(actual), PosX, PosY, BPMN.T, Elements, ScreenWidth, ScreenHeight);
+                    PosX += ScreenWidth / 15;
+
+                    if (PosX >= ScreenWidth - (ScreenWidth / 15)) {
+                        PosY += ScreenHeight / 10; //salto en caso de exceder el limite del ancho de la pantalla
+                        PosX = ScreenWidth / 15; //posicion inicial de X
+                    }
+                }
+
+                //procesar sucesor
+                if (!Elements.containsKey(sucesor)) {
+                    Element Esucesor = new Element(sucesor);
+                    Esucesor.Antecesores.add(actual);
+                    processElement(Esucesor, PosX, PosY, BPMN.T, Elements, ScreenWidth, ScreenHeight);
+                    PosX += ScreenWidth / 15;
+
+                    if (PosX >= ScreenWidth - (ScreenWidth / 15)) {
+                        PosY += ScreenHeight / 10; //salto en caso de exceder el limite del ancho de la pantalla
+                        PosX = ScreenWidth / 15; //posicion inicial de X
+                    }
+                } else {
+                    Elements.get(sucesor).Antecesores.add(actual);
+                }
+            }
+            HashMap<String, Element> elements = (HashMap<String, Element>) Elements.clone();
+            List<Map.Entry<String, Element>> elems = new ArrayList(elements.entrySet());
+            for (Map.Entry<String, Element> entry : elems) {
+                String key = entry.getKey();
+                if (!showTasks.contains(key) && key.length() == 1) {
+                    elements.remove(entry.getKey());
+                }
+            }
+            panel = new gJPanel(ScreenWidth, ScreenHeight, elements, BPMN, Text);
+            ElementsSaved.put(mode, Elements);
+        }
+        add(panel);
+        revalidate();
+    }
+
+    public void processElement(Element e, int PosX, int PosY, LinkedList<Character> tasks, HashMap<String, Element> Elements, int ScreenWidth, int ScreenHeight) {
         e.cPosX = PosX;
         e.cPosY = PosY;
-        if (cloneTasks.contains(e.Name)) {
+        if (tasks.contains(e.Name.charAt(0))) {
             e.type = "Task";
-            cloneTasks.remove(e.Name);
+            //cloneTasks.remove(e.Name);
         } else {
             e.type = "Gateway";
         }
         Elements.put(e.Name, e);
-            
+
     }
 
     @Override
     public void update(Observable o, Object arg) {
         System.out.println("Actualización de Observable!");
         WFG wfg = (WFG) o;
-        System.out.println("WFG: " + wfg.WFG.toString());
-        System.out.println("BPMN: " + wfg.BPMN.T.toString());
-        System.out.println("Text: " + wfg.Notation);
-        buildModel(wfg.BPMN, wfg.WFG, wfg.Notation);
+        WFGantesSplits = wfg.WFGantesSplits;
+        WFGSplits = wfg.WFGSplits;
+        WFG = wfg.WFG;
+        BPMN = wfg.BPMN;
+        Notation = wfg.Notation;
+        buildModel(BPMN, WFG, Notation, "All");
     }
 
-    
-    
-    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource().getClass().isInstance(new JCheckBox())) {
+            JCheckBox c = (JCheckBox) e.getSource();
+            if (c.isSelected() && !showTasks.contains(c.getText())) {
+                showTasks.add(c.getText());
+            } else if (!c.isSelected()) {
+                showTasks.remove(c.getText());
+            }
+            
+            if (currentMode.equals("All")) {
+                buildModel(BPMN, WFG, Notation, "All");
+            } else if (currentMode.equals("Splits")) {
+                buildModel(BPMN, WFGSplits, Notation, "Splits");
+            } else {
+                buildModel(BPMN, WFGSplits, Notation, "BeforeSplits");
+            }
+
+            /*
+            for (JCheckBox c : Checks) {
+                if (c.isSelected() && !showTasks.contains(c.getText())) {
+                    showTasks.add(c.getText());
+                } else if(!c.isSelected()) {
+                    System.out.println("c.getText: " + c.getText().charAt(0));
+                    showTasks.remove(c.getText());
+                }
+            }
+            if (currentMode.equals("All")) {
+                buildModel(BPMN, WFG, Notation, "All");
+            } else if (currentMode.equals("Splits")) {
+                buildModel(BPMN, WFGSplits, Notation, "Splits");
+            } else {
+                buildModel(BPMN, WFGSplits, Notation, "BeforeSplits");
+            }*/
+        } else {
+            if (antesSplitsRadio.isSelected()) {
+                buildModel(BPMN, WFGantesSplits, Notation, "BeforeSplits");
+            }
+            if (splitsRadio.isSelected()) {
+                buildModel(BPMN, WFGSplits, Notation, "Splits");
+            }
+            if (todoRadio.isSelected()) {
+                buildModel(BPMN, WFG, Notation, "All");
+            }
+        }
+    }
 
 }

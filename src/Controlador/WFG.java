@@ -14,6 +14,8 @@ import java.util.Observable;
  * @author Antonio
  */
 public class WFG extends Observable{
+    public LinkedHashMap<String, Integer> WFGantesSplits = new LinkedHashMap<>();
+    public LinkedHashMap<String, Integer> WFGSplits = new LinkedHashMap<>();
     public LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
     public BPMNModel BPMN = new BPMNModel();
     public String Notation = "";

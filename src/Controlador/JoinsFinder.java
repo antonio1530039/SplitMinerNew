@@ -146,7 +146,7 @@ public class JoinsFinder {
                     } else {
                         cierres = exploreBranch(s, notation);
                     }
-                }
+                }//Verificar, en caso de ser nulo el sucesor... Que se retorna como cierre? al no retornar nada, no se agrega a la notacion
             }
         }
         return cierres;

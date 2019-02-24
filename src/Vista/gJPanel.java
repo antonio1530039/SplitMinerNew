@@ -10,18 +10,61 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class gJPanel extends JPanel {
 
     int ScreenWidth;
     int ScreenHeight;
     int radio;
-    String ElementSelected;
-    HashMap<String, Element> Elements;
-    HashMap<String, Color> gatewaysColors;
-    BPMNModel BPMN;
+    
+    String ElementSelected = "";
+    public HashMap<String, Element> Elements = new HashMap<>();
+    HashMap<String, Color> gatewaysColors = new HashMap<>();
+    public BPMNModel BPMN;
+    
+    public gJPanel(){
+        this.addMouseListener(new MouseListener() {
+            @Override
+            public void mousePressed(MouseEvent me) {
+                clickAt(me.getX(), me.getY());
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent me) {
+                ElementSelected = "";
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+            }
+
+            public void mouseExited(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                clickAt(me.getX(), me.getY());
+            }
+        });
+
+        this.addMouseMotionListener(new MouseMotionListener() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                dragElementSelected(e.getX(), e.getY());
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+            }
+        });
+    }
+    
 
     public gJPanel(int width, int height, HashMap<String, Element> elements, BPMNModel bpmn, String text) {
         Elements = elements;
@@ -32,12 +75,15 @@ public class gJPanel extends JPanel {
         BPMN = bpmn;
         gatewaysColors = new HashMap<>();
 
-        JTextArea textField = new JTextArea();
-        textField.setBounds(5, 5, ScreenWidth, ScreenWidth);
-        textField.setText(text);
-        textField.setFont(textField.getFont().deriveFont(20f));
-        textField.setEditable(false);
-        add(textField);
+        JTextArea notationTxt = new JTextArea();
+        notationTxt.setBounds(5, 5, ScreenWidth, ScreenWidth);
+        notationTxt.setText(text);
+        notationTxt.setFont(notationTxt.getFont().deriveFont(20f));
+        notationTxt.setEditable(false);
+        add(notationTxt);
+
+        //Agregar radios!
+        
 
         setBackground(new Color(255, 255, 255));
         setSize(ScreenWidth, ScreenHeight);
@@ -84,6 +130,11 @@ public class gJPanel extends JPanel {
         super.paint(g);
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue();
+           
+            if(e.Name.charAt(0) == '@')
+                continue;
+            
+            
             if (e.type.equals("Task")) {
                 g.setColor(Color.black);
                 g.drawOval(e.cPosX, e.cPosY, radio, radio);
@@ -120,8 +171,11 @@ public class gJPanel extends JPanel {
             if (!e.Antecesores.isEmpty()) {
                 g.setColor(Color.black);
                 for (String antecesor : e.Antecesores) {
+                    if(antecesor.charAt(0) == '@')
+                        continue;
                     Element a = Elements.get(antecesor);
-                    drawArrowLine(g, a.cPosX + (2 * (radio / 2)), a.cPosY + (radio / 2), e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
+                    if(a!=null)
+                        drawArrowLine(g, a.cPosX + (2 * (radio / 2)), a.cPosY + (radio / 2), e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
                 }
             }
         }
@@ -178,5 +232,7 @@ public class gJPanel extends JPanel {
         g.drawLine(x1, y1, x2, y2);
         g.fillPolygon(xpoints, ypoints, 3);
     }
+
+   
 
 }
