@@ -1,6 +1,5 @@
 package Controlador;
 
-import Vista.gBuildGraphicModel;
 import Modelo.BPMNModel;
 import java.util.ArrayList;
 import java.util.Collection;

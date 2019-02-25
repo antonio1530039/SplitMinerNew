@@ -23,44 +23,6 @@ public class gJPanel extends JPanel {
     public HashMap<String, Element> Elements = new HashMap<>();
     HashMap<String, Color> gatewaysColors = new HashMap<>();
     public BPMNModel BPMN;
-    
-    public gJPanel(){
-        this.addMouseListener(new MouseListener() {
-            @Override
-            public void mousePressed(MouseEvent me) {
-                clickAt(me.getX(), me.getY());
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent me) {
-                ElementSelected = "";
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent me) {
-            }
-
-            public void mouseExited(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent me) {
-                clickAt(me.getX(), me.getY());
-            }
-        });
-
-        this.addMouseMotionListener(new MouseMotionListener() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                dragElementSelected(e.getX(), e.getY());
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-            }
-        });
-    }
-    
 
     public gJPanel(int width, int height, HashMap<String, Element> elements, BPMNModel bpmn, String text) {
         Elements = elements;
@@ -122,7 +84,7 @@ public class gJPanel extends JPanel {
     }
 
     @Override
-    public void paint(Graphics g) {
+    public void paint(Graphics g) {        
         super.paint(g);
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue();

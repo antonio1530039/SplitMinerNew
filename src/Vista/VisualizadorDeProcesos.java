@@ -43,9 +43,6 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.TextField;
 import java.io.File;
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -588,7 +585,7 @@ class ProcessViewer {
         //double epsilon = 0.3;
         
         
-        if (!epsilon_textField.getText().equals("") && !percentil_textField.getText().equals("")) {
+        if (!epsilon_textField.getText().equals("") || !percentil_textField.getText().equals("")) {
             try{
                 epsilon = Double.parseDouble(epsilon_textField.getText());
                 umbral = Double.parseDouble(percentil_textField.getText());
@@ -598,6 +595,7 @@ class ProcessViewer {
             }
         }else{
             System.out.println("Ingrese un número epsilon y percentil");
+            return;
         }
 
         System.out.println("Epsilon: " + epsilon);

@@ -9,25 +9,25 @@ import Controlador.SplitsFinder;
 import Modelo.BPMNModel;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import javax.swing.table.DefaultTableModel;
 
 
 public class SplitMinerCL {
     public static void main(String[] args) {
-        String filename = "";
-        double epsilon = 0.0;
-        double umbral = 0.0; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
+        String filename = "P1.txt";
+        double epsilon = 0.3;
+        double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
         if(args.length>0){
-            epsilon = Double.parseDouble(args[0]);
-            umbral = Double.parseDouble(args[1]);
-            filename = args[2];
+            try{
+                epsilon = Double.parseDouble(args[0]);
+                umbral = Double.parseDouble(args[1]);
+                filename = args[2];
+            }catch(Exception e){
+                System.out.println("Error! verifique que el epsilon, percentil y el nombre del archivo sean válidos!");
+                return;
+            }
             System.out.println("Parametros ingresados:");
             System.out.println("\tEpsilon: " + epsilon + "\n\tPercentil: " + umbral + "\n\tArchivo log: " + filename);
         }else{
-            epsilon = 0.3;
-            umbral = 0.4;
-            filename = "P1.txt";
             System.out.println("Sin parametros ingresados... parametros por defecto:");
             System.out.println("\tEpsilon: " + epsilon + "\n\tPercentil: " + umbral + "\n\tArchivo log: " + filename);
         }

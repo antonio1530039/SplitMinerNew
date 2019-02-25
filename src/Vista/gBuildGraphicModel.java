@@ -20,8 +20,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 public class gBuildGraphicModel extends JFrame implements Observer, ActionListener {
 
@@ -56,7 +54,6 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         setTitle("Model");
         setSize(ScreenWidth, ScreenHeight);
         setVisible(true);
-        
         bg = new ButtonGroup();
         int widthComponent = (ScreenWidth /15) - 10;
         antesSplitsRadio = new JRadioButton("Antes de splits");
