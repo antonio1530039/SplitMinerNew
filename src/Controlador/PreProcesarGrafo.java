@@ -60,7 +60,7 @@ public class PreProcesarGrafo {
          if (WFG.containsKey(edge)) {
             WFG.remove(edge);
             autoLoops.add(task);
-            System.out.println("\t\t... Removiendo autoop (" + edge + ")");
+            System.out.println("\t\t... Removiendo autolop (" + edge + ")");
          
          }
       }
@@ -96,7 +96,7 @@ public class PreProcesarGrafo {
             if ((first == third) && (first != second)) {
                WFG.remove(first + "," + second);
                WFG.remove(second + "," + third);
-               // System.out.println("\t\t... Removiendo shorloop (" + first + "," + second + "," + first + ")");
+               System.out.println("\t\t... Removiendo shorloop (" + first + "," + second + "," + first + ")");
                shortloops++;
             }
          
@@ -180,6 +180,8 @@ public class PreProcesarGrafo {
       return numParallelRelations;
    
    }
+
+
 
 
 }

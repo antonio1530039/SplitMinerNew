@@ -2,7 +2,9 @@ package Vista;
 
 import Modelo.BPMNModel;
 import Modelo.Element;
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.awt.event.MouseEvent;
@@ -11,6 +13,7 @@ import java.awt.event.MouseMotionListener;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 public class gJPanel extends JPanel {
@@ -32,13 +35,16 @@ public class gJPanel extends JPanel {
         ElementSelected = "";
         BPMN = bpmn;
         gatewaysColors = new HashMap<>();
-
+        
+        
         JTextArea notationTxt = new JTextArea();
         notationTxt.setBounds(5, 5, ScreenWidth, ScreenWidth);
         notationTxt.setText(text);
         notationTxt.setFont(notationTxt.getFont().deriveFont(20f));
         notationTxt.setEditable(false);
         add(notationTxt);
+        
+        
 
         //Agregar radios!
         
@@ -153,7 +159,7 @@ public class gJPanel extends JPanel {
         if (!ElementSelected.equals("")) {
             Elements.get(ElementSelected).cPosX = x - (radio / 2); //reasignar posicion al arrastrar mouse, para que el elemento quede en el centro del cursor
             Elements.get(ElementSelected).cPosY = y - (radio / 2);
-            this.repaint();
+            repaint();
         }
     }
 

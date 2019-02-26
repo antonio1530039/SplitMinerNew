@@ -89,7 +89,6 @@ public class FilesManagement {
         }
 
         System.out.println("\nSe han detectado todos los nombres de las actividades:");
-
         //recupera el set de tasks T
         Set<Map.Entry<String, Character>> tasks = activityList.entrySet();
         int tam = activityList.size();
@@ -152,9 +151,7 @@ public class FilesManagement {
     public String[][] showDataInfo(LinkedHashMap<Integer, ArrayList<Character>> tracesList) {
 
         System.out.println("\n\t1. Datos del dataset ");
-
-        System.out.println("\t --Actividades--  ");
-
+        System.out.println("\t --Actividades--  "); 
         for (Map.Entry<String, Character> entry1 : ActivityList.entrySet()) {
             System.out.println("\t\t" + entry1.getKey() + " - " + entry1.getValue());
         }
@@ -194,7 +191,6 @@ public class FilesManagement {
         System.out.println("\t Minimo de eventos por traza: " + min);
         System.out.println("\t Maximo de eventos por traza:  " + max);
         System.out.println("\t Promedio del tamanio de traza: " + average);
-
         return data;
 
     }

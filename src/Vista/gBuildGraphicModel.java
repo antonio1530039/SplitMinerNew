@@ -3,6 +3,8 @@ package Vista;
 import Controlador.WFG;
 import Modelo.BPMNModel;
 import Modelo.Element;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -20,6 +22,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 public class gBuildGraphicModel extends JFrame implements Observer, ActionListener {
 
@@ -54,23 +58,27 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         setTitle("Model");
         setSize(ScreenWidth, ScreenHeight);
         setVisible(true);
+        
         bg = new ButtonGroup();
         int widthComponent = (ScreenWidth /15) - 10;
-        antesSplitsRadio = new JRadioButton("Antes de splits");
+        
+        JPanel jpanel = new JPanel();
+        
+        antesSplitsRadio = new JRadioButton("Before splits");
         antesSplitsRadio.setBounds(10, 20, widthComponent, 30);
         antesSplitsRadio.addActionListener(this);
-        add(antesSplitsRadio);
+        jpanel.add(antesSplitsRadio);
         bg.add(antesSplitsRadio);
         splitsRadio = new JRadioButton("Splits");
         splitsRadio.setBounds(10, 50, widthComponent, 30);
         splitsRadio.addActionListener(this);
-        add(splitsRadio);
+        jpanel.add(splitsRadio);
         bg.add(splitsRadio);
-        todoRadio = new JRadioButton("Todo");
+        todoRadio = new JRadioButton("All");
         todoRadio.setBounds(10, 80, widthComponent, 30);
         todoRadio.setSelected(true);
         todoRadio.addActionListener(this);
-        add(todoRadio);
+        jpanel.add(todoRadio);
         bg.add(todoRadio);
         int y = 110;
         for (Character t : tasks) {
@@ -78,10 +86,26 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
             ch.setBounds(10, y, widthComponent, 30);
             ch.setSelected(true);
             ch.addActionListener(this);
-            add(ch);
+            jpanel.add(ch);
             y += 30;
             showTasks.add(t.toString());
         }
+        
+        
+        /*JTextArea logText = new JTextArea();
+        logText.setBounds(5, 5, ScreenWidth, ScreenWidth);
+        logText.setText("console");
+        logText.setEditable(false);
+        logText.setBackground(Color.black);
+        logText.setForeground(Color.white);
+        
+        JScrollPane areaScrollPane = new JScrollPane(logText);
+        areaScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        areaScrollPane.setPreferredSize(new Dimension(ScreenWidth/2, ScreenHeight/10));
+        jpanel.add(areaScrollPane, BorderLayout.AFTER_LAST_LINE);
+        */
+        add(jpanel, BorderLayout.NORTH);
+        
 
     }
 

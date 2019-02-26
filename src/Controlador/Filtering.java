@@ -312,7 +312,7 @@ public class Filtering {
          n = queue.get(0);
          queue.remove(0);
       
-         System.out.println("\t\t\tNext = '" + p + "'.   Queue = " + queue);
+         System.out.println("\t\t\tNext = '" + n + "'.   Queue = " + queue);
          
          //calcular *n
          List<Edge> l = obtenerPin(n);
@@ -325,12 +325,12 @@ public class Filtering {
             
             if (Cmax > Cb.get(p)) {
             
-               if (Cb.containsKey(n))
-                  System.out.println("\t\t\t\t\tUpdate Cb[" + n + "].");
-               Cb.put(n, Cmax);
+               if (Cb.containsKey(p))
+                  System.out.println("\t\t\t\t\tUpdate Cb[" + p + "].");
+               Cb.put(p, Cmax);
                
-               if (Eo.containsKey(n))
-                  System.out.println("\t\t\t\t\tUpdate Eo[" + n + "].");
+               if (Eo.containsKey(p))
+                  System.out.println("\t\t\t\t\tUpdate Eo[" + p + "].");
                Eo.put(p, p + "," + n);
                
                if (!(queue.contains(p) && !U.contains(p))) {

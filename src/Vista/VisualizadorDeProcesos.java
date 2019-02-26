@@ -72,7 +72,7 @@ class ProcessViewer {
     private TextField epsilon_textField = new TextField("0.3", 5), percentil_textField = new TextField("0.4", 5);
     private JPanel loadFile_pnl, menu_pnl, viewer_pnl, raw_pnl;
     private JButton information_btn, traces_btn, activities_btn, loadFile_btn, exportAsCSV_btn, deployment_btn, model_btn, exportAsXES_btn, execute_btn;
-    private JLabel titulo_txt, epsilon_txt, percentil_txt;
+    private JLabel titulo_txt, epsilon_txt, percentil_txt, information_txt;
     private DefaultTableModel traces_dtm, activities_dtm, information_dtm, model_dtm;
     private ActionListener loadFile_btnAction, information_btnAction, traces_btnAction, activities_btnAction, exportAsCSV_btnAction, exportAsXES_btnAction, model_btnAction, deployment_btnAction, execute_btnAction;
     private boolean activitiesSelected, tracesSelected, informationSelected, modelSelected, deploymentSelected;
@@ -124,6 +124,7 @@ class ProcessViewer {
         percentil_txt.setForeground(Color.white);
         percentil_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
 
+        
         loadFile_pnl.add(epsilon_txt);
         loadFile_pnl.add(epsilon_textField);
 
@@ -153,7 +154,9 @@ class ProcessViewer {
         loadFile_btn.addActionListener(loadFile_btnAction);
         loadFile_pnl.add(loadFile_btn);
 
-        execute_btn = new JButton("Execute");
+        execute_btn = new JButton("Mine");
+        execute_btn.setBackground(new Color(0,153,0));
+        execute_btn.setForeground(Color.white);
         execute_btn.addActionListener(execute_btnAction);
         loadFile_pnl.add(execute_btn);
 
@@ -610,7 +613,6 @@ class ProcessViewer {
         FilesManagement f = new FilesManagement(wfg.BPMN);
         ///////
         System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
-
         try {
             if (filename.endsWith(".txt")) {
                 tracesList = f.readDataInputTrazas(filename);
