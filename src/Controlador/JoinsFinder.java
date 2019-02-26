@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 public class JoinsFinder {
@@ -14,7 +15,7 @@ public class JoinsFinder {
     LinkedList<String> cloneTask;
     BPMNModel BPMN;
     LinkedHashMap<String, Integer> WFG;
-    int numberGatewaysOr = 0;
+    int numberGatewaysOr = 1;
 
     public JoinsFinder(BPMNModel bpmn, LinkedHashMap<String, Integer> wfg) {
         this.BPMN = bpmn;
@@ -39,7 +40,7 @@ public class JoinsFinder {
             notation.append(" " + actual);
             cloneTask.remove(actual);
             continueExploring(notation, getSucesorOantecesor(actual, 's'));
-        } else if (BPMN.Gand.contains(actual) || BPMN.Gxor.contains(actual) || BPMN.Gor.contains(actual)) { // es compuerta, resolverla
+        } else if ((BPMN.Gand.contains(actual) || BPMN.Gxor.contains(actual) ) && !actual.contains("C")) { // es compuerta, resolverla
             LinkedList<String> ramas = new LinkedList<>();
             HashMap<String, LinkedList<String>> cierres = resolveGateway(actual, ramas);
             ArrayList<String> cierresYanteriores = conectarCierres(cierres, notation, actual, ramas);
@@ -105,7 +106,7 @@ public class JoinsFinder {
         HashMap<String, LinkedList<String>> cierres = new HashMap<>();
         for (String s : sigs) {
             StringBuilder notationRama = new StringBuilder();
-            ArrayList<String> cierreYanteriores = exploreBranch(s, notationRama);
+            ArrayList<String> cierreYanteriores = exploreBranch(s, notationRama, gate);
             if (cierreYanteriores.size() > 0) {
                 for (String cierreYanterior : cierreYanteriores) {
                     String vals[] = cierreYanterior.split(",");
@@ -127,12 +128,21 @@ public class JoinsFinder {
         return cierres;
     }
 
-    public ArrayList<String> exploreBranch(String nodo, StringBuilder notation) {
+    public ArrayList<String> exploreBranch(String nodo, StringBuilder notation, String fromGateway) {
         ArrayList<String> cierres = new ArrayList<>();
-        if (getNumberEdgesToA(nodo) > 1) { //si tiene mas de un arco incidente
-            cierres.add(nodo + "," + getSucesorOantecesor(nodo, 'a')); //retornar el mismo nodo y el anterior de este
+        if (getNumberEdgesToA(nodo) > 1) {
+            //si este nodo tiene como antecesor la compuerta de donde viene, entonces retornar como cierre: nodo,fromGateway
+            HashSet<String> antecesores = antecesores(nodo);
+            if(antecesores.contains(fromGateway)){
+                System.out.println("(getNumberEdgesToA(nodo) > 1)...nodo,FromGateway: '"+nodo+"'," +fromGateway+ "' ");
+                cierres.add(nodo + "," + fromGateway);
+            }else{
+                //Pendiente revisar esto!
+                System.out.println("(getNumberEdgesToA(nodo) > 1)...nodo: '"+nodo+"'" );
+                cierres.add(nodo + "," + getSucesorOantecesor(nodo, 'a')); //retornar el mismo nodo y el anterior de este
+            }
         } else {
-            if (BPMN.Gand.contains(nodo) || BPMN.Gxor.contains(nodo) || BPMN.Gor.contains(nodo)) { //es compuerta... resolver
+            if ((BPMN.Gand.contains(nodo) || BPMN.Gxor.contains(nodo)) && !nodo.contains("C")) { //es compuerta... resolver
                 LinkedList<String> ramas = new LinkedList<>();
                 HashMap<String, LinkedList<String>> cierresGateway = resolveGateway(nodo, ramas);
                 cierres.addAll(conectarCierres(cierresGateway, notation, nodo, ramas));
@@ -144,7 +154,7 @@ public class JoinsFinder {
                     if (getNumberEdgesToA(s) > 1) {
                         cierres.add(s + "," + nodo);
                     } else {
-                        cierres = exploreBranch(s, notation);
+                        cierres = exploreBranch(s, notation, fromGateway);
                     }
                 }//Verificar, en caso de ser nulo el sucesor... Que se retorna como cierre? al no retornar nada, no se agrega a la notacion
             }
@@ -189,6 +199,23 @@ public class JoinsFinder {
             }
         }
     }
+    
+     //all nodes following 'task', given the current pruened WFG
+   public HashSet<String> antecesores(String target) {
+   
+      HashSet<String> antecesores = new LinkedHashSet<String>();
+   
+      for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
+         String key = entry.getKey();
+         String vals[] = key.split(",");
+         if (target.equals(vals[1])) {
+            antecesores.add(vals[0]);
+         }
+      
+      }
+   
+      return antecesores;
+   }
     
     
     //Encontrar el numero de edges entrantes ( *a )

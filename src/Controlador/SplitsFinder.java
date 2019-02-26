@@ -57,8 +57,17 @@ public class SplitsFinder {
    
       //Dada la lista de sucesores, para cada uno, encontrar 
       //su 'futuro', esto es cuales de <los otros sucesores> mantienen una relación de concurrencia con el. 
-      if(sucesores.size() < 2)
+      if(sucesores.size() == 0)
          return;
+     
+      if(sucesores.size() == 1){
+         String key = null;
+         key = a + "," + (String) sucesores.toArray()[0];
+         WFG.put(key, 1);
+         return;
+         
+      }
+          
       
       Object[] S = sucesores.toArray();
       HashSet<String> future = null;
@@ -286,7 +295,7 @@ public class SplitsFinder {
             System.out.println("\n\t\t\t C[ " + and + "]: " + Cu);
             System.out.println("\t\t\t F[ " + and + "]: " + Fi);
          
-
+         
          
             sucesores.add(and);
             resta(sucesores, A);

@@ -171,12 +171,12 @@ public class PostProcesarGrafo {
 
         System.out.println("\t\tDetectando joins y creando noatación...");
         //Lo siguiente es a manera de prueba.....................
-
-        /*
+ /*
+        
       WFG.clear();
       
       
-      
+     
       //Modelo 1
       
       WFG.put("X1A,b", 1);

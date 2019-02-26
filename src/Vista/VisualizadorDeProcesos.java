@@ -11,6 +11,7 @@ import Controlador.GenerarGrafo;
 import Controlador.PostProcesarGrafo;
 import Controlador.PreProcesarGrafo;
 import Controlador.SplitsFinder;
+import Controlador.Utils;
 import Controlador.WFG;
 import Modelo.BPMNModel;
 import Vista.gBuildGraphicModel;
@@ -75,9 +76,10 @@ class ProcessViewer {
     private JLabel titulo_txt, epsilon_txt, percentil_txt, information_txt;
     private DefaultTableModel traces_dtm, activities_dtm, information_dtm, model_dtm;
     private ActionListener loadFile_btnAction, information_btnAction, traces_btnAction, activities_btnAction, exportAsCSV_btnAction, exportAsXES_btnAction, model_btnAction, deployment_btnAction, execute_btnAction;
-    private boolean activitiesSelected, tracesSelected, informationSelected, modelSelected, deploymentSelected;
+    private boolean activitiesSelected, tracesSelected, informationSelected, modelSelected, deploymentSelected, wasMined;
     private String deployment;
     Dimension screenSize;
+    
 
     BPMNModel BPMN;
     LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
@@ -86,11 +88,12 @@ class ProcessViewer {
         Toolkit t = Toolkit.getDefaultToolkit();
         screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // Se consigue el tama�o de la ventana
         // Valores de inicio de porgrama
-        activitiesSelected = true;
-        tracesSelected = true;
-        informationSelected = true;
-        modelSelected = true;
-        deploymentSelected = true;
+        activitiesSelected = false;
+        tracesSelected = false;
+        informationSelected = false;
+        modelSelected = false;
+        deploymentSelected = false;
+        wasMined = false;
         deployment = "";
         fileName = null;
 
@@ -173,6 +176,22 @@ class ProcessViewer {
         deployment_btn = new JButton("Output Model");
         model_btn = new JButton("Model");
 
+        if(!wasMined)
+        {
+            activities_btn.setEnabled(false);
+            traces_btn.setEnabled(false);
+            information_btn.setEnabled(false);
+            model_btn.setEnabled(false);
+            deployment_btn.setEnabled(false);
+        }else{
+            activities_btn.setEnabled(true);
+            traces_btn.setEnabled(true);
+            information_btn.setEnabled(true);
+            model_btn.setEnabled(true);
+            deployment_btn.setEnabled(true);
+        }
+        
+        
         // Se asigan acciones a los botones
         information_btn.addActionListener(information_btnAction);
         activities_btn.addActionListener(activities_btnAction);
@@ -267,29 +286,33 @@ class ProcessViewer {
 
         raw_pnl = new JPanel();
 
-        JPanel north = new JPanel();
-
+        //JPanel north = new JPanel();
+        JPanel south = new JPanel();
         if (informationSelected) {
             JPanel j = buildTablePanel(information_dtm, "Description");
-            j.setPreferredSize(new Dimension(100, screenSize.height / 6));
-            north.add(j);
+            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height/2));
+            south.add(j);
         }
-        north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
+       // north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
 
-        JPanel south = new JPanel();
+       
         if (activitiesSelected) {
             JPanel j = buildTablePanel(activities_dtm, "Activities");
-            j.setPreferredSize(new Dimension(screenSize.width / 10, 100));
+            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height/2));
             south.add(j);
         }
         if (tracesSelected) {
-            south.add(buildTablePanel(traces_dtm, "Traces"));
+             JPanel j = buildTablePanel(traces_dtm, "Traces");
+            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height/2));
+            south.add(j);
         }
         if (modelSelected) {
-            south.add(buildTablePanel(model_dtm, "BPMN Model"));
+            JPanel j = buildTablePanel(model_dtm, "BPMN Model");
+            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height/2));
+            south.add(j);
         }
         south.setLayout(new BoxLayout(south, BoxLayout.X_AXIS));
-        raw_pnl.add(north);
+        //raw_pnl.add(north);
         raw_pnl.add(south);
 
         if (deploymentSelected) {
@@ -587,7 +610,6 @@ class ProcessViewer {
         //double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
         //double epsilon = 0.3;
         
-        
         if (!epsilon_textField.getText().equals("") || !percentil_textField.getText().equals("")) {
             try{
                 epsilon = Double.parseDouble(epsilon_textField.getText());
@@ -600,7 +622,7 @@ class ProcessViewer {
             System.out.println("Ingrese un número epsilon y percentil");
             return;
         }
-
+        
         System.out.println("Epsilon: " + epsilon);
         System.out.println("percentil: " + umbral);
 
@@ -673,6 +695,7 @@ class ProcessViewer {
         
         wfg.WFGantesSplits = (LinkedHashMap)wfg.WFG.clone();
         
+        
         /////////
         System.out.println("\nPASO 4: CONSTRUCCION DEL MODELO BPMN");
 
@@ -714,6 +737,11 @@ class ProcessViewer {
         this.WFG = wfg.WFG; //asignar el valor actual del grafo (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         this.BPMN = wfg.BPMN;//asignar el valor actual del modelo BPMN (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         wfg.notifyAction(); //notificar que el modelo tuvo cambios
+        
+        
+        wasMined = true;
+        
+        refreshWindow();
     }
 
     void refreshWindow() {

@@ -27,7 +27,7 @@ public class gJPanel extends JPanel {
     HashMap<String, Color> gatewaysColors = new HashMap<>();
     public BPMNModel BPMN;
 
-    public gJPanel(int width, int height, HashMap<String, Element> elements, BPMNModel bpmn, String text) {
+    public gJPanel(int width, int height, HashMap<String, Element> elements, BPMNModel bpmn) {
         Elements = elements;
         ScreenWidth = width;
         ScreenHeight = height;
@@ -37,14 +37,14 @@ public class gJPanel extends JPanel {
         gatewaysColors = new HashMap<>();
         
         
-        JTextArea notationTxt = new JTextArea();
+        /*JTextArea notationTxt = new JTextArea();
         notationTxt.setBounds(5, 5, ScreenWidth, ScreenWidth);
         notationTxt.setText(text);
         notationTxt.setFont(notationTxt.getFont().deriveFont(20f));
         notationTxt.setEditable(false);
         add(notationTxt);
         
-        
+        */
 
         //Agregar radios!
         
@@ -94,10 +94,6 @@ public class gJPanel extends JPanel {
         super.paint(g);
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue();
-           
-            if(e.Name.charAt(0) == '@')
-                continue;
-            
             
             if (e.type.equals("Task")) {
                 g.setColor(Color.black);

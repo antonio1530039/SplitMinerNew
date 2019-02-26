@@ -5,7 +5,9 @@ import Modelo.BPMNModel;
 import Modelo.Element;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,13 +19,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import static javax.swing.text.StyleConstants.Alignment;
+import javax.swing.text.StyledDocument;
 
 public class gBuildGraphicModel extends JFrame implements Observer, ActionListener {
 
@@ -39,15 +48,19 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
     private HashMap<String, HashMap<String, Element>> ElementsSaved;
 
     BPMNModel BPMN;
-    String Notation = "";
     String currentMode = "";
     int ScreenWidth;
     int ScreenHeight;
     int PosX;
     int PosY;
 
-    JPanel panel = new JPanel();
-
+    JPanel jpanelGrafica = new JPanel();
+    JPanel jpanelComponentes = new JPanel(new FlowLayout(FlowLayout.CENTER));
+    JPanel jpanelnotation = new JPanel();
+    
+    JPanel jpanelMenu = new JPanel(new BorderLayout());
+    
+    JTextArea notationTxt = new JTextArea();
     public gBuildGraphicModel(LinkedList<Character> tasks) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         ScreenWidth = (int) screenSize.getWidth();
@@ -62,23 +75,23 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         bg = new ButtonGroup();
         int widthComponent = (ScreenWidth /15) - 10;
         
-        JPanel jpanel = new JPanel();
+         
         
         antesSplitsRadio = new JRadioButton("Before splits");
         antesSplitsRadio.setBounds(10, 20, widthComponent, 30);
         antesSplitsRadio.addActionListener(this);
-        jpanel.add(antesSplitsRadio);
+        jpanelComponentes.add(antesSplitsRadio);
         bg.add(antesSplitsRadio);
         splitsRadio = new JRadioButton("Splits");
         splitsRadio.setBounds(10, 50, widthComponent, 30);
         splitsRadio.addActionListener(this);
-        jpanel.add(splitsRadio);
+        jpanelComponentes.add(splitsRadio);
         bg.add(splitsRadio);
         todoRadio = new JRadioButton("All");
         todoRadio.setBounds(10, 80, widthComponent, 30);
         todoRadio.setSelected(true);
         todoRadio.addActionListener(this);
-        jpanel.add(todoRadio);
+        jpanelComponentes.add(todoRadio);
         bg.add(todoRadio);
         int y = 110;
         for (Character t : tasks) {
@@ -86,31 +99,38 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
             ch.setBounds(10, y, widthComponent, 30);
             ch.setSelected(true);
             ch.addActionListener(this);
-            jpanel.add(ch);
+            jpanelComponentes.add(ch);
             y += 30;
             showTasks.add(t.toString());
         }
         
         
-        /*JTextArea logText = new JTextArea();
-        logText.setBounds(5, 5, ScreenWidth, ScreenWidth);
-        logText.setText("console");
-        logText.setEditable(false);
-        logText.setBackground(Color.black);
-        logText.setForeground(Color.white);
         
-        JScrollPane areaScrollPane = new JScrollPane(logText);
-        areaScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        areaScrollPane.setPreferredSize(new Dimension(ScreenWidth/2, ScreenHeight/10));
-        jpanel.add(areaScrollPane, BorderLayout.AFTER_LAST_LINE);
-        */
-        add(jpanel, BorderLayout.NORTH);
+        notationTxt.setBounds(5, 5, ScreenWidth, ScreenWidth);
+        notationTxt.setText("");
+        notationTxt.setFont(notationTxt.getFont().deriveFont(20f));
+        notationTxt.setEditable(true);
+        /*StyledDocument doc = notationTxt.getStyledDocument();
+        SimpleAttributeSet center = new SimpleAttributeSet();
+        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+        doc.setParagraphAttributes(0, doc.getLength(), center, false);*/
+        JTextField notationTitle = new JTextField("Notation: ");
+        notationTitle.setBounds(5, 5, ScreenWidth, ScreenWidth);
+        notationTitle.setFont(notationTitle.getFont().deriveFont(20f));
+        notationTitle.setEditable(false);
+        jpanelnotation.add(notationTitle);
+        jpanelnotation.add(notationTxt);
+        
+       
+        jpanelMenu.add(jpanelComponentes, BorderLayout.NORTH);
+        jpanelMenu.add(jpanelnotation, BorderLayout.SOUTH);
+        add(jpanelMenu, BorderLayout.NORTH);
         
 
     }
 
-    public void buildModel(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG, String Text, String mode) {
-        this.remove(panel);
+    public void buildModel(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG, String mode) {
+        this.remove(jpanelGrafica);
         currentMode = mode;
         if (ElementsSaved.containsKey(mode)) {
             HashMap<String, Element> elements = (HashMap<String, Element>) ElementsSaved.get(mode).clone();
@@ -121,11 +141,11 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                     elements.remove(entry.getKey());
                 }
             }
-            panel = new gJPanel(ScreenWidth, ScreenHeight, elements, BPMN, Text);
+            jpanelGrafica = new gJPanel(ScreenWidth, ScreenHeight, elements, BPMN);
         } else {
             //posicion inicial del primer elemento en el canvas
             PosX = ScreenWidth / 15;
-            PosY = ScreenHeight / 3;
+            PosY = ScreenHeight / 10;
             HashMap<String, Element> Elements = new HashMap<>();
             Elements = new HashMap<>();
             for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
@@ -133,12 +153,19 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
                 String actual = vals[0];
                 String sucesor = vals[1];
+                
+                if(actual.charAt(0) == '@'){ //Si actual es un autoloop, quitar @ para procesar el elemento
+                    actual = "" + actual.charAt(1);
+                }
+                
+                if(sucesor.charAt(0) == '@'){//Si actual es un autoloop, quitar @ para procesar el elemento
+                    sucesor = "" + sucesor.charAt(1);
+                }
 
                 //Procesar nodo actual
                 if (!Elements.containsKey(actual)) {
                     processElement(new Element(actual), PosX, PosY, BPMN.T, Elements, ScreenWidth, ScreenHeight);
                     PosX += ScreenWidth / 15;
-
                     if (PosX >= ScreenWidth - (ScreenWidth / 15)) {
                         PosY += ScreenHeight / 10; //salto en caso de exceder el limite del ancho de la pantalla
                         PosX = ScreenWidth / 15; //posicion inicial de X
@@ -165,12 +192,13 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 String key = entry.getKey();
                 if (!showTasks.contains(key) && key.length() == 1) {
                     elements.remove(entry.getKey());
+                    
                 }
             }
-            panel = new gJPanel(ScreenWidth, ScreenHeight, elements, BPMN, Text);
+            jpanelGrafica = new gJPanel(ScreenWidth, ScreenHeight, elements, BPMN);
             ElementsSaved.put(mode, Elements);
         }
-        add(panel);
+        add(jpanelGrafica);
         revalidate();
     }
 
@@ -194,8 +222,8 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         WFGSplits = wfg.WFGSplits;
         WFG = wfg.WFG;
         BPMN = wfg.BPMN;
-        Notation = wfg.Notation;
-        buildModel(BPMN, WFG, Notation, "All");
+        notationTxt.setText(wfg.Notation);
+        buildModel(BPMN, WFG, "All");
     }
 
     @Override
@@ -209,22 +237,22 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
             }
             
             if (currentMode.equals("All")) {
-                buildModel(BPMN, WFG, Notation, "All");
+                buildModel(BPMN, WFG, "All");
             } else if (currentMode.equals("Splits")) {
-                buildModel(BPMN, WFGSplits, Notation, "Splits");
+                buildModel(BPMN, WFGSplits, "Splits");
             } else {
-                buildModel(BPMN, WFGSplits, Notation, "BeforeSplits");
+                buildModel(BPMN, WFGSplits, "BeforeSplits");
             }
 
         } else {
             if (antesSplitsRadio.isSelected()) {
-                buildModel(BPMN, WFGantesSplits, Notation, "BeforeSplits");
+                buildModel(BPMN, WFGantesSplits, "BeforeSplits");
             }
             if (splitsRadio.isSelected()) {
-                buildModel(BPMN, WFGSplits, Notation, "Splits");
+                buildModel(BPMN, WFGSplits, "Splits");
             }
             if (todoRadio.isSelected()) {
-                buildModel(BPMN, WFG, Notation, "All");
+                buildModel(BPMN, WFG, "All");
             }
         }
     }
