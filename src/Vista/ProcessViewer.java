@@ -311,7 +311,7 @@ public class ProcessViewer {
             JPanel feet = new JPanel();
 
             JTextPane editor = new JTextPane();
-            editor.setEditable(false);
+            editor.setEditable(true);
             editor.setSize(400, 20);
             SimpleAttributeSet attrs = new SimpleAttributeSet();
             StyleConstants.setBold(attrs, true);

@@ -1,4 +1,4 @@
-
+﻿
 Contexto
 
 
@@ -57,7 +57,7 @@ For each trace : traces{
 
 *A significant context is a context that occurs significantly often, where the significance of ocurrence is a user-define treshold
 
-
+**How to get subsequences?, how the trace is divided?
 
 function Covering Probability(subsequence, con1, con2, K, L){
 	

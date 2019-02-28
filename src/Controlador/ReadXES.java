@@ -41,7 +41,21 @@ public class ReadXES {
         XPath xpath = XPathFactory.newInstance().newXPath();
         //archivo de salida
         
-        String newPath = path.substring(0, path.lastIndexOf("/")+1) + newFileName + ".txt";
+        String newPath = "";
+        
+        if(path.contains("/")){
+            newPath = path.substring(0, path.lastIndexOf("/")+1) + newFileName + ".txt";
+        }else if(path.contains( ((char) 92) + "" )){
+            System.out.println("contiene jej");
+             newPath = path.substring(0, path.lastIndexOf( ((char)92) +"" )+1) + newFileName + ".txt";
+
+        }
+        
+        
+            
+        System.out.println("ReadFile.NewPath: " + newPath);
+        System.out.println("ReadFile.ParameterPath: " + path);
+        System.out.println("ReadFile.fileName: " + newFileName);
         BufferedWriter writer = new BufferedWriter(new FileWriter(newPath));
         BufferedReader br = null;
         FileReader fr = null;
