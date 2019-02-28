@@ -66,7 +66,6 @@ public class PostProcesarGrafo {
 
                 if (Utils.igualesString(entry1.getValue(), entry2.getValue())) {
                     //compuertas repetidas, 'c' y 'cr'eliminar una de ellas del grafo
-
                     //1. remueve todos los arcos 'cr'*
                     Utils.removerEdges(entry2.getKey(), WFG);
                     //2. en todos los arcos *'cr', reemplaza 'cr' por 'c'
@@ -76,7 +75,6 @@ public class PostProcesarGrafo {
                 } else {
                     j++;
                 }
-
             }
             i++;
         }

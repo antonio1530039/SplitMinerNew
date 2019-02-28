@@ -1,30 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package splitminer;
 
-import Controlador.*;
 import Vista.*;
-import Modelo.BPMNModel;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
-/**
- *
- * @author cti
- */
 public class SplitMiner {
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         /*//P1.txt NOTATION: a AND{  XOR{  c, h}, b XOR{  e, g}} d f
-        
-        
         final String filename = "P1.txt";
         double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
         LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas

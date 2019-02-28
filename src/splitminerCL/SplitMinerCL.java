@@ -30,12 +30,7 @@ public class SplitMinerCL {
          }
       }
       
-      
       System.out.println("\tEpsilon: '" + epsilon + "'\n\tPercentil: '" + umbral + "'\n\tArchivo log: '" + filename+ "'\n");
-      
-      
-      
-     //P1.txt NOTATION: a AND{ XOR{c, h}, b XOR{e, g}} d f
       
       System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
       

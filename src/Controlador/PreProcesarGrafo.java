@@ -36,6 +36,7 @@ public class PreProcesarGrafo {
    
       System.out.println("\t Grafo actual con las modificaciones previas (AUTOLOOP, SHORTLOOP, PARALLEL RELATIONS):");
       Utils.mostrarGrafo(2, WFG);
+     
         
         //NUEVOS CAMBIOS: FILTERING      
       System.out.println("\n\t3.FILTERING: percentil = '" + percentile + "'.");

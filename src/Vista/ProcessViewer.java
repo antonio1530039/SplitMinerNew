@@ -39,7 +39,6 @@ import java.awt.TextField;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
@@ -387,7 +386,10 @@ public class ProcessViewer {
                         String name = fileName.getName();
                         try{
                             String path = ReadXES.XESTOTXT(fileName.getAbsolutePath(), name.substring(0, name.indexOf(".")));
-                            JOptionPane.showMessageDialog(main_frm, "File converted! Path: " + path);
+                            fileName = new File(path);
+                            refreshWindow();
+                            JOptionPane.showMessageDialog(main_frm, "File converted!\nPath: " + path+"\nNow you can mine it");
+                            
                         }catch(Exception e){
                             JOptionPane.showMessageDialog(main_frm, "Error while trying to convert xes to txt: " + e.getMessage());
                         }
@@ -616,6 +618,36 @@ public class ProcessViewer {
             dataTraces[i][1] = entry.getValue().toString();
             i++;
         }
+        
+        /*
+        0 - [a, b, c, d, e, f]
+	1 - [a, b, c, d, e, f]
+	2 - [a, b, c, d, e, f]
+	3 - [a, b, c, d, e, f]
+        */
+        
+        ArrayList<Character> sequence = new ArrayList<>();
+        sequence.add('b');
+        sequence.add('c');
+        ArrayList<ArrayList<Character>> context = RepairOutliers.context(sequence, tracesList.get(0), 1, 3);
+        System.out.println("con(" + sequence.toString() + ", " + tracesList.get(0).toString() + ",1, 2 = " + context.toString());
+        
+        ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), context.get(0), context.get(1));
+        System.out.println("cov(" + tracesList.get(0).toString() + "," + context.get(0).toString() + ", " + context.get(1).toString() + " = " + covering.toString());
+        
+        
+        if(true){
+            return;
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
         // Modelo para la table traces
         traces_dtm = new DefaultTableModel(dataTraces, columnNamesTraces);
@@ -637,6 +669,7 @@ public class ProcessViewer {
         PreProcesarGrafo preprocesarGrafo = new PreProcesarGrafo(wfg.BPMN, wfg.WFG, tracesList, generarGrafo.firsts, generarGrafo.lasts, umbral, epsilon);
         
         /*pendiente de revisar*/
+        /*
         List<Map.Entry<String, Integer>> edges = new ArrayList(wfg.WFG.entrySet());
         for (Map.Entry<String, Integer> entry : edges) {
             String key = entry.getKey();
@@ -648,6 +681,7 @@ public class ProcessViewer {
             }
             
         }
+        */
         /*------*/
         
         wfg.WFGantesSplits = (LinkedHashMap)wfg.WFG.clone();
