@@ -1,0 +1,65 @@
+
+Contexto
+
+
+σ = traza
+l = longitud de subsecuencia a la izquierda
+r = logitud de subsecuencia a la derecha
+
+σ = < a, b, c, d, e, f, h >
+
+con(σ', σ, l, r)
+con(<c>,σ,1,2 ) = (<b>, <d,e>)
+
+cov(σ, σ' , σ' )
+	     1    2
+cov(σ, <a,b>, <e,f>) = {<c, d>}
+
+cov(σ, <b>, <d>) = {<c>}
+
+/////////////////////////////////////////////////////////////////////////////
+
+Repairing Outlier Behaviour
+
+I: 
+	-event log L
+	-A context frequency threshold Tc
+	-A context's subsequence lengths CL (l, r)
+	-An upper bound for length of covered subsequence K.
+
+
+
+Algorithm:
+
+1. All traces are scanned to compute covering probabilities of all context and their possible covered subsequences.
+
+2. For each trace and each subsequence in it (with length <= K), we check its conext frequency and covering probability (according to Tc). If the context is significant and the covering probability is low, we replace the subsequence with a better one according to that that context. Otherwise, if a context is insignificant it is not able to be used for repairing outlier behaviour
+
+
+For each trace : traces{
+	compute covering probability of all context
+	compute covered subsequences
+}
+
+For each trace : traces{
+	for each subsequence : trace{
+		if(subsequence.length <= K){
+			if(subsequence.context is significant && subsequence.probability < Tc){
+				replaceSubsequence with a better one, according to that context
+			}else if(sbusequence.context is insignificant){
+				it is not able to be used for repairing outlier behaviour
+					remove..
+			}
+		}
+	}
+
+}
+
+*A significant context is a context that occurs significantly often, where the significance of ocurrence is a user-define treshold
+
+
+
+function Covering Probability(subsequence, con1, con2, K, L){
+	
+
+}

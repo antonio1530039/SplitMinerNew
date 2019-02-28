@@ -6,7 +6,7 @@
 package splitminer;
 
 import Controlador.*;
-import Vista.gBuildGraphicModel;
+import Vista.*;
 import Modelo.BPMNModel;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

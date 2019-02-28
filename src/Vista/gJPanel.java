@@ -2,9 +2,7 @@ package Vista;
 
 import Modelo.BPMNModel;
 import Modelo.Element;
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.awt.event.MouseEvent;
@@ -13,8 +11,6 @@ import java.awt.event.MouseMotionListener;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 public class gJPanel extends JPanel {
 
