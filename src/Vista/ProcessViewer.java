@@ -619,6 +619,12 @@ public class ProcessViewer {
             i++;
         }
         
+        
+        
+        
+        
+        
+        
         /*
         0 - [a, b, c, d, e, f]
 	1 - [a, b, c, d, e, f]
@@ -627,12 +633,18 @@ public class ProcessViewer {
         */
         
         ArrayList<Character> sequence = new ArrayList<>();
-        sequence.add('b');
         sequence.add('c');
-        ArrayList<ArrayList<Character>> context = RepairOutliers.context(sequence, tracesList.get(0), 1, 3);
-        System.out.println("con(" + sequence.toString() + ", " + tracesList.get(0).toString() + ",1, 2 = " + context.toString());
+        sequence.add('d');
+        ArrayList<ArrayList<Character>> context = RepairOutliers.context(sequence, tracesList.get(0), 2, 2);
+        System.out.println("con(" + sequence.toString() + ", " + tracesList.get(0).toString() + ",2, 2 = " + context.toString());
         
-        ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), context.get(0), context.get(1));
+        //ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), context.get(0), context.get(1));
+        ArrayList<Character> t1 = new ArrayList<>();
+        t1.add('b');
+        
+        ArrayList<Character> t2 = new ArrayList<>();
+        t2.add('d');
+        ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), t1, t2);
         System.out.println("cov(" + tracesList.get(0).toString() + "," + context.get(0).toString() + ", " + context.get(1).toString() + " = " + covering.toString());
         
         
