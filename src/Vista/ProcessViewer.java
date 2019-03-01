@@ -622,29 +622,19 @@ public class ProcessViewer {
         
         
         
-        
-        
-        
         /*
-        0 - [a, b, c, d, e, f]
-	1 - [a, b, c, d, e, f]
-	2 - [a, b, c, d, e, f]
-	3 - [a, b, c, d, e, f]
-        */
+        Test para reparación de outliers
+        
+        //0 - [a, b, c, d, e, f]
         
         ArrayList<Character> sequence = new ArrayList<>();
         sequence.add('c');
-        sequence.add('d');
-        ArrayList<ArrayList<Character>> context = RepairOutliers.context(sequence, tracesList.get(0), 2, 2);
-        System.out.println("con(" + sequence.toString() + ", " + tracesList.get(0).toString() + ",2, 2 = " + context.toString());
         
-        //ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), context.get(0), context.get(1));
-        ArrayList<Character> t1 = new ArrayList<>();
-        t1.add('b');
+        ArrayList<ArrayList<Character>> context = RepairOutliers.context(sequence, tracesList.get(0), 0, 2);
+        System.out.println("con(" + sequence.toString() + ", " + tracesList.get(0).toString() + ",0, 2 = " + context.toString());
         
-        ArrayList<Character> t2 = new ArrayList<>();
-        t2.add('d');
-        ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), t1, t2);
+        ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), context.get(0), context.get(1));
+       
         System.out.println("cov(" + tracesList.get(0).toString() + "," + context.get(0).toString() + ", " + context.get(1).toString() + " = " + covering.toString());
         
         
@@ -652,7 +642,7 @@ public class ProcessViewer {
             return;
         }
         
-        
+        */
         
         
         
@@ -680,21 +670,6 @@ public class ProcessViewer {
 
         PreProcesarGrafo preprocesarGrafo = new PreProcesarGrafo(wfg.BPMN, wfg.WFG, tracesList, generarGrafo.firsts, generarGrafo.lasts, umbral, epsilon);
         
-        /*pendiente de revisar*/
-        /*
-        List<Map.Entry<String, Integer>> edges = new ArrayList(wfg.WFG.entrySet());
-        for (Map.Entry<String, Integer> entry : edges) {
-            String key = entry.getKey();
-            String vals[] = key.split(",");
-            if(wfg.WFG.containsKey(vals[1] + "," + vals[0])){
-                wfg.WFG.remove(vals[0] + "," + vals[1]);
-                wfg.WFG.remove(vals[1] + "," + vals[0]);
-                System.out.println("+++++++++++++++++++++ Se removió short loop WFG level: " + vals[0] + "," + vals[1]);
-            }
-            
-        }
-        */
-        /*------*/
         
         wfg.WFGantesSplits = (LinkedHashMap)wfg.WFG.clone();
         

@@ -42,7 +42,7 @@ public class RepairOutliers {
     public static ArrayList<Character> covering(ArrayList<Character> trace, ArrayList<Character> leftNeighbour, ArrayList<Character> rightNeighbour ){
         ArrayList<Character> covering = new ArrayList<>();
         
-        if(leftNeighbour.isEmpty() || rightNeighbour.isEmpty())
+        if(leftNeighbour.isEmpty() || rightNeighbour.isEmpty()) //PENDIENTE.. Duda, en caso de detectar vecinos vacios que se retorna?
             return covering;
         //el ciclo inicia en la posición en la traza del último elemento  de la secuencia correspondiente al vecino izquierdo más 1
         //el ciclo termina hasta que i es igual a la posición en la traza del primer elemento de la secuencia correspondiente al vecino derecho
