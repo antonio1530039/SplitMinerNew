@@ -1,9 +1,25 @@
 package Controlador;
 
+import Modelo.SignificantContext;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 
 
 public class RepairOutliers {
+    
+    
+    public void Algorithm(LinkedHashMap<Integer, ArrayList<Character>> tracesList, double tc, int l, int r, int K){
+        HashMap<LinkedHashSet<LinkedHashSet>, SignificantContext> significantContexts = new HashMap<>();
+        
+        for(Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()){
+            
+        }
+    }
+    
+    
     
     public static ArrayList<ArrayList<Character>> context(ArrayList<Character> secuence, ArrayList<Character> trace, int l, int r ){
         //Dada una secuencia de tareas y una traza; encontrar el contexto de la secuencia...
@@ -41,14 +57,24 @@ public class RepairOutliers {
 
     public static ArrayList<Character> covering(ArrayList<Character> trace, ArrayList<Character> leftNeighbour, ArrayList<Character> rightNeighbour ){
         ArrayList<Character> covering = new ArrayList<>();
-        
-        if(leftNeighbour.isEmpty() || rightNeighbour.isEmpty()) //PENDIENTE.. Duda, en caso de detectar vecinos vacios que se retorna?
+
+        if(leftNeighbour.isEmpty() && rightNeighbour.isEmpty())
             return covering;
-        //el ciclo inicia en la posición en la traza del último elemento  de la secuencia correspondiente al vecino izquierdo más 1
-        //el ciclo termina hasta que i es igual a la posición en la traza del primer elemento de la secuencia correspondiente al vecino derecho
-        for(int i = trace.indexOf(leftNeighbour.get(leftNeighbour.size()-1)) + 1; i < trace.indexOf(rightNeighbour.get(0)); i++){
-            covering.add(trace.get(i));
+        
+        int start = 0;
+        int end = 0;
+        if(leftNeighbour.isEmpty()){
+            end =trace.indexOf(rightNeighbour.get(0));
+        }else if(rightNeighbour.isEmpty()){
+            start = trace.indexOf(leftNeighbour.get(leftNeighbour.size()-1)) + 1;
+            end = trace.size();
+        }else{
+            start = trace.indexOf(leftNeighbour.get(leftNeighbour.size()-1)) + 1;
+            end =trace.indexOf(rightNeighbour.get(0));
         }
+        for(int i = start; i < end; i++)
+            covering.add(trace.get(i));
+
         return covering;
     }
 }

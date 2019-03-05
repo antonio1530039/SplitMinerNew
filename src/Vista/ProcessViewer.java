@@ -622,16 +622,16 @@ public class ProcessViewer {
         
         
         
-        /*
-        Test para reparación de outliers
+        
+        //Test para reparación de outliers
         
         //0 - [a, b, c, d, e, f]
         
         ArrayList<Character> sequence = new ArrayList<>();
         sequence.add('c');
-        
-        ArrayList<ArrayList<Character>> context = RepairOutliers.context(sequence, tracesList.get(0), 0, 2);
-        System.out.println("con(" + sequence.toString() + ", " + tracesList.get(0).toString() + ",0, 2 = " + context.toString());
+        sequence.add('d');
+        ArrayList<ArrayList<Character>> context = RepairOutliers.context(sequence, tracesList.get(0), 1,2);
+        System.out.println("con(" + sequence.toString() + ", " + tracesList.get(0).toString() + ",1, 2 = " + context.toString());
         
         ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), context.get(0), context.get(1));
        
@@ -642,7 +642,7 @@ public class ProcessViewer {
             return;
         }
         
-        */
+        
         
         
         

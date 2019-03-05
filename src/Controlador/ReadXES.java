@@ -59,7 +59,7 @@ public class ReadXES {
                     for (int i = 0; i < nodoss1.getLength(); i++) {
                         Node asd1 = nodoss1.item(i);
                         Element esl = (Element) asd1;
-                        System.out.println(esl.getAttribute("key") + " " + esl.getAttribute("value"));
+                        //System.out.println(esl.getAttribute("key") + " " + esl.getAttribute("value"));
                         if (esl.getAttribute("key").equals("concept:name")) {
                             writer.write(esl.getAttribute("value") + "; ");
                         }
