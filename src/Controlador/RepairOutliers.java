@@ -18,7 +18,10 @@ public class RepairOutliers {
         HashMap<ArrayList<LinkedHashSet<Character>>, SignificantContext> significantContexts = new HashMap<>();
         
         for(Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()){
+            
             ArrayList<Character> trace = entry.getValue();
+            trace.add(0, 'O');
+            trace.add('O');
             for(Character t : trace){
                 ArrayList<Character> secuence = new ArrayList<>();
                 secuence.add(t);
@@ -66,6 +69,8 @@ public class RepairOutliers {
             for(int i = (subLeft - l) ; i <=  subLeft - 1; i++){ 
                 leftNeighbour.add(trace.get(i));
             }
+        }else{
+            leftNeighbour.add('O');
         }
         
         //Verificamos que la posición en la traza del ultimo elemento en la secuencia mas el número de elementos requeridos hacia la derecha sea menor al número de elementos en la traza
@@ -75,6 +80,8 @@ public class RepairOutliers {
             for(int i = (subRight + 1); i <= (subRight + r); i++){
                 rightNeighbour.add(trace.get(i));
             }
+        }else{
+            rightNeighbour.add('O');
         }
         context.add(leftNeighbour);
         context.add(rightNeighbour);

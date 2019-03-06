@@ -641,7 +641,7 @@ public class ProcessViewer {
         
         RepairOutliers r = new RepairOutliers();
         
-        r.Algorithm(tracesList, 0.3, 1, 1, 0);
+        r.Algorithm(tracesList, 0.25, 1, 1, 1);
         
         if(true){
             return;
