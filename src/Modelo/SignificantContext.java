@@ -6,8 +6,8 @@ import java.util.LinkedHashSet;
 
 public class SignificantContext {
     
-    public int Frecuency = 0;
-    public LinkedHashSet<LinkedHashSet<Character>> ProbableSubsequences = new LinkedHashSet<>();
+    public int Frecuency = 1;
+    public LinkedHashSet<Character> ProbableSubsequences = new LinkedHashSet<>();
     
     
 }

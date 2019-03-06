@@ -39,6 +39,7 @@ import java.awt.TextField;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
@@ -626,17 +627,21 @@ public class ProcessViewer {
         //Test para reparación de outliers
         
         //0 - [a, b, c, d, e, f]
-        
+        /*
         ArrayList<Character> sequence = new ArrayList<>();
         sequence.add('c');
         sequence.add('d');
-        ArrayList<ArrayList<Character>> context = RepairOutliers.context(sequence, tracesList.get(0), 1,2);
+        ArrayList<LinkedHashSet<Character>> context = RepairOutliers.context(sequence, tracesList.get(0), 1,2);
         System.out.println("con(" + sequence.toString() + ", " + tracesList.get(0).toString() + ",1, 2 = " + context.toString());
         
-        ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), context.get(0), context.get(1));
+        ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), (ArrayList) context.get(0),(ArrayList) context.get(1));
        
         System.out.println("cov(" + tracesList.get(0).toString() + "," + context.get(0).toString() + ", " + context.get(1).toString() + " = " + covering.toString());
+        */
         
+        RepairOutliers r = new RepairOutliers();
+        
+        r.Algorithm(tracesList, 0.3, 1, 1, 0);
         
         if(true){
             return;

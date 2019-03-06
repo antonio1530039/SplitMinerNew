@@ -12,21 +12,48 @@ public class RepairOutliers {
     
     
     public void Algorithm(LinkedHashMap<Integer, ArrayList<Character>> tracesList, double tc, int l, int r, int K){
-        HashMap<LinkedHashSet<LinkedHashSet>, SignificantContext> significantContexts = new HashMap<>();
+        //Dado tc (porcentaje para considerar un contexto como significante) calcular el numero de trazas en el que debe existir el contexto
+        double minimumTraces = tracesList.size() * tc;
+        
+        HashMap<ArrayList<LinkedHashSet<Character>>, SignificantContext> significantContexts = new HashMap<>();
         
         for(Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()){
+            ArrayList<Character> trace = entry.getValue();
+            for(Character t : trace){
+                ArrayList<Character> secuence = new ArrayList<>();
+                secuence.add(t);
+                ArrayList<LinkedHashSet<Character>> con = context(secuence, trace, l , r);
+                if(significantContexts.containsKey(con)){
+                    SignificantContext sc = significantContexts.get(con);
+                    sc.Frecuency++;
+                    sc.ProbableSubsequences.add(t);
+                }else{
+                    significantContexts.put(con, new SignificantContext());
+                }
+            }
+        }
+        System.out.println("SignificantContextes");
+        for(Map.Entry<ArrayList<LinkedHashSet<Character>>, SignificantContext> entry : significantContexts.entrySet()){
+            SignificantContext sc = entry.getValue();
+            //if(sc.Frecuency >= minimumTraces){
+                System.out.println("SignificantContext: " + entry.getKey().toString());
+                System.out.println("Frecuency: " + entry.getValue().Frecuency);
+                System.out.println("ProbableSubsequences: " + entry.getValue().ProbableSubsequences);
+                System.out.println("");
+            //}
             
         }
+        System.out.println("minimumTraces for SC: " + minimumTraces);
     }
     
     
     
-    public static ArrayList<ArrayList<Character>> context(ArrayList<Character> secuence, ArrayList<Character> trace, int l, int r ){
+    public static ArrayList<LinkedHashSet<Character>> context(ArrayList<Character> secuence, ArrayList<Character> trace, int l, int r ){
         //Dada una secuencia de tareas y una traza; encontrar el contexto de la secuencia...
         //...según el número de vecinos requeridos a la izquierda y a la derecha indicados en los parámetros 'l' y 'r' respectivamente
-        ArrayList<Character> leftNeighbour = new ArrayList<>();
-        ArrayList<Character> rightNeighbour = new ArrayList<>();
-        ArrayList<ArrayList<Character>> context = new ArrayList<>();
+        LinkedHashSet<Character> leftNeighbour = new LinkedHashSet<>();
+        LinkedHashSet<Character> rightNeighbour = new LinkedHashSet<>();
+        ArrayList<LinkedHashSet<Character>> context = new ArrayList<>();
         
         int subLeft = trace.indexOf(secuence.get(0)); //posición de la traza del primer elemento de la secuencia
         int subRight = trace.indexOf(secuence.get(secuence.size()-1) ); //indice de la traza del ultimo elemento en la secuencia
