@@ -9,85 +9,73 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-public class RepairOutliers {
+public class FixOutliers {
 
     public HashMap<ArrayList<ArrayList<Character>>, SignificantContext> getSignificantContexts(LinkedHashMap<Integer, ArrayList<Character>> tracesList, double tc, int l, int r, int K) {
         //Dado tc (porcentaje para considerar un contexto como significante) calcular el numero de trazas en el que debe existir el contexto
         double minimumTraces = tracesList.size() * tc;
-        
-        HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = new HashMap<>();
 
+        HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = new HashMap<>();
+        ArrayList<Integer> secuence = new ArrayList<>();
+        
         for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
             ArrayList<Character> trace = entry.getValue();
-            System.out.println("Trace: " + trace.toString());
-            ArrayList<Integer> secuence = new ArrayList<>();
             for (int i = 0; i < trace.size(); i++) {
                 secuence.add(i);
                 if (secuence.size() == K) {
                     ArrayList<ArrayList<Character>> con = context(secuence, trace, l, r);
-                    ArrayList<ArrayList<Character>> con2 = new ArrayList<>();
 
                     ArrayList<Character> realSecuence = new ArrayList<>();
                     for (Integer index : secuence) {
                         realSecuence.add(trace.get(index));
                     }
+                    
+                    ArrayList<ArrayList<Character>> con2 = new ArrayList<>();
                     con2.add(con.get(0));
                     con2.add((ArrayList) realSecuence.clone());
 
-                    if (significantContexts.containsKey(con)) {
-                        SignificantContext sc = significantContexts.get(con);
-                        sc.Frecuency++;
-                        LinkedHashSet lhmrealSecuence = new LinkedHashSet<>();
-                        lhmrealSecuence.addAll(realSecuence);
+                    ArrayList<ArrayList> all = new ArrayList<>();
 
-                        if (sc.ProbableSubsequences.containsKey(lhmrealSecuence)) {
-                            Integer freq = sc.ProbableSubsequences.get(lhmrealSecuence);
-                            freq++;
-                            sc.ProbableSubsequences.put(lhmrealSecuence, freq);
+                    all.add(con);
+                    all.add(con2);
+
+                    for (int j = 0; j < 2; j++) {
+                        LinkedHashSet lhmrealSecuence = new LinkedHashSet<>();
+                        if (significantContexts.containsKey(all.get(j))) {
+                            SignificantContext sc = significantContexts.get(all.get(j));
+                            sc.Frecuency++;
+                            if (j == 0) {
+                                lhmrealSecuence.addAll(realSecuence);
+                            } else {
+                                lhmrealSecuence.add('O');
+                            }
+                            if (sc.ProbableSubsequences.containsKey(lhmrealSecuence)) {
+                                Integer freq = sc.ProbableSubsequences.get(lhmrealSecuence);
+                                freq++;
+                                sc.ProbableSubsequences.put(lhmrealSecuence, freq);
+                            } else {
+                                sc.ProbableSubsequences.put(lhmrealSecuence, 1);
+                            }
                         } else {
+                            SignificantContext sc = new SignificantContext();
+                            lhmrealSecuence.addAll(realSecuence);
                             sc.ProbableSubsequences.put(lhmrealSecuence, 1);
+                            significantContexts.put(all.get(j), sc);
                         }
-                    } else {
-                        SignificantContext sc = new SignificantContext();
-                        LinkedHashSet lhmrealSecuence = new LinkedHashSet<>();
-                        lhmrealSecuence.addAll(realSecuence);
-                        sc.ProbableSubsequences.put(lhmrealSecuence, 1);
-                        significantContexts.put(con, sc);
-                    }
-
-                    if (significantContexts.containsKey(con2)) {
-                        SignificantContext sc = significantContexts.get(con2);
-                        sc.Frecuency++;
-                        LinkedHashSet lhmrealSecuence = new LinkedHashSet<>();
-                        lhmrealSecuence.add('O');
-                        if (sc.ProbableSubsequences.containsKey(lhmrealSecuence)) {
-                            Integer freq = sc.ProbableSubsequences.get(lhmrealSecuence);
-                            freq++;
-                            sc.ProbableSubsequences.put(lhmrealSecuence, freq);
-
-                        } else {
-                            sc.ProbableSubsequences.put(lhmrealSecuence, 1);
-                        }
-                    } else {
-                        SignificantContext sc = new SignificantContext();
-                        LinkedHashSet lhmrealSecuence = new LinkedHashSet<>();
-                        lhmrealSecuence.addAll(realSecuence);
-                        sc.ProbableSubsequences.put(lhmrealSecuence, 1);
-                        significantContexts.put(con2, sc);
                     }
                     secuence.clear();
                 }
             }
+            secuence.clear();
         }
-        
-        System.out.println("SignificantContexts\n");
+
+        System.out.println("\tSignificantContexts\n");
         List<Map.Entry<ArrayList<ArrayList<Character>>, SignificantContext>> entries = new ArrayList(significantContexts.entrySet());
-        
+
         for (Map.Entry<ArrayList<ArrayList<Character>>, SignificantContext> entry : entries) {
             TreeSet treeset = new TreeSet(entry.getValue().ProbableSubsequences.values());
             SignificantContext sc = entry.getValue();
-            if( (Double.parseDouble( (treeset.last().toString()) ) / sc.Frecuency) >= tc){
-                
+            if ((Double.parseDouble((treeset.last().toString())) / sc.Frecuency) >= tc) {
                 System.out.println("\t!!SignificantContext: " + entry.getKey().toString());
                 System.out.println("\tFrecuency: " + entry.getValue().Frecuency);
                 System.out.println("\tProbableSubsequences: ");
@@ -96,36 +84,32 @@ public class RepairOutliers {
                     System.out.println("\t\t\tfreq: " + entry2.getValue());
                 }
                 System.out.println("");
-            }else{
+            } else {
                 significantContexts.remove(entry.getKey());
             }
         }
-        System.out.println("minimumTraces for SC: " + minimumTraces);
         return significantContexts;
     }
-    
-    
-    
-    
-    public void algorithm(HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts, LinkedHashMap<Integer, ArrayList<Character>> tracesList){
-        System.out.println("\nExecuting algorithm...."); 
-        
+
+    public void algorithm(HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts, LinkedHashMap<Integer, ArrayList<Character>> tracesList) {
+        System.out.println("\nExecuting algorithm....");
+
         List<Map.Entry<Integer, ArrayList<Character>>> traces = new ArrayList(tracesList.entrySet());
-         
-         for(Map.Entry<Integer, ArrayList<Character>> traceIterator : traces){
-             ArrayList<Character> trace = traceIterator.getValue();
-             System.out.println("Trace: " + trace.toString());
-             for(Map.Entry<ArrayList<ArrayList<Character>>, SignificantContext> scIterator : significantContexts.entrySet()){
-                 ArrayList<ArrayList<Character>> context = scIterator.getKey();
-                 //Obtener covertura del contexto 
-                 ArrayList<Character> covering = covering(trace, context.get(0), context.get(1));
-                 System.out.println("\tContext: " + context.toString());
-                 System.out.println("\tCovering: " + covering.toString());
-                 
-                 System.out.println("");
-                 System.out.println("");
-             }
-         }
+
+        for (Map.Entry<Integer, ArrayList<Character>> traceIterator : traces) {
+            ArrayList<Character> trace = traceIterator.getValue();
+            System.out.println("Trace: " + trace.toString());
+            for (Map.Entry<ArrayList<ArrayList<Character>>, SignificantContext> scIterator : significantContexts.entrySet()) {
+                ArrayList<ArrayList<Character>> context = scIterator.getKey();
+                //Obtener covertura del contexto 
+                ArrayList<Character> covering = covering(trace, context.get(0), context.get(1));
+                System.out.println("\tContext: " + context.toString());
+                System.out.println("\tCovering: " + covering.toString());
+
+                System.out.println("");
+                System.out.println("");
+            }
+        }
     }
 
     public static ArrayList<ArrayList<Character>> context(ArrayList<Integer> secuence, ArrayList<Character> trace, int l, int r) {

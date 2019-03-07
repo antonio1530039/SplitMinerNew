@@ -7,6 +7,7 @@ package Vista;
  */
 import Controlador.*;
 import Modelo.BPMNModel;
+import Modelo.SignificantContext;
 import Vista.gBuildGraphicModel;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -38,6 +39,7 @@ import java.awt.GridBagConstraints;
 import java.awt.TextField;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -639,9 +641,11 @@ public class ProcessViewer {
         System.out.println("cov(" + tracesList.get(0).toString() + "," + context.get(0).toString() + ", " + context.get(1).toString() + " = " + covering.toString());
         */
         
-        RepairOutliers r = new RepairOutliers();
+        FixOutliers r = new FixOutliers();
         
-        r.Algorithm(tracesList, 0.25, 1, 1, 1);
+        HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = r.getSignificantContexts(tracesList, 0.25, 1, 1, 1);
+        
+       // r.algorithm(significantContexts, tracesList);
         
         if(true){
             return;
