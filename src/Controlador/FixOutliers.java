@@ -17,7 +17,7 @@ public class FixOutliers {
 
         HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = new HashMap<>();
         ArrayList<Integer> secuence = new ArrayList<>();
-        
+
         for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
             ArrayList<Character> trace = entry.getValue();
             for (int i = 0; i < trace.size(); i++) {
@@ -29,7 +29,7 @@ public class FixOutliers {
                     for (Integer index : secuence) {
                         realSecuence.add(trace.get(index));
                     }
-                    
+
                     ArrayList<ArrayList<Character>> con2 = new ArrayList<>();
                     con2.add(con.get(0));
                     con2.add((ArrayList) realSecuence.clone());
@@ -103,11 +103,12 @@ public class FixOutliers {
                 //Obtener covertura del contexto 
                 ArrayList<Character> covering = covering(trace, context.get(0), context.get(1), K);//modify K value
                 System.out.println("\tContext: " + context.toString());
-                
-                if(covering != null)
+
+                if (covering != null) {
                     System.out.println("\tCovering: " + covering.toString());
-                else
+                } else {
                     System.out.println("Covering not found");
+                }
 
                 System.out.println("");
                 System.out.println("");
@@ -154,56 +155,56 @@ public class FixOutliers {
 
     public static ArrayList<Character> covering(ArrayList<Character> trace, ArrayList<Character> leftNeighbour, ArrayList<Character> rightNeighbour, int K) {
         ArrayList<Character> covering = new ArrayList<>();
-        
-        leftNeighbour.remove((Character)'O');
-        rightNeighbour.remove((Character)'O');
-        
+
+        leftNeighbour.remove((Character) 'O');
+        rightNeighbour.remove((Character) 'O');
+
         if (leftNeighbour.isEmpty() && rightNeighbour.isEmpty()) {
             return null;
         }
-        
-        for(Character c : leftNeighbour){
-            if(!trace.contains(c)){
+
+        for (Character c : leftNeighbour) {
+            if (!trace.contains(c)) {
                 System.out.println("\tcovering: traza no contiene un elemento del contexto izquierdo");
                 return null;
             }
         }
-        
-        for(Character c : rightNeighbour){
-            if(!trace.contains(c)){
+
+        for (Character c : rightNeighbour) {
+            if (!trace.contains(c)) {
                 System.out.println("\tcovering: traza no contiene un elemento del contexto derecho");
                 return null;
             }
         }
-         
-        
-       
-        
-
-        int start, end;
         
         if(leftNeighbour.isEmpty()){
-            start = 0;
-            end = (start) + K;
-        }else if (rightNeighbour.isEmpty()) {
-            start = trace.indexOf(leftNeighbour.get(leftNeighbour.size() - 1)) + 1;
-            end = trace.size();
-        } else {
-            if(trace.indexOf(leftNeighbour.get(leftNeighbour.size() - 1)) >= trace.indexOf(rightNeighbour.get(0))){
+            for(int i = 0; i <= K-1; i++)
+                covering.add(trace.get(i));
+        }else if(rightNeighbour.isEmpty()){
+            int start = trace.indexOf(leftNeighbour.get(leftNeighbour.size()-1));
+            for(int i= start+1; i <= start + K; i++){
+                covering.add(trace.get(i));
+            }
+        }else{
+            //Normal, verify case -1 and 0
+            int left = trace.indexOf(leftNeighbour.get(leftNeighbour.size()-1));
+            int right = trace.indexOf(rightNeighbour.get(0));
+            //case -1
+            if(left >= right){
                 return null;
             }
-            start = trace.indexOf(leftNeighbour.get(leftNeighbour.size() - 1)) + 1;
-            end = (start-1) + K;
+            //case0
+            if(left+1 == right){
+                return covering;
+            }
+            
+            for(int i = left + 1; i <= left + K; i++){
+                covering.add(trace.get(i));
+            }
+            
         }
-        //[[], [c]]
-        //b c
-        if(end > trace.size())
-            return covering;
         
-        for (int i = start; i < end; i++) {
-            covering.add(trace.get(i));
-        }
-
+        
         return covering;
     }
 }
