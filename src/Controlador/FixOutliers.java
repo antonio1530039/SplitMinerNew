@@ -35,7 +35,6 @@ public class FixOutliers {
                     con2.add((ArrayList) realSecuence.clone());
 
                     ArrayList<ArrayList> all = new ArrayList<>();
-
                     all.add(con);
                     all.add(con2);
 
@@ -91,7 +90,7 @@ public class FixOutliers {
         return significantContexts;
     }
 
-    public void algorithm(HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts, LinkedHashMap<Integer, ArrayList<Character>> tracesList) {
+    public void algorithm(HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts, LinkedHashMap<Integer, ArrayList<Character>> tracesList, int K) {
         System.out.println("\nExecuting algorithm....");
 
         List<Map.Entry<Integer, ArrayList<Character>>> traces = new ArrayList(tracesList.entrySet());
@@ -102,9 +101,13 @@ public class FixOutliers {
             for (Map.Entry<ArrayList<ArrayList<Character>>, SignificantContext> scIterator : significantContexts.entrySet()) {
                 ArrayList<ArrayList<Character>> context = scIterator.getKey();
                 //Obtener covertura del contexto 
-                ArrayList<Character> covering = covering(trace, context.get(0), context.get(1));
+                ArrayList<Character> covering = covering(trace, context.get(0), context.get(1), K);//modify K value
                 System.out.println("\tContext: " + context.toString());
-                System.out.println("\tCovering: " + covering.toString());
+                
+                if(covering != null)
+                    System.out.println("\tCovering: " + covering.toString());
+                else
+                    System.out.println("Covering not found");
 
                 System.out.println("");
                 System.out.println("");
@@ -149,24 +152,54 @@ public class FixOutliers {
         return context;
     }
 
-    public static ArrayList<Character> covering(ArrayList<Character> trace, ArrayList<Character> leftNeighbour, ArrayList<Character> rightNeighbour) {
+    public static ArrayList<Character> covering(ArrayList<Character> trace, ArrayList<Character> leftNeighbour, ArrayList<Character> rightNeighbour, int K) {
         ArrayList<Character> covering = new ArrayList<>();
-
+        
+        leftNeighbour.remove((Character)'O');
+        rightNeighbour.remove((Character)'O');
+        
         if (leftNeighbour.isEmpty() && rightNeighbour.isEmpty()) {
-            return covering;
+            return null;
         }
+        
+        for(Character c : leftNeighbour){
+            if(!trace.contains(c)){
+                System.out.println("\tcovering: traza no contiene un elemento del contexto izquierdo");
+                return null;
+            }
+        }
+        
+        for(Character c : rightNeighbour){
+            if(!trace.contains(c)){
+                System.out.println("\tcovering: traza no contiene un elemento del contexto derecho");
+                return null;
+            }
+        }
+         
+        
+       
+        
 
-        int start = 0;
-        int end = 0;
-        if (leftNeighbour.isEmpty()) {
-            end = trace.indexOf(rightNeighbour.get(0));
-        } else if (rightNeighbour.isEmpty()) {
+        int start, end;
+        
+        if(leftNeighbour.isEmpty()){
+            start = 0;
+            end = (start) + K;
+        }else if (rightNeighbour.isEmpty()) {
             start = trace.indexOf(leftNeighbour.get(leftNeighbour.size() - 1)) + 1;
             end = trace.size();
         } else {
+            if(trace.indexOf(leftNeighbour.get(leftNeighbour.size() - 1)) >= trace.indexOf(rightNeighbour.get(0))){
+                return null;
+            }
             start = trace.indexOf(leftNeighbour.get(leftNeighbour.size() - 1)) + 1;
-            end = trace.indexOf(rightNeighbour.get(0));
+            end = (start-1) + K;
         }
+        //[[], [c]]
+        //b c
+        if(end > trace.size())
+            return covering;
+        
         for (int i = start; i < end; i++) {
             covering.add(trace.get(i));
         }

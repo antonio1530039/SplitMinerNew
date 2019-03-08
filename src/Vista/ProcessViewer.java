@@ -645,7 +645,7 @@ public class ProcessViewer {
         
         HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = r.getSignificantContexts(tracesList, 0.25, 1, 1, 1);
         
-       // r.algorithm(significantContexts, tracesList);
+        r.algorithm(significantContexts, tracesList, 1);
         
         if(true){
             return;
