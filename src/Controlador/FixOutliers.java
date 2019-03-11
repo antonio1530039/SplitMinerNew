@@ -182,6 +182,12 @@ public class FixOutliers {
                 covering.add(trace.get(i));
         }else if(rightNeighbour.isEmpty()){
             int start = trace.indexOf(leftNeighbour.get(leftNeighbour.size()-1));
+            //a b b
+            //a b
+            if(start+K >= trace.size()){
+                return covering;
+            }
+            
             for(int i= start+1; i <= start + K; i++){
                 covering.add(trace.get(i));
             }
@@ -193,7 +199,7 @@ public class FixOutliers {
             if(left >= right){
                 return null;
             }
-            //case0
+            //case 0
             if(left+1 == right){
                 return covering;
             }
