@@ -2,7 +2,7 @@
 //I: log, l, r, K, umbral
 
 
-getSignificantContexts(int l, int r, int K, , LinkedHashMap<Integer, ArrayList<Character>> traces){
+getSignificantContexts(int l, int r, int K, LinkedHashMap<Integer, ArrayList<Character>> traces){
 	HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = new HashMap<>();
 	for(t : traces){
 		ArrayList<Character> left = new ArrayList<>();
@@ -17,8 +17,9 @@ getSignificantContexts(int l, int r, int K, , LinkedHashMap<Integer, ArrayList<C
 						if( j > i){
 							if( ((j+1) - (i+2)) > K ){
 								//a partir de j llenar right
-								finishContext(left, j, (j+r), significantContexts, subsequence);
+								finishContext(left, j, (j+r), significantContexts, subsequence, t);
 								makeChanges(significantContexts, traces);
+								subsequence.removeAll();
 								break;
 							}else{
 								subsequence.add(trace.get(j));
@@ -26,8 +27,9 @@ getSignificantContexts(int l, int r, int K, , LinkedHashMap<Integer, ArrayList<C
 						}else{
 							if( (i+1) - (j+2) > K ){
 								//a partir de i llenar right
-								finishContext(left, i, (i+r), significantContexts, subsequence);
+								finishContext(left, i, (i+r), significantContexts, subsequence, t);
 								makeChanges(significantContexts, traces);
+								subsequence.removeAll();
 								break;
 							}else{
 								subsequence.add(trace.get(j));
@@ -42,11 +44,13 @@ getSignificantContexts(int l, int r, int K, , LinkedHashMap<Integer, ArrayList<C
 }
 
 
-finishContext(ArrayList<Character> left, int start, int end, HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts, ArrayList<Character> subsequence, , LinkedHashMap<Integer, ArrayList<Character>> traces ){
+finishContext(ArrayList<Character> left, int start, int end, HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts, ArrayList<Character> subsequence,
+			 LinkedHashMap<Integer, ArrayList<Character>> traces, ArrayList<Character> actualTrace){
 	ArrayList<Character> right = new ArrayList<>();
 	for(int z = start; z <  end; z++){
-		right.add(t.get(z))
+		right.add(actualTrace.get(z))
 	}
+	//verificar existencia de contexto y actualizar frecuencias...
 	significantContexts.put(left.join(right), subsequence);
 
 	//Para este contexto buscar todas las posibles coverturas
@@ -59,22 +63,21 @@ finishContext(ArrayList<Character> left, int start, int end, HashMap<ArrayList<A
 
 }
 
+//a , b >  c =10, f = 1, d = 15
+// a , d,  b 
 
 makeChanges(LinkedHashMap<HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts, LinkedHashMap<Integer, ArrayList<Character>> traces){
 	for(t : traces){
 		for(sc : significantContexts){
 			if(sc exists in t){
+				//al remplazar, eliminar contexto (si se da el caso) y actualizar frecuencias
 				t.replace(sc.bestCover);
+				//actualizar frecuencias
+				SC = significantContexts.get(sc)
+				SC.freq++;
+				ssc = SC.subsequences.get(sc.bestCover)
+				ssc.freq++;
 			}
 		}
 	}
-}
-
-
-refreshFrequencies(HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts,  LinkedHashMap<Integer, ArrayList<Character>> traces){
-
-	for(t : traces){
-
-	}
-
 }
