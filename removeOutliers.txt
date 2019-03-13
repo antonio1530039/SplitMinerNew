@@ -67,15 +67,17 @@ finishContext(ArrayList<Character> left, int start, int end, HashMap<ArrayList<A
 makeChanges(LinkedHashMap<HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts, LinkedHashMap<Integer, ArrayList<Character>> traces, double umbral){
 	for(t : traces){
 		for(sc : significantContexts){
-			if(sc != 'O') //si  es igual a vacino, ignorar
-				if(sc exists in t && sc.probability > umbral){
-					t.replace(sc.bestCover);
-					//actualizar frecuencias
-					SC = significantContexts.get(sc)
-					SC.freq++;
-					ssc = SC.subsequences.get(sc.bestCover)
-					ssc.freq++;
-				}
+			cover = getCovertura(sc.left, sc.right, t);
+			//verificar si la covertura existe como subsecuencia del contexto
+			coverC = sc.subsequences.get(cover)
+			if(coverC == null || sc.bestCover.probability > umbral){ //si no existe la covertura o la probabilidad de la mejor covertura para este contexto es mayor al umbral, entonces remplazar
+				t.replace(sc.bestCover);
+				//actualizar frecuencias
+				SC = significantContexts.get(sc)
+				SC.freq++;
+				ssc = SC.subsequences.get(sc.bestCover)
+				ssc.freq++;	
+			}
 		}
 	}
 }
