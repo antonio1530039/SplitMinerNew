@@ -643,9 +643,9 @@ public class ProcessViewer {
         
         FixOutliers r = new FixOutliers();
         
-        HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = r.getSignificantContexts(tracesList, 0.25, 1, 1, 1);
+//        HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = r.getSignificantContexts(tracesList, 0.25, 1, 1, 1);
         
-        r.algorithm(significantContexts, tracesList, 1);
+        r.Algorithm(tracesList, 1, 1, 1, 0.25);
         
         if(true){
             return;
