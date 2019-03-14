@@ -12,9 +12,9 @@ public class FixOutliers {
 
     public void Algorithm(LinkedHashMap<Integer, ArrayList<Character>> tracesList, int l, int r, int K, double umbral) {
         List<Map.Entry<Integer, ArrayList<Character>>> traces = new ArrayList(tracesList.entrySet());
-        
+
         HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = new HashMap<>();
-        
+
         for (Map.Entry<Integer, ArrayList<Character>> t : traces) {
             ArrayList<Character> trace = t.getValue();
             trace.add(0, 'O');
@@ -40,14 +40,53 @@ public class FixOutliers {
         ArrayList<Character> left = new ArrayList<>();
         for (int i = 0; i < trace.size(); i++) {
             //En este ciclo se agregan los vecinos de la izquierda
+            System.out.println("Actual trace: " + trace.toString());
             left.add(trace.get(i));
             if (left.size() == l) {
                 ArrayList<Character> subsequence = new ArrayList<>();
                 for (int j = i + 1; j < trace.size(); j++) {
                     subsequence.add(trace.get(j));
+                    
                     if (subsequence.size() == K) {
-                        System.out.println("finishing context with sequence: " + subsequence);
-                        finishContext(left, j + 1, (j + 1 + r), significantContexts, subsequence, trace, l, r);
+                        //finishContext(left, j + 1, (j + 1 + r), significantContexts, subsequence, trace, l, r);
+                        
+                        //fill right neighboour
+                        ArrayList<Character> right = new ArrayList<>();
+                        if ( (j+1+r) > trace.size()) {
+                            //right.add('O');
+                            break;
+                        } else {
+                            for (int z = j + 1; z < (j + 1 + r); z++) {
+                                right.add(trace.get(z));
+                            }
+                        }
+
+                        ArrayList<ArrayList<Character>> con = new ArrayList<>();
+                        con.add((ArrayList<Character>) left.clone());
+                        con.add((ArrayList<Character>) right.clone());
+
+                        //Desde K hasta K=1 disminuyendo en 1, agregar las subsequencias
+                        while(!subsequence.isEmpty()) {
+                            pushContext(con, subsequence, significantContexts);
+                            System.out.println("\nPushed context : " + con.toString() + " with sequence: " + subsequence.toString());
+                            //verificar si la subsequencia partida tiene el tamaño r, tomar como contexto esta
+                            if (subsequence.size() == r && subsequence.get(0) != 'O') {
+
+                                //Crear nuevo contexto
+                                ArrayList<ArrayList<Character>> subcontext = new ArrayList<>();
+                                subcontext.add((ArrayList<Character>) left.clone());
+                                subcontext.add((ArrayList<Character>) subsequence.clone());
+
+                                ArrayList<Character> subs = new ArrayList<>();
+                                subs.add('O');
+                                pushContext(subcontext, subs, significantContexts);
+
+                                System.out.println("\tPushed subcontext : " + subcontext.toString() + " with sequence: " + subs.toString());
+                            }
+
+                            subsequence.remove(subsequence.size() - 1);
+                        }
+                        
                         //makeChanges(significantContexts, trace, umbral);
                         break;
                     }
@@ -57,46 +96,6 @@ public class FixOutliers {
         }
     }
 
-    public void finishContext(ArrayList<Character> left, int start, int end, HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts, ArrayList<Character> subsequence,
-            ArrayList<Character> actualTrace, int l, int r) {
-
-        ArrayList<Character> right = new ArrayList<>();
-        if (start >= actualTrace.size()) {
-            right.add('O');
-        } else {
-            for (int z = start; z < end; z++) {
-                right.add(actualTrace.get(z));
-            }
-        }
-        
-        ArrayList<ArrayList<Character>> con = new ArrayList<>();
-        con.add((ArrayList<Character>) left.clone());
-        con.add((ArrayList<Character>)right.clone());
-        
-        //Desde K hasta K=1 disminuyendo en 1, agregar las subsequencias
-        for (int i = 0; i <= subsequence.size() - 1; i++) { //verificar fin de i
-            pushContext(con, subsequence, significantContexts);
-
-            //verificar si la subsequencia partida tiene el tamaño r, tomar como contexto esta
-            if (subsequence.size() == r && subsequence.get(0) != 'O') {
-                
-                //Crear nuevo contexto
-                ArrayList<ArrayList<Character>> subcontext = new ArrayList<>();
-                subcontext.add((ArrayList<Character>)left.clone());
-                subcontext.add((ArrayList<Character>)subsequence.clone());
-
-                ArrayList<Character> subs = new ArrayList<>();
-                subs.add('O');
-                pushContext(subcontext, subs, significantContexts);
-                
-                System.out.println("subsequenceCopy == r - context: " + subcontext.toString() );
-            }
-            
-            subsequence.remove(subsequence.size() - 1);
-        }
-        
-        //es necesario agregar el vacio como subsequencia ultima? 
-    }
 
     public void pushContext(ArrayList<ArrayList<Character>> con, ArrayList<Character> subsequence, HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts) {
         LinkedHashSet<Character> realSecuence = new LinkedHashSet();
