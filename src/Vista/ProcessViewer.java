@@ -641,11 +641,11 @@ public class ProcessViewer {
         System.out.println("cov(" + tracesList.get(0).toString() + "," + context.get(0).toString() + ", " + context.get(1).toString() + " = " + covering.toString());
         */
         
-        FixOutliers r = new FixOutliers();
+        RepairOutliers r = new RepairOutliers();
         
 //        HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = r.getSignificantContexts(tracesList, 0.25, 1, 1, 1);
         
-        r.Algorithm(tracesList, 1, 1, 1, 0.25);
+        r.Filtering(tracesList, 1, 1, 1, 0.25);
         
         if(true){
             return;
