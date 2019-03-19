@@ -155,7 +155,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
                 //Procesar nodo actual
                 if (!Elements.containsKey(actual)) {
-                    processElement(new Element(actual), PosX, PosY, BPMN.T, Elements, ScreenWidth, ScreenHeight);
+                    processElement(new Element(actual), PosX, PosY, BPMN, Elements, ScreenWidth, ScreenHeight);
                     PosX += ScreenWidth / 15;
                     if (PosX >= ScreenWidth - (ScreenWidth / 15)) {
                         PosY += ScreenHeight / 10; //salto en caso de exceder el limite del ancho de la pantalla
@@ -166,7 +166,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 if (!Elements.containsKey(sucesor)) {
                     Element Esucesor = new Element(sucesor);
                     Esucesor.Antecesores.add(actual);
-                    processElement(Esucesor, PosX, PosY, BPMN.T, Elements, ScreenWidth, ScreenHeight);
+                    processElement(Esucesor, PosX, PosY, BPMN, Elements, ScreenWidth, ScreenHeight);
                     PosX += ScreenWidth / 15;
 
                     if (PosX >= ScreenWidth - (ScreenWidth / 15)) {
@@ -193,14 +193,16 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         revalidate();
     }
 
-    public void processElement(Element e, int PosX, int PosY, LinkedList<Character> tasks, HashMap<String, Element> Elements, int ScreenWidth, int ScreenHeight) {
+    public void processElement(Element e, int PosX, int PosY, BPMNModel bpmn, HashMap<String, Element> Elements, int ScreenWidth, int ScreenHeight) {
         e.cPosX = PosX;
         e.cPosY = PosY;
-        if (tasks.contains(e.Name.charAt(0))) {
-            e.type = "Task";
-        } else {
+        
+        if( bpmn.Gor.contains(e.Name) || bpmn.Gxor.contains(e.Name) || bpmn.Gand.contains(e.Name)){
             e.type = "Gateway";
+        }else{
+            e.type = "Task";
         }
+        
         Elements.put(e.Name, e);
 
     }

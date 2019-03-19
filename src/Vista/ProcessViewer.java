@@ -43,22 +43,25 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
+import javax.swing.JTextField;
 
 
 public class ProcessViewer {
 
     private JFrame main_frm;
     private File fileName;
-    private TextField epsilon_textField = new TextField("0.3", 5), percentil_textField = new TextField("0.4", 5);
+    private JTextField epsilon_textField = new JTextField("0.3", 5), percentil_textField = new JTextField("0.4", 5), l_textField = new JTextField("1",4), r_textField = new JTextField("1",4), k_textField = new JTextField("1",4), umbral_textField = new JTextField("0.25",4);
     private JPanel loadFile_pnl, menu_pnl, viewer_pnl, raw_pnl;
     private JButton information_btn, traces_btn, activities_btn, loadFile_btn, exportAsCSV_btn, deployment_btn, model_btn, exportAsBPMN_btn, mine_btn, convertToXES_btn;
-    private JLabel titulo_txt, epsilon_txt, percentil_txt, information_txt;
+    private JLabel titulo_txt, epsilon_txt, percentil_txt, information_txt, l_txt, r_txt, umbral_txt, k_txt;
     private DefaultTableModel traces_dtm, activities_dtm, information_dtm, model_dtm;
-    private ActionListener loadFile_btnAction, information_btnAction, traces_btnAction, activities_btnAction, exportAsCSV_btnAction, exportAsBPMN_btnAction, model_btnAction, deployment_btnAction, mine_btnAction, convertToXES_btnAction;
-    private boolean activitiesSelected, tracesSelected, informationSelected, modelSelected, deploymentSelected, wasMined;
+    private ActionListener loadFile_btnAction, information_btnAction, traces_btnAction, activities_btnAction, exportAsCSV_btnAction, exportAsBPMN_btnAction, model_btnAction, deployment_btnAction, mine_btnAction, convertToXES_btnAction, filtering_checkAction;
+    private boolean activitiesSelected, tracesSelected, informationSelected, modelSelected, deploymentSelected, wasMined, isFilteringSelected;
     private String deployment;
+    private JCheckBox filtering_check = new JCheckBox("Filtering outliers");;
     Dimension screenSize;
     
 
@@ -77,6 +80,7 @@ public class ProcessViewer {
         wasMined = false;
         deployment = "";
         fileName = null;
+        isFilteringSelected = false;
 
         // Se generan las acciones
         initializeActions();
@@ -124,21 +128,64 @@ public class ProcessViewer {
         
         convertToXES_btn = new JButton("Convert file XES to txt");
         convertToXES_btn.addActionListener(convertToXES_btnAction);
+        
+        
+        
+        filtering_check.addActionListener(filtering_checkAction);
+        
+        l_txt = new JLabel("l:");
+        l_txt.setForeground(Color.white);
+        l_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
 
+        r_txt = new JLabel("r:");
+        r_txt.setForeground(Color.white);
+        r_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
+        
+        k_txt = new JLabel("K:");
+        k_txt.setForeground(Color.white);
+        k_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
+
+        umbral_txt = new JLabel("Umbral:");
+        umbral_txt.setForeground(Color.white);
+        umbral_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
+      
+        
+        if(isFilteringSelected){
+            l_txt.setVisible(true);
+            r_txt.setVisible(true);
+            k_txt.setVisible(true);
+            umbral_txt.setVisible(true);
+            l_textField.setVisible(true);
+            r_textField.setVisible(true);
+            k_textField.setVisible(true);
+            umbral_textField.setVisible(true);
+        }else{
+            l_txt.setVisible(false);
+            r_txt.setVisible(false);
+            k_txt.setVisible(false);
+            umbral_txt.setVisible(false);
+            l_textField.setVisible(false);
+            r_textField.setVisible(false);
+            k_textField.setVisible(false);
+            umbral_textField.setVisible(false);
+        }
+        
         if (fileName != null) {
-            mine_btn.setEnabled(true);
+            mine_btn.setVisible(true);
+            this.filtering_check.setVisible(true);
             titulo_txt.setText(fileName.getName());
             loadFile_pnl.add(titulo_txt);
             if(fileName.getName().toLowerCase().contains(".xes")){
-                convertToXES_btn.setEnabled(true);
+                convertToXES_btn.setVisible(true);
             }else{
-                convertToXES_btn.setEnabled(false);
+                convertToXES_btn.setVisible(false);
             }
         } else {
             titulo_txt.setText("No selected file");
             loadFile_pnl.add(titulo_txt);
-            convertToXES_btn.setEnabled(false);
-            mine_btn.setEnabled(false);
+            convertToXES_btn.setVisible(false);
+            mine_btn.setVisible(false);
+            filtering_check.setVisible(false);
         }
         
         loadFile_btn = new JButton("Load File");
@@ -150,8 +197,23 @@ public class ProcessViewer {
             exportAsBPMN_btn.addActionListener(exportAsBPMN_btnAction);
             loadFile_pnl.add(exportAsBPMN_btn);
         }
-
         
+        loadFile_pnl.add(filtering_check);
+        
+        
+        
+        loadFile_pnl.add(l_txt);
+        loadFile_pnl.add(l_textField);
+        
+        
+        loadFile_pnl.add(r_txt);
+        loadFile_pnl.add(r_textField);
+        
+        loadFile_pnl.add(k_txt);
+        loadFile_pnl.add(k_textField);
+        
+        loadFile_pnl.add(umbral_txt);
+        loadFile_pnl.add(umbral_textField);
         
         loadFile_pnl.add(convertToXES_btn);
         
@@ -381,6 +443,18 @@ public class ProcessViewer {
             }
         };
         
+        filtering_checkAction = new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                if(filtering_check.isSelected()){
+                    isFilteringSelected = true;
+                }else{
+                    isFilteringSelected = false;
+                }
+                refreshWindow();
+
+            }
+        };
+        
         
         convertToXES_btnAction = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -580,7 +654,25 @@ public class ProcessViewer {
 
         LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas
 
-        FilesManagement f = new FilesManagement(wfg.BPMN);
+        FilesManagement f;
+        if(isFilteringSelected){
+            int l, r, k;
+            double umb;
+            
+            try{
+                l = Integer.parseInt(l_textField.getText());
+                r = Integer.parseInt(r_textField.getText());
+                k = Integer.parseInt(k_textField.getText());
+                umb = Double.parseDouble(umbral_textField.getText());
+            }catch(Exception e){
+                System.out.println("l, r, k o umbral invalidos!");
+                return;
+            }
+            
+            f = new FilesManagement(wfg.BPMN, isFilteringSelected, l, r, k, umb);
+        }else{
+            f = new FilesManagement(wfg.BPMN, isFilteringSelected, 0, 0, 0, 0.0);
+        }
         ///////
         System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
         try {
@@ -621,30 +713,6 @@ public class ProcessViewer {
             dataTraces[i][1] = entry.getValue().toString();
             i++;
         }
-        
-        
-        
-        
-       
-        
-        System.out.println("\n\n\tFILTRADO...");
-        
-        RepairOutliers r = new RepairOutliers();
-        
-        r.Filtering(tracesList, 1, 1, 1, 0.25);
-        
-        System.out.println("");
-        System.out.println("");
-        System.out.println("\t4. Mostrando TRAZAS DESPUES DEL FILTRADO ");
-        for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
-            System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
-        }
-        
-     
-        if(true)
-            return;
-        
-        
         
 
         // Modelo para la table traces
