@@ -1,0 +1,166 @@
+package Controlador;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+
+public class RepairOutliers {
+
+    LinkedHashMap<ArrayList<ArrayList<Character>>, LinkedHashMap< ArrayList<Character>, Object[]>> V = new LinkedHashMap<>();
+
+    public void Filtering(LinkedHashMap<Integer, ArrayList<Character>> tracesList, int l, int r, int K, double umbral) {
+        for (Map.Entry<Integer, ArrayList<Character>> trace : tracesList.entrySet()) {
+            ArrayList<Character> ti = trace.getValue();
+            ti.add(0, 'I');
+            ti.add('O');
+        }
+
+        boolean activo = true;
+        int j = 0;
+        while (activo) {
+            int contadorContextos = 0;
+
+            for (Map.Entry<Integer, ArrayList<Character>> trace : tracesList.entrySet()) {
+                ArrayList<Character> ti = trace.getValue();
+
+                for (int k = 0; k <= K; k++) {
+                    //Obtener contexto
+                    ArrayList<ArrayList<Character>> c = obtenerContexto(ti, j, l, r, k);
+                    if (c == null) {
+                        break;
+                    }
+
+                    //Obtener covertura
+                    LinkedHashMap<ArrayList<Character>, Object[]> coverturas = covertura(c, k, tracesList);
+                    if (V.containsKey(c)) { //Si el contexto ya existe entonces continuar, pero antes...
+                        LinkedHashMap<ArrayList<Character>, Object[]> coverturasEnContexto = V.get(c);
+                        for (Map.Entry<ArrayList<Character>, Object[]> entry : coverturas.entrySet()) {
+                            if (!coverturasEnContexto.containsKey(entry.getKey())) { //verificar si el contexto no contiene una covertura de las obtenidas previamente, si es asi agregarla
+                                coverturasEnContexto.put(entry.getKey(), entry.getValue());
+                            }
+                        }
+                        continue;
+                    }
+                    V.put(c, coverturas);
+                    contadorContextos++;
+                }
+
+                if (contadorContextos == 0) {
+                    continue;
+                }
+
+            }
+            if (contadorContextos == 0) {
+                activo = false;
+            }
+            j += l;
+        }
+
+        for (Map.Entry<ArrayList<ArrayList<Character>>, LinkedHashMap<ArrayList<Character>, Object[]>> entry : V.entrySet()) {
+            
+            System.out.println("\nContext: " + entry.getKey().toString());
+            System.out.println("Covering: ");
+            //Calcular probabilidades
+            LinkedHashMap< ArrayList<Character>, Object[]> coverturas = V.get(entry.getKey());
+
+            //Calcular frecuencia total
+            int F = 0;
+            for (Map.Entry<ArrayList<Character>, Object[]> e : coverturas.entrySet()) {
+                F += (int) e.getValue()[0];
+            }
+
+            //Calcular probabilidades y obtener PCE mayor
+            ArrayList<ArrayList<Character>> maxCover = new ArrayList<>();
+            double max = 0.0;
+            for (Map.Entry<ArrayList<Character>, Object[]> e : coverturas.entrySet()) {
+                double PCE = (int) e.getValue()[0] / (double) F;
+                e.getValue()[1] = PCE;
+                if (PCE > max) {
+                    max = PCE;
+                    maxCover = (ArrayList<ArrayList<Character>>) e.getKey().clone();
+                }
+            }
+            System.out.println("Max probability: " + max);
+            System.out.println("Max cover: " + maxCover);
+            System.out.println("");
+            
+           
+            for (Map.Entry<ArrayList<Character>, Object[]> cov : entry.getValue().entrySet()) {
+                System.out.println("\ts: " + cov.getKey());
+                System.out.println("\t\tF: " + (int) cov.getValue()[0]);
+                System.out.println("\t\tPCE: " + (double) cov.getValue()[1]);  
+            }
+
+        }
+
+    }
+
+    public ArrayList<ArrayList<Character>> obtenerContexto(ArrayList<Character> ti, int j, int l, int r, int k1) {
+        if ((j + l + k1 + r - 1) < ti.size()) {
+            ArrayList<ArrayList<Character>> contexto = new ArrayList<>();
+            ArrayList<Character> izquierda = new ArrayList<>();
+            ArrayList<Character> derecha = new ArrayList<>();
+
+            for (int i = j; i < j + l; i++) {
+                izquierda.add(ti.get(i));
+            }
+
+            for (int i = (j + l + k1); i < (j + l + k1 + r); i++) {
+                derecha.add(ti.get(i));
+            }
+
+            contexto.add(izquierda);
+            contexto.add(derecha);
+
+            return contexto;
+
+        }
+        return null;
+    }
+
+    public LinkedHashMap<ArrayList<Character>, Object[]> covertura(ArrayList<ArrayList<Character>> c, int k, LinkedHashMap<Integer, ArrayList<Character>> tracesList) {
+        LinkedHashMap<ArrayList<Character>, Object[]> cov = new LinkedHashMap();
+
+        for (Map.Entry<Integer, ArrayList<Character>> trace : tracesList.entrySet()) {
+            ArrayList<Character> ti = trace.getValue();
+
+            int j = ti.indexOf(c.get(0).get(0));
+
+            if (j == -1) {
+                continue;
+            }
+
+            //Obtener contexto
+            ArrayList<ArrayList<Character>> cc = obtenerContexto(ti, j, c.get(0).size(), c.get(1).size(), k);
+
+            if (c.equals(cc)) { //El contexto existe, ahora obtener covertura
+                ArrayList<Character> s = new ArrayList<>();
+
+                if (k == 0) {
+                    s.add('O');
+                } else {
+                    // c.get(0).size = l (longitud de contexto a la izquierda)
+                    for (int i = (j + c.get(0).size()); i < ((j + c.get(0).size()) + k); i++) {
+                        s.add(ti.get(i));
+                    }
+                }
+
+                if (cov.containsKey(s)) {
+                    Object[] freqAndPCE = cov.get(s);
+                    Object[] newFreqAndPCE = new Object[2];
+                    newFreqAndPCE[0] = (int) freqAndPCE[0] + 1;
+                    newFreqAndPCE[1] = (double) freqAndPCE[1];
+                    cov.put(s, newFreqAndPCE);
+                } else {
+                    Object[] freqAndPCE = new Object[2];
+                    freqAndPCE[0] = 1;
+                    freqAndPCE[1] = 0.0;
+                    cov.put(s, freqAndPCE);
+                }
+            }
+        }
+        return cov;
+    }
+
+}

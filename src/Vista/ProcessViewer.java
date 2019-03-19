@@ -643,17 +643,20 @@ public class ProcessViewer {
         
         RepairOutliers r = new RepairOutliers();
         
+        System.out.println("\nFILTRADO...");
+        
 //        HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = r.getSignificantContexts(tracesList, 0.25, 1, 1, 1);
         
         r.Filtering(tracesList, 1, 1, 1, 0.25);
         
-        if(true){
-            return;
+        System.out.println("");
+        System.out.println("");
+        System.out.println("\t4. Mostrando TRAZAS DESPUES DEL FILTRADO ");
+        for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
+            System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
         }
         
-        
-        
-        
+     
         
         
         
