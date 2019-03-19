@@ -625,27 +625,11 @@ public class ProcessViewer {
         
         
         
-        
-        //Test para reparación de outliers
-        
-        //0 - [a, b, c, d, e, f]
-        /*
-        ArrayList<Character> sequence = new ArrayList<>();
-        sequence.add('c');
-        sequence.add('d');
-        ArrayList<LinkedHashSet<Character>> context = RepairOutliers.context(sequence, tracesList.get(0), 1,2);
-        System.out.println("con(" + sequence.toString() + ", " + tracesList.get(0).toString() + ",1, 2 = " + context.toString());
-        
-        ArrayList<Character> covering = RepairOutliers.covering(tracesList.get(0), (ArrayList) context.get(0),(ArrayList) context.get(1));
        
-        System.out.println("cov(" + tracesList.get(0).toString() + "," + context.get(0).toString() + ", " + context.get(1).toString() + " = " + covering.toString());
-        */
+        
+        System.out.println("\n\n\tFILTRADO...");
         
         RepairOutliers r = new RepairOutliers();
-        
-        System.out.println("\nFILTRADO...");
-        
-//        HashMap<ArrayList<ArrayList<Character>>, SignificantContext> significantContexts = r.getSignificantContexts(tracesList, 0.25, 1, 1, 1);
         
         r.Filtering(tracesList, 1, 1, 1, 0.25);
         
@@ -657,8 +641,8 @@ public class ProcessViewer {
         }
         
      
-        
-        
+        if(true)
+            return;
         
         
         
