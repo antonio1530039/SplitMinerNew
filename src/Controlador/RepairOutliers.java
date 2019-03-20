@@ -9,7 +9,7 @@ public class RepairOutliers {
 
     LinkedHashMap<ArrayList<ArrayList<Character>>, LinkedHashMap< ArrayList<Character>, Object[]>> V = new LinkedHashMap<>();
 
-    public void Filtering(LinkedHashMap<Integer, ArrayList<Character>> L, int l, int r, int K, double umbral) {
+    public void Filtering(LinkedHashMap<Integer, ArrayList<Character>> L, int l, int r, int K, double umbral, StringBuilder contextOutput) {
         for (Map.Entry<Integer, ArrayList<Character>> trace : L.entrySet()) {
             ArrayList<Character> ti = trace.getValue();
             ti.add(0, 'I');
@@ -95,13 +95,13 @@ public class RepairOutliers {
 
         //Imprimir contextos
         for (Map.Entry<ArrayList<ArrayList<Character>>, LinkedHashMap<ArrayList<Character>, Object[]>> entry : V.entrySet()) {
-            System.out.println("\nContext: " + entry.getKey().toString() + "\nCovering:");
+            contextOutput.append("=============================");
+            contextOutput.append("\nContext: " + entry.getKey().toString() + "\nCovering:\n");
             LinkedHashMap< ArrayList<Character>, Object[]> coverturas = V.get(entry.getKey());
             for (Map.Entry<ArrayList<Character>, Object[]> cov : entry.getValue().entrySet()) {
-                System.out.println("\ts: " + cov.getKey());
-                System.out.println("\t\tF: " + (int) cov.getValue()[0]);
-                System.out.println("\t\tPCE: " + (double) cov.getValue()[1]);
+                contextOutput.append("\ts: " + cov.getKey() + "\n\tF: " + (int) cov.getValue()[0]+ "\n\tPCE: " + (double) cov.getValue()[1] + "\n\n");
             }
+            contextOutput.append("=============================\n");
         }
     }
 

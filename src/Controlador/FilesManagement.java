@@ -16,20 +16,22 @@ public class FilesManagement {
     int R;
     int K;
     double Umbral;
+    public StringBuilder contextOutput;
 
     public LinkedHashMap<String, Character> ActivityList;
 
-    public FilesManagement(BPMNModel bpmn, boolean filtering, int l, int r, int k, double umbral) {
+    public FilesManagement(BPMNModel bpmn, boolean filtering, int l, int r, int k, double umbral, StringBuilder contextOutput) {
         BPMN = bpmn;
         Filtering = filtering;
         L = l;
         R = r;
         K = k;
         Umbral = umbral;
+        this.contextOutput = contextOutput;
     }
 
-    public LinkedHashMap<Integer, ArrayList<Character>> readDataInput(String filename) throws Exception {
-
+    public Object[] readDataInput(String filename) throws Exception {
+// public LinkedHashMap<Integer, ArrayList<Character>> readDataInput(String filename) throws Exception {
         ArrayList<ArrayList<String>> bitacora = new ArrayList<ArrayList<String>>();
 
         int index;
@@ -159,20 +161,30 @@ public class FilesManagement {
         System.out.println("\n\t1. Trazas detectadas: '" + tracesList.size() + "' trazas");
 
         if (Filtering) {
+            LinkedHashMap<Integer, ArrayList<Character>> originalTraces = copyMap(tracesList);
             System.out.println("\n\n\tFILTRADO...");
             RepairOutliers r = new RepairOutliers();
-            r.Filtering(tracesList, L, R, K, Umbral);
+            r.Filtering(tracesList, L, R, K, Umbral, contextOutput);
             System.out.println("");
             System.out.println("");
             System.out.println("\t4. Mostrando TRAZAS DESPUES DEL FILTRADO ");
             for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
                 System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
             }
+
+            showDataInfo(tracesList);
+
+            Object[] all = new Object[2];
+            all[0] = originalTraces.clone();
+            all[1] = tracesList;
+            return all;
         }
 
         showDataInfo(tracesList);
+        Object[] all = new Object[2];
+        all[0] = tracesList;
 
-        return tracesList;
+        return all;
 
     }
 
@@ -223,7 +235,7 @@ public class FilesManagement {
 
     }
 
-    public LinkedHashMap<Integer, ArrayList<Character>> readDataInputTrazas(String filename) throws Exception {
+    public Object[] readDataInputTrazas(String filename) throws Exception {
 
         LinkedHashMap<Integer, ArrayList<Character>> tracesList = new LinkedHashMap<Integer, ArrayList<Character>>();
         LinkedHashMap<String, Character> activityList = new LinkedHashMap<String, Character>();
@@ -296,21 +308,39 @@ public class FilesManagement {
         System.out.println("\n\t1. Trazas detectadas: '" + tracesList.size() + "' trazas");
 
         if (Filtering) {
+            LinkedHashMap<Integer, ArrayList<Character>> originalTraces = copyMap(tracesList);
+            
             System.out.println("\n\n\tFILTRADO...");
             RepairOutliers r = new RepairOutliers();
-            r.Filtering(tracesList, 1, 1, 1, 0.25);
+            r.Filtering(tracesList, L, R, K, Umbral, contextOutput);
             System.out.println("");
             System.out.println("");
             System.out.println("\t4. Mostrando TRAZAS DESPUES DEL FILTRADO ");
             for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
                 System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
             }
+            showDataInfo(tracesList);
+
+            Object[] all = new Object[2];
+            all[0] = originalTraces;
+            all[1] = tracesList;
+            return all;
         }
 
         showDataInfo(tracesList);
+        Object[] all = new Object[2];
+        all[0] = tracesList;
 
-        return tracesList;
+        return all;
 
+    }
+    
+    public LinkedHashMap<Integer, ArrayList<Character>> copyMap(LinkedHashMap<Integer, ArrayList<Character>> map){
+        LinkedHashMap<Integer, ArrayList<Character>> newMap = new LinkedHashMap<>();
+        for(Map.Entry<Integer, ArrayList<Character>> entry : map.entrySet()){
+            newMap.put(entry.getKey(), (ArrayList<Character>) entry.getValue().clone());
+        }
+        return newMap;
     }
 
 }

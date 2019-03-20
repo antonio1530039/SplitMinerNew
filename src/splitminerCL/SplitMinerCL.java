@@ -36,14 +36,14 @@ public class SplitMinerCL {
         System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
 
         BPMNModel BPMN = new BPMNModel();
-        FilesManagement f = new FilesManagement(BPMN, true , 1, 1, 1, 0.25); //boolean Filtering, int l, int r, int k, double umbral
+        FilesManagement f = new FilesManagement(BPMN, true , 1, 1, 1, 0.25 , new StringBuilder()); //boolean Filtering, int l, int r, int k, double umbral
         LinkedHashMap<Integer, ArrayList<Character>> tracesList = null; //lista de trazas
 
         try {
             if (filename.endsWith(".txt")) {
-                tracesList = f.readDataInputTrazas(filename);
+                tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInputTrazas(filename)[0];
             } else if (filename.endsWith(".csv")) {
-                tracesList = f.readDataInput(filename);
+                tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInput(filename)[0];
             } else {
                 System.out.println("El tipo de archivo de entrada no es valido...EXIT");
                 return;
@@ -58,7 +58,7 @@ public class SplitMinerCL {
 
         RepairOutliers r = new RepairOutliers();
 
-        r.Filtering(tracesList, 1, 1, 1, 0.25);
+        r.Filtering(tracesList, 1, 1, 1, 0.25, new StringBuilder());
 
         System.out.println("");
         System.out.println("");

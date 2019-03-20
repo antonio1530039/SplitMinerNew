@@ -36,34 +36,28 @@ import java.awt.event.ActionListener;
 import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import java.awt.TextField;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
-
 public class ProcessViewer {
 
     private JFrame main_frm;
     private File fileName;
-    private JTextField epsilon_textField = new JTextField("0.3", 5), percentil_textField = new JTextField("0.4", 5), l_textField = new JTextField("1",4), r_textField = new JTextField("1",4), k_textField = new JTextField("1",4), umbral_textField = new JTextField("0.25",4);
+    private JTextField epsilon_textField = new JTextField("0.3", 5), percentil_textField = new JTextField("0.4", 5), l_textField = new JTextField("1", 4), r_textField = new JTextField("1", 4), k_textField = new JTextField("1", 4), umbral_textField = new JTextField("0.25", 4);
     private JPanel loadFile_pnl, menu_pnl, viewer_pnl, raw_pnl;
-    private JButton information_btn, traces_btn, activities_btn, loadFile_btn, exportAsCSV_btn, deployment_btn, model_btn, exportAsBPMN_btn, mine_btn, convertToXES_btn;
+    private JButton information_btn, traces_btn, activities_btn, loadFile_btn, exportAsCSV_btn, deployment_btn, model_btn, exportAsBPMN_btn, mine_btn, convertToXES_btn, filtering_btn;
     private JLabel titulo_txt, epsilon_txt, percentil_txt, information_txt, l_txt, r_txt, umbral_txt, k_txt;
     private DefaultTableModel traces_dtm, activities_dtm, information_dtm, model_dtm;
-    private ActionListener loadFile_btnAction, information_btnAction, traces_btnAction, activities_btnAction, exportAsCSV_btnAction, exportAsBPMN_btnAction, model_btnAction, deployment_btnAction, mine_btnAction, convertToXES_btnAction, filtering_checkAction;
+    private ActionListener loadFile_btnAction, information_btnAction, traces_btnAction, activities_btnAction, exportAsCSV_btnAction, exportAsBPMN_btnAction, model_btnAction, deployment_btnAction, mine_btnAction, convertToXES_btnAction, filtering_btnAction;
     private boolean activitiesSelected, tracesSelected, informationSelected, modelSelected, deploymentSelected, wasMined, isFilteringSelected;
     private String deployment;
-    private JCheckBox filtering_check = new JCheckBox("Filtering outliers");;
     Dimension screenSize;
-    
 
     BPMNModel BPMN;
     LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
@@ -91,7 +85,6 @@ public class ProcessViewer {
         buildRaw();
         buildViewer();
         buildWindow();
-
     }
 
     private void buildLoadFile() {
@@ -112,27 +105,23 @@ public class ProcessViewer {
         percentil_txt.setForeground(Color.white);
         percentil_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
 
-        
         loadFile_pnl.add(epsilon_txt);
         loadFile_pnl.add(epsilon_textField);
 
         loadFile_pnl.add(percentil_txt);
         loadFile_pnl.add(percentil_textField);
-        
-       
 
         mine_btn = new JButton("Mine");
-        mine_btn.setBackground(new Color(0,153,0));
+        mine_btn.setBackground(new Color(0, 153, 0));
         mine_btn.setForeground(Color.black);
         mine_btn.addActionListener(mine_btnAction);
-        
+
         convertToXES_btn = new JButton("Convert file XES to txt");
         convertToXES_btn.addActionListener(convertToXES_btnAction);
-        
-        
-        
-        filtering_check.addActionListener(filtering_checkAction);
-        
+
+        filtering_btn = new JButton("Filtering outliers");
+        filtering_btn.addActionListener(filtering_btnAction);
+
         l_txt = new JLabel("l:");
         l_txt.setForeground(Color.white);
         l_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
@@ -140,7 +129,7 @@ public class ProcessViewer {
         r_txt = new JLabel("r:");
         r_txt.setForeground(Color.white);
         r_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
-        
+
         k_txt = new JLabel("K:");
         k_txt.setForeground(Color.white);
         k_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
@@ -148,9 +137,8 @@ public class ProcessViewer {
         umbral_txt = new JLabel("Umbral:");
         umbral_txt.setForeground(Color.white);
         umbral_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
-      
-        
-        if(isFilteringSelected){
+
+        if (isFilteringSelected) {
             l_txt.setVisible(true);
             r_txt.setVisible(true);
             k_txt.setVisible(true);
@@ -159,7 +147,7 @@ public class ProcessViewer {
             r_textField.setVisible(true);
             k_textField.setVisible(true);
             umbral_textField.setVisible(true);
-        }else{
+        } else {
             l_txt.setVisible(false);
             r_txt.setVisible(false);
             k_txt.setVisible(false);
@@ -169,15 +157,15 @@ public class ProcessViewer {
             k_textField.setVisible(false);
             umbral_textField.setVisible(false);
         }
-        
+
         if (fileName != null) {
             mine_btn.setVisible(true);
-            this.filtering_check.setVisible(true);
+            filtering_btn.setVisible(true);
             titulo_txt.setText(fileName.getName());
             loadFile_pnl.add(titulo_txt);
-            if(fileName.getName().toLowerCase().contains(".xes")){
+            if (fileName.getName().toLowerCase().contains(".xes")) {
                 convertToXES_btn.setVisible(true);
-            }else{
+            } else {
                 convertToXES_btn.setVisible(false);
             }
         } else {
@@ -185,38 +173,35 @@ public class ProcessViewer {
             loadFile_pnl.add(titulo_txt);
             convertToXES_btn.setVisible(false);
             mine_btn.setVisible(false);
-            filtering_check.setVisible(false);
+            filtering_btn.setVisible(false);
         }
-        
+
         loadFile_btn = new JButton("Load File");
         loadFile_btn.addActionListener(loadFile_btnAction);
         loadFile_pnl.add(loadFile_btn);
 
-        if (WFG.size()>0) {
+        if (WFG.size() > 0) {
             exportAsBPMN_btn = new JButton("Export as BPMN 2.0");
             exportAsBPMN_btn.addActionListener(exportAsBPMN_btnAction);
             loadFile_pnl.add(exportAsBPMN_btn);
         }
-        
-        loadFile_pnl.add(filtering_check);
-        
-        
-        
+
+        loadFile_pnl.add(filtering_btn);
+
         loadFile_pnl.add(l_txt);
         loadFile_pnl.add(l_textField);
-        
-        
+
         loadFile_pnl.add(r_txt);
         loadFile_pnl.add(r_textField);
-        
+
         loadFile_pnl.add(k_txt);
         loadFile_pnl.add(k_textField);
-        
+
         loadFile_pnl.add(umbral_txt);
         loadFile_pnl.add(umbral_textField);
-        
+
         loadFile_pnl.add(convertToXES_btn);
-        
+
         loadFile_pnl.add(mine_btn);
 
     }
@@ -232,22 +217,20 @@ public class ProcessViewer {
         deployment_btn = new JButton("Output Model");
         model_btn = new JButton("Model");
 
-        if(!wasMined)
-        {
+        if (!wasMined) {
             activities_btn.setEnabled(false);
             traces_btn.setEnabled(false);
             information_btn.setEnabled(false);
             model_btn.setEnabled(false);
             deployment_btn.setEnabled(false);
-        }else{
+        } else {
             activities_btn.setEnabled(true);
             traces_btn.setEnabled(true);
             information_btn.setEnabled(true);
             model_btn.setEnabled(true);
             deployment_btn.setEnabled(true);
         }
-        
-        
+
         // Se asigan acciones a los botones
         information_btn.addActionListener(information_btnAction);
         activities_btn.addActionListener(activities_btnAction);
@@ -346,25 +329,24 @@ public class ProcessViewer {
         JPanel south = new JPanel();
         if (informationSelected) {
             JPanel j = buildTablePanel(information_dtm, "Description");
-            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height/2));
+            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
-       // north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
+        // north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
 
-       
         if (activitiesSelected) {
             JPanel j = buildTablePanel(activities_dtm, "Activities");
-            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height/2));
+            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         if (tracesSelected) {
-             JPanel j = buildTablePanel(traces_dtm, "Traces");
-            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height/2));
+            JPanel j = buildTablePanel(traces_dtm, "Traces");
+            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         if (modelSelected) {
             JPanel j = buildTablePanel(model_dtm, "BPMN Model");
-            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height/2));
+            j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         south.setLayout(new BoxLayout(south, BoxLayout.X_AXIS));
@@ -390,6 +372,7 @@ public class ProcessViewer {
             /* Se prepara el panel Raw*/
             JPanel pnl = new JPanel(new BorderLayout());
             pnl.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
             JLabel title = new JLabel("Output Model");
             title.setFont(new Font("Tahoma", Font.BOLD, 18));
 
@@ -442,39 +425,80 @@ public class ProcessViewer {
 
             }
         };
-        
-        filtering_checkAction = new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                if(filtering_check.isSelected()){
-                    isFilteringSelected = true;
-                }else{
-                    isFilteringSelected = false;
-                }
-                refreshWindow();
 
+        filtering_btnAction = new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                System.out.println(ae.getActionCommand());
+                // prompt
+                String l = JOptionPane.showInputDialog(main_frm, "Filtering outliers\nIngrese el parametro 'l':");
+                String r = JOptionPane.showInputDialog(main_frm, "Filtering outliers\nIngrese el parametro 'r':");
+                String k = JOptionPane.showInputDialog(main_frm, "Filtering outliers\nIngrese el parametro 'K':");
+                String umbral = JOptionPane.showInputDialog(main_frm, "Filtering outliers\nIngrese el 'umbral':");
+
+                if (l != null && r != null && k != null & umbral != null) {
+                    int left, right, K;
+                    double u;
+                    try {
+                        left = Integer.parseInt(l);
+                        right = Integer.parseInt(r);
+                        K = Integer.parseInt(k);
+                        u = Double.parseDouble(umbral);
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(main_frm, "Alguno de los datos ingresados es invalido! vuelva a ingresarlos");
+                        return;
+                    }
+                    StringBuilder contextOutput = new StringBuilder();
+                    BPMNModel bpmn = new BPMNModel();
+                    FilesManagement f = new FilesManagement(bpmn, true, left, right, K, u, contextOutput); //boolean Filtering, int l, int r, int k, double umbral
+                    LinkedHashMap<Integer, ArrayList<Character>> originalTraces; //lista de trazas
+                    LinkedHashMap<Integer, ArrayList<Character>> repairedTraces; //lista de trazas
+                     Object[] traces = new Object[2];
+                    try {
+                        if (fileName.getAbsolutePath().endsWith(".txt")) {
+                            traces = f.readDataInputTrazas(fileName.getAbsolutePath());
+                        } else if (fileName.getAbsolutePath().endsWith(".csv")) {
+                           traces = f.readDataInput(fileName.getAbsolutePath());
+                        } else {
+                            JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido.");
+                            return;
+                        }
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(main_frm, "El archivo '" + fileName.getAbsolutePath() + "' no se puede abrir.");
+                        return;
+                    }
+                    originalTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[0];
+                    repairedTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[1];
+                    
+                    System.out.println("OriginalTraces: " + originalTraces.toString());
+                    System.out.println("repairedTraces: " + repairedTraces.toString());
+                    FilterOutliersFrame fof = new FilterOutliersFrame(originalTraces, repairedTraces, contextOutput.toString(), fileName.getName().substring(0, fileName.getName().indexOf(".")));
+                    
+
+                } else {
+                    JOptionPane.showMessageDialog(main_frm, "Ingrese todos los parámetros para realizar el filtrado!");
+                }
             }
         };
-        
-        
+
         convertToXES_btnAction = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (fileName != null) {
                     if (fileName.getName().toLowerCase().contains(".xes")) {
                         String name = fileName.getName();
-                        try{
+                        try {
                             String path = ReadXES.XESTOTXT(fileName.getAbsolutePath(), name.substring(0, name.indexOf(".")));
                             fileName = new File(path);
                             refreshWindow();
-                            JOptionPane.showMessageDialog(main_frm, "File converted!\nPath: " + path+"\nNow you can mine it");
-                            
-                        }catch(Exception e){
+                            JOptionPane.showMessageDialog(main_frm, "File converted!\nPath: " + path + "\nNow you can mine it");
+
+                        } catch (Exception e) {
                             JOptionPane.showMessageDialog(main_frm, "Error while trying to convert xes to txt: " + e.getMessage());
                         }
 
-                    }else{
+                    } else {
                         JOptionPane.showMessageDialog(main_frm, "File selected is not XES");
                     }
-                }else{
+                } else {
                     JOptionPane.showMessageDialog(main_frm, "No file selected");
                 }
 
@@ -625,26 +649,24 @@ public class ProcessViewer {
 
     }
 
-
     public void execute(String filename) {
         double epsilon = 0.0, umbral = 0.0;
 
         //double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
         //double epsilon = 0.3;
-        
         if (!epsilon_textField.getText().equals("") || !percentil_textField.getText().equals("")) {
-            try{
+            try {
                 epsilon = Double.parseDouble(epsilon_textField.getText());
                 umbral = Double.parseDouble(percentil_textField.getText());
-            }catch(Exception e){
+            } catch (Exception e) {
                 System.out.println("Epsilon o percentil inválidos! Ingrese números solamente. " + e.getMessage());
                 return;
             }
-        }else{
+        } else {
             System.out.println("Ingrese un número epsilon y percentil");
             return;
         }
-        
+
         System.out.println("Epsilon: " + epsilon);
         System.out.println("percentil: " + umbral);
 
@@ -655,31 +677,14 @@ public class ProcessViewer {
         LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas
 
         FilesManagement f;
-        if(isFilteringSelected){
-            int l, r, k;
-            double umb;
-            
-            try{
-                l = Integer.parseInt(l_textField.getText());
-                r = Integer.parseInt(r_textField.getText());
-                k = Integer.parseInt(k_textField.getText());
-                umb = Double.parseDouble(umbral_textField.getText());
-            }catch(Exception e){
-                System.out.println("l, r, k o umbral invalidos!");
-                return;
-            }
-            
-            f = new FilesManagement(wfg.BPMN, isFilteringSelected, l, r, k, umb);
-        }else{
-            f = new FilesManagement(wfg.BPMN, isFilteringSelected, 0, 0, 0, 0.0);
-        }
+        f = new FilesManagement(wfg.BPMN, false, 0, 0, 0, 0.0, new StringBuilder());
         ///////
         System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
         try {
             if (filename.endsWith(".txt")) {
-                tracesList = f.readDataInputTrazas(filename);
+                tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInputTrazas(filename)[0];
             } else if (filename.endsWith(".csv")) {
-                tracesList = f.readDataInput(filename);
+                tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInput(filename)[0];
             } else {
                 JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido.");
                 return;
@@ -713,7 +718,6 @@ public class ProcessViewer {
             dataTraces[i][1] = entry.getValue().toString();
             i++;
         }
-        
 
         // Modelo para la table traces
         traces_dtm = new DefaultTableModel(dataTraces, columnNamesTraces);
@@ -733,18 +737,16 @@ public class ProcessViewer {
         System.out.println("\nPASO 3: PREPROCESAMIENTO DEL GRAFO");
 
         PreProcesarGrafo preprocesarGrafo = new PreProcesarGrafo(wfg.BPMN, wfg.WFG, tracesList, generarGrafo.firsts, generarGrafo.lasts, umbral, epsilon);
-        
-        
-        wfg.WFGantesSplits = (LinkedHashMap)wfg.WFG.clone();
-        
-        
+
+        wfg.WFGantesSplits = (LinkedHashMap) wfg.WFG.clone();
+
         /////////
         System.out.println("\nPASO 4: CONSTRUCCION DEL MODELO BPMN");
 
         SplitsFinder crearModelo = new SplitsFinder(wfg.BPMN, generarGrafo.firsts, generarGrafo.lasts, wfg.WFG, preprocesarGrafo.parallelRelations);
-        
+
         wfg.WFGSplits = (LinkedHashMap) wfg.WFG.clone();
-        
+
         /////////
         System.out.println("\nPASO 5: POST-PROCESAMIENTO");
 
@@ -770,18 +772,18 @@ public class ProcessViewer {
         // Model para la tabla Modelo
         model_dtm = new DefaultTableModel(dataModel, columnNamesModel);
         ///////
-       
-        
+
         gBuildGraphicModel view = new gBuildGraphicModel(wfg.BPMN.T); //Instancia de la vista
         wfg.addObserver(view); //Agregar observador al modelo
 
         this.WFG = wfg.WFG; //asignar el valor actual del grafo (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         this.BPMN = wfg.BPMN;//asignar el valor actual del modelo BPMN (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         wfg.notifyAction(); //notificar que el modelo tuvo cambios
-        
-        
+
         wasMined = true;
-        
+
+       
+
         refreshWindow();
     }
 
