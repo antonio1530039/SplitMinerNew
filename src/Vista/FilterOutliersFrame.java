@@ -1,8 +1,10 @@
 package Vista;
 
 import Controlador.BPMNFiles;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,15 +17,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 
 public class FilterOutliersFrame extends JFrame {
 
@@ -33,64 +39,57 @@ public class FilterOutliersFrame extends JFrame {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int ScreenWidth = (int) screenSize.getWidth();
         int ScreenHeight = (int) screenSize.getHeight();
-
-        String ot = "";
+        
+        // Se prepara la tabla traces
+       // String[] columnNamesTraces = new String[]{"ID", "Original Traces", "Repaired Traces"};
+        String[] columnNamesTraces = new String[]{"Original Traces", "Repaired Traces"};
+        String[][] dataTraces = new String[originalTraces.size()][3];
+        int i = 0;
         for (Map.Entry<Integer, ArrayList<Character>> entry : originalTraces.entrySet()) {
-            ot += (entry.getKey() + " - " + entry.getValue() + "\n");
+           // dataTraces[i][0] = entry.getKey().toString();
+            dataTraces[i][0] = entry.getValue().toString();
+            i++;
         }
 
-        String rt = "";
+               
+        i = 0;
         for (Map.Entry<Integer, ArrayList<Character>> entry : repairedTraces.entrySet()) {
-            rt += (entry.getKey() + " - " + entry.getValue() + "\n");
+            dataTraces[i][1] = entry.getValue().toString();
+            i++;
         }
+        
+        // Modelo para la table traces
+        DefaultTableModel originalTracesDTM = new DefaultTableModel(dataTraces, columnNamesTraces);
+        
+        
+        JPanel j = buildTablePanel(originalTracesDTM, "Traces");
+        j.setPreferredSize(new Dimension(screenSize.width - (screenSize.width/100)*5 , screenSize.height / 2));
+        
+        jpanelComponentes.add(j);
+        
+        add(jpanelComponentes, BorderLayout.NORTH);
 
-        //original traces
-        
-        JPanel middlePanel = new JPanel ();
-        middlePanel.setBorder ( new TitledBorder ( new EtchedBorder (), "Original traces" ) );
-        JTextArea display = new JTextArea ( 20, 40 );
-        display.setText(ot);
-        JScrollPane scroll = new JScrollPane ( display );
-        scroll.setVerticalScrollBarPolicy ( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        middlePanel.add ( scroll );
 
-        jpanelComponentes.add(middlePanel);
-
-        
-        
-        //repaired traces
-
-        JPanel middlePanel2 = new JPanel ();
-        middlePanel2.setBorder ( new TitledBorder ( new EtchedBorder (), "Repaired traces" ) );
-        JTextArea display2 = new JTextArea ( 20, 40 );
-        display2.setText(rt);
-        JScrollPane scroll2 = new JScrollPane ( display2 );
-        scroll2.setVerticalScrollBarPolicy ( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
-        scroll2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        middlePanel2.add ( scroll2 );
-
-        jpanelComponentes.add(middlePanel2);
-        
-        
-        
         //contexts output
 
         JPanel middlePanel3 = new JPanel ();
         middlePanel3.setBorder ( new TitledBorder ( new EtchedBorder (), "Significant contexts values" ) );
-        JTextArea display3 = new JTextArea ( 20, 40 );
+        JTextArea display3 = new JTextArea ( 20, 50);
+        display3.setSize(new Dimension(screenSize.width / 2, screenSize.height / 3 ));
         display3.setText(contextOutput);
         JScrollPane scroll3 = new JScrollPane ( display3 );
         scroll3.setVerticalScrollBarPolicy ( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
         scroll3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         middlePanel3.add ( scroll3 );
-
-
-        jpanelComponentes.add(middlePanel3);
+        
+        middlePanel3.setPreferredSize(new Dimension(screenSize.width / 2, screenSize.height / 3));
+        
+        JPanel jpanelComponentes2 = new JPanel();
+        jpanelComponentes2.add(middlePanel3);
         
         JFrame main = this;
         
-        JButton save = new JButton("Save log");
+        JButton save = new JButton("Save repaired log");
         ActionListener save_actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /* Se escoge el directorio destino para el archivo */
@@ -140,15 +139,29 @@ public class FilterOutliersFrame extends JFrame {
         save.addActionListener(save_actionListener);
         
         
-       jpanelComponentes.add(save);
+       jpanelComponentes2.add(save);
         
         
         
-        add(jpanelComponentes);
+        add(jpanelComponentes2, BorderLayout.SOUTH);
 
         setTitle("Filter Outliers output");
         setSize(ScreenWidth, ScreenHeight);
         setVisible(true);
+    }
+    
+    JPanel buildTablePanel(DefaultTableModel dtb, String title) {
+        /* Se inicializa la tablas*/
+        JLabel titleTable_txt = new JLabel(title);
+        titleTable_txt.setFont(new Font("Tahoma", Font.BOLD, 18));
+        JScrollPane tbl_sp = new JScrollPane(new JTable(dtb), JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+        /* Se prepara el panel*/
+        JPanel pnl = new JPanel(new BorderLayout());
+        pnl.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        pnl.add(titleTable_txt, BorderLayout.NORTH);
+        pnl.add(tbl_sp, BorderLayout.CENTER);
+        return pnl;
     }
 
 }

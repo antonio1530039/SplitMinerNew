@@ -309,7 +309,7 @@ public class ProcessViewer {
         /* Se inicializa la tablas*/
         JLabel titleTable_txt = new JLabel(title);
         titleTable_txt.setFont(new Font("Tahoma", Font.BOLD, 18));
-        JScrollPane tbl_sp = new JScrollPane(new JTable(dtb));
+        JScrollPane tbl_sp = new JScrollPane(new JTable(dtb), JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         /* Se prepara el panel*/
         JPanel pnl = new JPanel(new BorderLayout());
@@ -469,8 +469,6 @@ public class ProcessViewer {
                     originalTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[0];
                     repairedTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[1];
                     
-                    System.out.println("OriginalTraces: " + originalTraces.toString());
-                    System.out.println("repairedTraces: " + repairedTraces.toString());
                     FilterOutliersFrame fof = new FilterOutliersFrame(originalTraces, repairedTraces, contextOutput.toString(), fileName.getName().substring(0, fileName.getName().indexOf(".")));
                     
 
