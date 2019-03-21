@@ -24,9 +24,6 @@ public class RepairOutliers {
             for (Map.Entry<Integer, ArrayList<Character>> trace : L.entrySet()) {
                 ArrayList<Character> ti = trace.getValue();
 
-                ArrayList<LinkedHashSet<ArrayList<Character>>> R = new ArrayList<>();
-                ArrayList<ArrayList<ArrayList<Character>>> cs = new ArrayList<>();
-
                 for (int k = 0; k <= K; k++) {
                     //Obtener contexto
                     ArrayList<ArrayList<Character>> c = obtenerContexto(ti, j, l, r, k);
@@ -38,58 +35,50 @@ public class RepairOutliers {
                         continue;
                     }
 
-                    R.add(covertura(c, K, L));
-                    cs.add(c);
-
+                    LinkedHashSet<ArrayList<Character>> cov = covertura(c, K, L);
                     contadorContextos++;
-                }
 
-                if (contadorContextos == 0) {
-                    continue;
-                }
+                    //Agregar contextos
+                    V.put(c, new LinkedHashMap<>());
 
-                //Agregar contextos
-                for (ArrayList<ArrayList<Character>> context : cs) {
-                    V.put(context, new LinkedHashMap<>());
-                }
-
-                //Obtener frecuencias para cada contexto identificado
-                for (int index = 0; index < cs.size(); index++) {
+                    //Obtener frecuencias para el contexto identificado
                     int F = 0;
 
                     LinkedHashMap<ArrayList<Character>, Object[]> coverMap = new LinkedHashMap<>();
 
-                    for (ArrayList<Character> subsequence : R.get(index)) {
-                        int f = getFrecuency(cs.get(index), subsequence, K, L);
+                    for (ArrayList<Character> subsequence : cov) {
+                        int f = getFrecuency(c, subsequence, K, L);
                         Object[] frecAndPCE = new Object[2];
                         frecAndPCE[0] = (int) f;
                         coverMap.put(subsequence, frecAndPCE);
                         F += f;
                     }
-
-                    V.put(cs.get(index), coverMap);
+                    V.put(c, coverMap);
 
                     double max = 0.0;
                     ArrayList<Character> maxCover = new ArrayList<>();
-                    for (ArrayList<Character> subsequence : R.get(index)) {
-                        double PCE = (int) V.get(cs.get(index)).get(subsequence)[0] / (double) F;
-                        V.get(cs.get(index)).get(subsequence)[1] = PCE;
+                    for (ArrayList<Character> subsequence : cov) {
+                        double PCE = (int) V.get(c).get(subsequence)[0] / (double) F;
+                        V.get(c).get(subsequence)[1] = PCE;
                         if (PCE > max) {
                             max = PCE;
                             maxCover = (ArrayList<Character>) subsequence.clone();
                         }
                     }
                     Object[] maxContextObject = new Object[2];
-                    maxContextObject[0] = cs.get(index);
+                    maxContextObject[0] = c;
                     maxContextObject[1] = maxCover.clone();
 
-                    remplazar(L, R.get(index), maxContextObject, umbral);
+                    remplazar(L, cov, maxContextObject, umbral);
 
                 }
+
             }
+
             if (contadorContextos == 0) {
                 activo = false;
             }
+
             j += l;
         }
 
@@ -99,7 +88,7 @@ public class RepairOutliers {
             contextOutput.append("\nContext: " + entry.getKey().toString() + "\nCovering:\n");
             LinkedHashMap< ArrayList<Character>, Object[]> coverturas = V.get(entry.getKey());
             for (Map.Entry<ArrayList<Character>, Object[]> cov : entry.getValue().entrySet()) {
-                contextOutput.append("\ts: " + cov.getKey() + "\n\tF: " + (int) cov.getValue()[0]+ "\n\tPCE: " + (double) cov.getValue()[1] + "\n\n");
+                contextOutput.append("\ts: " + cov.getKey() + "\n\tF: " + (int) cov.getValue()[0] + "\n\tPCE: " + (double) cov.getValue()[1] + "\n\n");
             }
             contextOutput.append("=============================\n");
         }
@@ -107,11 +96,10 @@ public class RepairOutliers {
 
     public int getFrecuency(ArrayList<ArrayList<Character>> c, ArrayList<Character> s2, int k, LinkedHashMap<Integer, ArrayList<Character>> L) {
         int F = 0;
-        LinkedHashSet<ArrayList<Character>> cov = new LinkedHashSet();
+        Character first = c.get(0).get(0);
         for (Map.Entry<Integer, ArrayList<Character>> trace : L.entrySet()) {
             ArrayList<Character> ti = trace.getValue();
             ArrayList<Integer> jList = new ArrayList<>();
-            Character first = c.get(0).get(0);
             for (int i = 0; i < ti.size(); i++) {
                 if (ti.get(i) == first) {
                     jList.add(i);
@@ -167,11 +155,11 @@ public class RepairOutliers {
     public LinkedHashSet<ArrayList<Character>> covertura(ArrayList<ArrayList<Character>> c, int k, LinkedHashMap<Integer, ArrayList<Character>> L) {
 
         LinkedHashSet<ArrayList<Character>> cov = new LinkedHashSet();
-
+        Character first = c.get(0).get(0);
         for (Map.Entry<Integer, ArrayList<Character>> trace : L.entrySet()) {
             ArrayList<Character> ti = trace.getValue();
             ArrayList<Integer> jList = new ArrayList<>();
-            Character first = c.get(0).get(0);
+
             for (int i = 0; i < ti.size(); i++) {
                 if (ti.get(i) == first) {
                     jList.add(i);
@@ -205,10 +193,13 @@ public class RepairOutliers {
     public void remplazar(LinkedHashMap<Integer, ArrayList<Character>> L, LinkedHashSet<ArrayList<Character>> R, Object[] maxContext, double umbral) {
         ArrayList<ArrayList<Character>> c = (ArrayList<ArrayList<Character>>) maxContext[0];
         LinkedHashMap<ArrayList<Character>, Object[]> subs = V.get(c);//Obtenemos subsecuencias del contexto
+        ArrayList<Character> maxSecuence = new ArrayList<>();
+        maxSecuence.addAll(c.get(0)); //vecino izquierdo maxContext
+        maxSecuence.addAll((ArrayList<Character>) maxContext[1]); //covertura maxContext
+        maxSecuence.addAll(c.get(1)); //vecino derecho maxContext
 
         for (Map.Entry<Integer, ArrayList<Character>> ti : L.entrySet()) {
             ArrayList<Character> trace = ti.getValue();
-            
             for (ArrayList<Character> s : R) {
                 //obtener valores de frecuencia y pce de la subsecuencia analizada s
                 Object[] p = subs.get(s);
@@ -254,11 +245,7 @@ public class RepairOutliers {
                     }
 
                     if (existe) {
-                        ArrayList<Character> maxSecuence = new ArrayList<>();
-                        maxSecuence.addAll(c.get(0)); //vecino izquierdo maxContext
-                        maxSecuence.addAll((ArrayList<Character>) maxContext[1]); //covertura maxContext
-                        maxSecuence.addAll(c.get(1)); //vecino derecho maxContext
-                        System.out.println("Trace replacement...\n" + "\t\tSecuence: " + fullSecuence.toString() + " < umbral and exists in trace: " + trace.toString() + "\n" + "\t\tMaxContext: " + maxSecuence.toString() + "\n" + "\tTrace before change: " + trace.toString());
+                        //System.out.println("Trace replacement...\n" + "\t\tSecuence: " + fullSecuence.toString() + " < umbral and exists in trace: " + trace.toString() + "\n" + "\t\tMaxContext: " + maxSecuence.toString() + "\n" + "\tTrace before change: " + trace.toString());
                         int iterator = 0;
                         while (iterator < maxSecuence.size()) {
                             if (trace.get(J) != maxSecuence.get(iterator)) {
@@ -275,7 +262,7 @@ public class RepairOutliers {
                             J++;
                             iterator++;
                         }
-                        System.out.println("\tTrace after change: " + trace.toString() + "\n");
+                        //System.out.println("\tTrace after change: " + trace.toString() + "\n");
                     }
                 }
             }
