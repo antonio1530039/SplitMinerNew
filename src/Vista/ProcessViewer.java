@@ -49,15 +49,17 @@ public class ProcessViewer {
 
     private JFrame main_frm;
     private File fileName;
-    private JTextField epsilon_textField = new JTextField("0.3", 5), percentil_textField = new JTextField("0.4", 5), l_textField = new JTextField("1", 4), r_textField = new JTextField("1", 4), k_textField = new JTextField("1", 4), umbral_textField = new JTextField("0.25", 4);
+    private JTextField epsilon_textField = new JTextField("0.3", 5), percentil_textField = new JTextField("0.4", 5);
     private JPanel loadFile_pnl, menu_pnl, viewer_pnl, raw_pnl;
     private JButton information_btn, traces_btn, activities_btn, loadFile_btn, exportAsCSV_btn, deployment_btn, model_btn, exportAsBPMN_btn, mine_btn, convertToXES_btn, filtering_btn;
-    private JLabel titulo_txt, epsilon_txt, percentil_txt, information_txt, l_txt, r_txt, umbral_txt, k_txt;
+    private JLabel titulo_txt, epsilon_txt, percentil_txt;
     private DefaultTableModel traces_dtm, activities_dtm, information_dtm, model_dtm;
     private ActionListener loadFile_btnAction, information_btnAction, traces_btnAction, activities_btnAction, exportAsCSV_btnAction, exportAsBPMN_btnAction, model_btnAction, deployment_btnAction, mine_btnAction, convertToXES_btnAction, filtering_btnAction;
-    private boolean activitiesSelected, tracesSelected, informationSelected, modelSelected, deploymentSelected, wasMined, isFilteringSelected;
+    private boolean activitiesSelected, tracesSelected, informationSelected, modelSelected, deploymentSelected, wasMined, wasLoaded;
     private String deployment;
     Dimension screenSize;
+    WFG wfg = new WFG(); //Modelo: grafo y modelo BPMN
+    LinkedHashMap<Integer, ArrayList<Character>> tracesList = null;
 
     BPMNModel BPMN;
     LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
@@ -74,7 +76,7 @@ public class ProcessViewer {
         wasMined = false;
         deployment = "";
         fileName = null;
-        isFilteringSelected = false;
+        wasLoaded = false;
 
         // Se generan las acciones
         initializeActions();
@@ -121,42 +123,7 @@ public class ProcessViewer {
 
         filtering_btn = new JButton("Filtering outliers");
         filtering_btn.addActionListener(filtering_btnAction);
-
-        l_txt = new JLabel("l:");
-        l_txt.setForeground(Color.white);
-        l_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
-
-        r_txt = new JLabel("r:");
-        r_txt.setForeground(Color.white);
-        r_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
-
-        k_txt = new JLabel("K:");
-        k_txt.setForeground(Color.white);
-        k_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
-
-        umbral_txt = new JLabel("Umbral:");
-        umbral_txt.setForeground(Color.white);
-        umbral_txt.setFont(new Font("Tahoma", Font.BOLD, 15));
-
-        if (isFilteringSelected) {
-            l_txt.setVisible(true);
-            r_txt.setVisible(true);
-            k_txt.setVisible(true);
-            umbral_txt.setVisible(true);
-            l_textField.setVisible(true);
-            r_textField.setVisible(true);
-            k_textField.setVisible(true);
-            umbral_textField.setVisible(true);
-        } else {
-            l_txt.setVisible(false);
-            r_txt.setVisible(false);
-            k_txt.setVisible(false);
-            umbral_txt.setVisible(false);
-            l_textField.setVisible(false);
-            r_textField.setVisible(false);
-            k_textField.setVisible(false);
-            umbral_textField.setVisible(false);
-        }
+  
 
         if (fileName != null) {
             mine_btn.setVisible(true);
@@ -180,25 +147,13 @@ public class ProcessViewer {
         loadFile_btn.addActionListener(loadFile_btnAction);
         loadFile_pnl.add(loadFile_btn);
 
-        if (WFG.size() > 0) {
+        if (wasMined) {
             exportAsBPMN_btn = new JButton("Export as BPMN 2.0");
             exportAsBPMN_btn.addActionListener(exportAsBPMN_btnAction);
             loadFile_pnl.add(exportAsBPMN_btn);
         }
 
         loadFile_pnl.add(filtering_btn);
-
-        loadFile_pnl.add(l_txt);
-        loadFile_pnl.add(l_textField);
-
-        loadFile_pnl.add(r_txt);
-        loadFile_pnl.add(r_textField);
-
-        loadFile_pnl.add(k_txt);
-        loadFile_pnl.add(k_textField);
-
-        loadFile_pnl.add(umbral_txt);
-        loadFile_pnl.add(umbral_textField);
 
         loadFile_pnl.add(convertToXES_btn);
 
@@ -216,17 +171,21 @@ public class ProcessViewer {
         activities_btn = new JButton("Activities");
         deployment_btn = new JButton("Output Model");
         model_btn = new JButton("Model");
-
-        if (!wasMined) {
+        
+        if(!wasLoaded){
             activities_btn.setEnabled(false);
             traces_btn.setEnabled(false);
             information_btn.setEnabled(false);
-            model_btn.setEnabled(false);
-            deployment_btn.setEnabled(false);
-        } else {
+        }else{
             activities_btn.setEnabled(true);
             traces_btn.setEnabled(true);
             information_btn.setEnabled(true);
+        }
+
+        if (!wasMined) {
+            model_btn.setEnabled(false);
+            deployment_btn.setEnabled(false);
+        } else {
             model_btn.setEnabled(true);
             deployment_btn.setEnabled(true);
         }
@@ -452,12 +411,12 @@ public class ProcessViewer {
                     FilesManagement f = new FilesManagement(bpmn, true, left, right, K, u, contextOutput); //boolean Filtering, int l, int r, int k, double umbral
                     LinkedHashMap<Integer, ArrayList<Character>> originalTraces; //lista de trazas
                     LinkedHashMap<Integer, ArrayList<Character>> repairedTraces; //lista de trazas
-                     Object[] traces = new Object[2];
+                    Object[] traces = new Object[2];
                     try {
                         if (fileName.getAbsolutePath().endsWith(".txt")) {
                             traces = f.readDataInputTrazas(fileName.getAbsolutePath());
                         } else if (fileName.getAbsolutePath().endsWith(".csv")) {
-                           traces = f.readDataInput(fileName.getAbsolutePath());
+                            traces = f.readDataInput(fileName.getAbsolutePath());
                         } else {
                             JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido.");
                             return;
@@ -468,9 +427,8 @@ public class ProcessViewer {
                     }
                     originalTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[0];
                     repairedTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[1];
-                    
+
                     FilterOutliersFrame fof = new FilterOutliersFrame(originalTraces, repairedTraces, contextOutput.toString(), fileName.getName().substring(0, fileName.getName().indexOf(".")));
-                    
 
                 } else {
                     JOptionPane.showMessageDialog(main_frm, "Ingrese todos los parámetros para realizar el filtrado!");
@@ -533,11 +491,76 @@ public class ProcessViewer {
                         System.out.println("Error en el archivo.");
 
                     } else {
-                        System.out.println(fileName.getAbsolutePath());
-                        System.out.println(fileName.getName());
+                        
                         if (!fileName.getName().endsWith(".txt") && !fileName.getName().endsWith(".csv") && !fileName.getName().endsWith(".xes")) {
                             JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido");
+                            refreshWindow();
+                            return;
                         }
+                        
+                        //Reiniciar contenedores
+                        tracesList = null;
+                        wfg = new WFG();
+                        wasMined = false;
+                        modelSelected = false;
+                        deploymentSelected = false;
+                        
+                        
+                        String filename = fileName.getAbsolutePath();
+                        FilesManagement f = new FilesManagement(wfg.BPMN, false, 0, 0, 0, 0.0, new StringBuilder());
+                        ///////
+                        System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
+                        try {
+                            if (filename.endsWith(".txt")) {
+                                tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInputTrazas(filename)[0];
+                            } else if (filename.endsWith(".csv")) {
+                                tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInput(filename)[0];
+                            } else {
+                                JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido.");
+                                return;
+                            }
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(main_frm, "El archivo '" + filename + "' no se puede abrir.");
+                            return;
+                        }
+
+                        ///////
+                        // Se prepara la tabla Actividades
+                        String[] columnNames = new String[]{"Description", "Item"};
+                        String[][] data = new String[f.ActivityList.size()][2];
+                        int i = 0;
+                        for (Map.Entry<String, Character> entry1 : f.ActivityList.entrySet()) {
+                            data[i][0] = entry1.getKey();
+                            data[i][1] = entry1.getValue().toString();
+                            i++;
+                        }
+                        // Modelo para la table activities
+                        activities_dtm = new DefaultTableModel(data, columnNames);
+                        ////////
+                        // Se prepara la tabla traces
+                        String[] columnNamesTraces = new String[]{"ID", "Traces"};
+                        String[][] dataTraces = new String[tracesList.size()][2];
+                        i = 0;
+                        System.out.println("\t3. Mostrando TRAZAS IDENTIFICADAS  en el archivo '" + filename + "'.");
+                        for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
+                            System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
+                            dataTraces[i][0] = entry.getKey().toString();
+                            dataTraces[i][1] = entry.getValue().toString();
+                            i++;
+                        }
+
+                        // Modelo para la table traces
+                        traces_dtm = new DefaultTableModel(dataTraces, columnNamesTraces);
+
+                        // Se prepara el modelo para la table infrmation
+                        String[] columnNamesInfo = new String[]{"", ""};
+                        String[][] columnNamesdataInfo = f.showDataInfo(tracesList);
+                        information_dtm = new DefaultTableModel(columnNamesdataInfo, columnNamesInfo);
+                        wasLoaded = true;
+                        activitiesSelected = true;
+                        tracesSelected = true; 
+                        informationSelected = true;
+                        
                     }
                     refreshWindow();
                 }
@@ -646,6 +669,8 @@ public class ProcessViewer {
         };
 
     }
+    
+     
 
     public void execute(String filename) {
         double epsilon = 0.0, umbral = 0.0;
@@ -670,60 +695,7 @@ public class ProcessViewer {
 
         //P1.txt NOTATION: a AND{  XOR{  c, h}, b XOR{  e, g}} d f
         //final String filename = "P1.txt";
-        WFG wfg = new WFG(); //Modelo: grafo y modelo BPMN
-
-        LinkedHashMap<Integer, ArrayList<Character>> tracesList; //lista de trazas
-
-        FilesManagement f;
-        f = new FilesManagement(wfg.BPMN, false, 0, 0, 0, 0.0, new StringBuilder());
-        ///////
-        System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
-        try {
-            if (filename.endsWith(".txt")) {
-                tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInputTrazas(filename)[0];
-            } else if (filename.endsWith(".csv")) {
-                tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInput(filename)[0];
-            } else {
-                JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido.");
-                return;
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(main_frm, "El archivo '" + filename + "' no se puede abrir.");
-            return;
-        }
-
-        ///////
-        // Se prepara la tabla Actividades
-        String[] columnNames = new String[]{"Description", "Item"};
-        String[][] data = new String[f.ActivityList.size()][2];
-        int i = 0;
-        for (Map.Entry<String, Character> entry1 : f.ActivityList.entrySet()) {
-            data[i][0] = entry1.getKey();
-            data[i][1] = entry1.getValue().toString();
-            i++;
-        }
-        // Modelo para la table activities
-        activities_dtm = new DefaultTableModel(data, columnNames);
-        ////////
-        // Se prepara la tabla traces
-        String[] columnNamesTraces = new String[]{"ID", "Traces"};
-        String[][] dataTraces = new String[tracesList.size()][2];
-        i = 0;
-        System.out.println("\t3. Mostrando TRAZAS IDENTIFICADAS  en el archivo '" + filename + "'.");
-        for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
-            System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
-            dataTraces[i][0] = entry.getKey().toString();
-            dataTraces[i][1] = entry.getValue().toString();
-            i++;
-        }
-
-        // Modelo para la table traces
-        traces_dtm = new DefaultTableModel(dataTraces, columnNamesTraces);
-
-        // Se prepara el modelo para la table infrmation
-        String[] columnNamesInfo = new String[]{"", ""};
-        String[][] columnNamesdataInfo = f.showDataInfo(tracesList);
-        information_dtm = new DefaultTableModel(columnNamesdataInfo, columnNamesInfo);
+       
 
         ///////
         System.out.println("\n");
@@ -760,7 +732,7 @@ public class ProcessViewer {
         // Se prepara la tabla Modelo
         String[] columnNamesModel = new String[]{"Key", "Value"};
         String[][] dataModel = new String[wfg.WFG.size()][2];
-        i = 0;
+        int i = 0;
         for (Map.Entry<String, Integer> entry : wfg.WFG.entrySet()) {
             dataModel[i][0] = "[" + entry.getKey() + "]";
             dataModel[i][1] = String.valueOf(entry.getValue());
@@ -779,9 +751,9 @@ public class ProcessViewer {
         wfg.notifyAction(); //notificar que el modelo tuvo cambios
 
         wasMined = true;
-
-       
-
+        modelSelected = true;
+        deploymentSelected = true;
+        
         refreshWindow();
     }
 
