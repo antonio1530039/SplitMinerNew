@@ -15,7 +15,7 @@ public class PostProcesarGrafo {
 
     LinkedHashMap<String, Integer> WFG;
     BPMNModel BPMN;
-    List<Character> autoLoops = new LinkedList<Character>();
+    List<Character> autoLoops = new LinkedList<>();
     public String notation = "";
 
     public PostProcesarGrafo(BPMNModel bpmn, LinkedHashMap<String, Integer> wfg, List<Character> autoLoops) {
@@ -169,8 +169,8 @@ public class PostProcesarGrafo {
 
         System.out.println("\t\tDetectando joins y creando noatación...");
         //Lo siguiente es a manera de prueba.....................
- /*
-        
+ 
+        /*
       WFG.clear();
       
       
@@ -218,8 +218,8 @@ public class PostProcesarGrafo {
    	[d,2] - 1
    	[2,e] - 1
          */
- /*
-     
+ 
+     /*
       //Modelo 2
       WFG.put("A1A,b", 1);
       WFG.put("A1A,c", 1);
