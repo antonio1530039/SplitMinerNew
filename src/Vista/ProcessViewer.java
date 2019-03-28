@@ -750,6 +750,26 @@ public class ProcessViewer {
         this.BPMN = wfg.BPMN;//asignar el valor actual del modelo BPMN (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         wfg.notifyAction(); //notificar que el modelo tuvo cambios
 
+        
+        System.out.println("====================Loop detection===============");
+        for(String gateway : wfg.BPMN.Gxor){
+            if(gateway.charAt(gateway.length()-1) == 'A'){
+                System.out.println("\t\tSplit gateway: " + gateway);
+                System.out.println("\t\t\tAntecesores: " + GatewayLoops.getAllAnteccesors(wfg.WFG, gateway));
+                System.out.println("\t\t\tSucesores: " + GatewayLoops.getAllSucesores(wfg.WFG, gateway));
+            }
+        }
+        
+        
+        for(String gateway : wfg.BPMN.Gand){
+            if(gateway.charAt(gateway.length()-1) == 'A'){
+                System.out.println("\t\tSplit gateway: " + gateway);
+                System.out.println("\t\t\tAntecesores: " + GatewayLoops.getAllAnteccesors(wfg.WFG, gateway));
+                System.out.println("\t\t\tSucesores: " + GatewayLoops.getAllSucesores(wfg.WFG, gateway));
+            }
+        }
+        
+
         wasMined = true;
         modelSelected = true;
         deploymentSelected = true;

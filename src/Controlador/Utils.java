@@ -61,6 +61,9 @@ public class Utils {
       return sucesores;
    }
    
+  
+   
+   
    public static boolean iguales(HashSet<Character> first, HashSet<Character> second) {
 
         if (first.size() != second.size()) {
