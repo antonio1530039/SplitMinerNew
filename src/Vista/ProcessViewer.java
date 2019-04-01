@@ -7,8 +7,6 @@ package Vista;
  */
 import Controlador.*;
 import Modelo.BPMNModel;
-import Modelo.SignificantContext;
-import Vista.gBuildGraphicModel;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -755,7 +753,7 @@ public class ProcessViewer {
         for(String gateway : wfg.BPMN.Gxor){
             if(gateway.charAt(gateway.length()-1) == 'A'){
                 System.out.println("\t\tSplit gateway: " + gateway);
-                System.out.println("\t\t\tAntecesores: " + GatewayLoops.getAllAnteccesors(wfg.WFG, gateway));
+                System.out.println("\t\t\tAntecesores: " + GatewayLoops.getAllAntecesores(wfg.WFG, gateway));
                 System.out.println("\t\t\tSucesores: " + GatewayLoops.getAllSucesores(wfg.WFG, gateway));
             }
         }
@@ -764,7 +762,7 @@ public class ProcessViewer {
         for(String gateway : wfg.BPMN.Gand){
             if(gateway.charAt(gateway.length()-1) == 'A'){
                 System.out.println("\t\tSplit gateway: " + gateway);
-                System.out.println("\t\t\tAntecesores: " + GatewayLoops.getAllAnteccesors(wfg.WFG, gateway));
+                System.out.println("\t\t\tAntecesores: " + GatewayLoops.getAllAntecesores(wfg.WFG, gateway));
                 System.out.println("\t\t\tSucesores: " + GatewayLoops.getAllSucesores(wfg.WFG, gateway));
             }
         }

@@ -10,7 +10,7 @@ import java.util.Map;
 public class GatewayLoops {
     
     
-    public static LinkedHashSet<String> getAllAnteccesors(LinkedHashMap<String, Integer> WFG, String target){
+    public static LinkedHashSet<String> getAllAntecesores(LinkedHashMap<String, Integer> WFG, String target){
         LinkedHashSet<String> atras = new LinkedHashSet<>();
         
         LinkedHashSet<String> antecesores = getSucesoresOAntecesores(target, WFG, 'a');
@@ -18,8 +18,8 @@ public class GatewayLoops {
         atras.addAll(antecesores);
         
         while(!antecesores.isEmpty()){
-            for(String a : antecesores){
-                antecesores = getAllAnteccesors(WFG, a);
+            for(String a : (LinkedHashSet<String>) antecesores.clone()){
+                antecesores = getAllAntecesores(WFG, a);
                 atras.addAll(antecesores);
             }
         }
@@ -36,7 +36,7 @@ public class GatewayLoops {
         adelante.addAll(sucesores);
         
         while(!sucesores.isEmpty()){
-            for(String s : sucesores){
+            for(String s : (LinkedHashSet<String>) sucesores.clone()){
                 sucesores = getAllSucesores(WFG, s);
                 adelante.addAll(sucesores);
             }

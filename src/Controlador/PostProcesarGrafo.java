@@ -170,11 +170,13 @@ public class PostProcesarGrafo {
         System.out.println("\t\tDetectando joins y creando noatación...");
         //Lo siguiente es a manera de prueba.....................
  
-        /*
-      WFG.clear();
-      
+        
+     
       
      
+     
+         WFG.clear();
+       
       //Modelo 1
       
       WFG.put("X1A,b", 1);
@@ -374,15 +376,15 @@ public class PostProcesarGrafo {
          */
  /*
       //Modelo 5 - ciclos
-      WFG.put("1,b", 1);
-      WFG.put("1,c", 1);
-      WFG.put("a,1", 1);
-      WFG.put("A,d", 1);
-      WFG.put("A,e", 1);
-      WFG.put("b,A", 1);
+      WFG.put("A1A,b", 1);
+      WFG.put("A1A,c", 1);
+      WFG.put("a,A1A", 1);
+      WFG.put("X1A,d", 1);
+      WFG.put("X1A,e", 1);
+      WFG.put("b,X1A", 1);
       WFG.put("e,f", 1);
-      WFG.put("f,1", 1);
-      WFG.put("c,A", 1);
+      WFG.put("f,A1A", 1);
+      WFG.put("c,X1A", 1);
    
       
       
@@ -390,8 +392,8 @@ public class PostProcesarGrafo {
       BPMN.Gor.clear();
       BPMN.Gxor.clear();
    
-      BPMN.Gand.add('1');
-      BPMN.Gxor.add('A');
+      BPMN.Gand.add("A1A");
+      BPMN.Gxor.add("X1A");
    
    
       BPMN.T.clear();
