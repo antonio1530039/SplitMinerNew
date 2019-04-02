@@ -750,11 +750,22 @@ public class ProcessViewer {
 
         
         System.out.println("====================Loop detection===============");
+        
+        
+        ArrayList<String> loops = new ArrayList<>();
+        
         for(String gateway : wfg.BPMN.Gxor){
             if(gateway.charAt(gateway.length()-1) == 'A'){
                 System.out.println("\t\tSplit gateway: " + gateway);
-                System.out.println("\t\t\tAntecesores: " + GatewayLoops.getAllAntecesores(wfg.WFG, gateway));
-                System.out.println("\t\t\tSucesores: " + GatewayLoops.getAllSucesores(wfg.WFG, gateway));
+                System.out.println("\t\t\tTrying to find a loop...");
+                ArrayList<String> loopsInG = GatewayLoops.findLoops(WFG, gateway);
+                for(String l : loopsInG){
+                    String[] vals = l.split(",");
+                    if( !(loops.contains(loops) || loops.contains(vals[1] + "," + vals[0]))){
+                        loops.add(l);
+                    }
+                    
+                }
             }
         }
         
@@ -762,10 +773,19 @@ public class ProcessViewer {
         for(String gateway : wfg.BPMN.Gand){
             if(gateway.charAt(gateway.length()-1) == 'A'){
                 System.out.println("\t\tSplit gateway: " + gateway);
-                System.out.println("\t\t\tAntecesores: " + GatewayLoops.getAllAntecesores(wfg.WFG, gateway));
-                System.out.println("\t\t\tSucesores: " + GatewayLoops.getAllSucesores(wfg.WFG, gateway));
+                System.out.println("\t\t\tTrying to find a loop...");
+                 ArrayList<String> loopsInG = GatewayLoops.findLoops(WFG, gateway);
+                for(String l : loopsInG){
+                    String[] vals = l.split(",");
+                    if( !(loops.contains(loops) || loops.contains(vals[1] + "," + vals[0]))){
+                        loops.add(l);
+                    }
+                    
+                }
             }
         }
+        
+        System.out.println("Loops detected: " + loops.toString());
         
 
         wasMined = true;

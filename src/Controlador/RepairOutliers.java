@@ -245,7 +245,7 @@ public class RepairOutliers {
                     }
 
                     if (existe) {
-                        //System.out.println("Trace replacement...\n" + "\t\tSecuence: " + fullSecuence.toString() + " < umbral and exists in trace: " + trace.toString() + "\n" + "\t\tMaxContext: " + maxSecuence.toString() + "\n" + "\tTrace before change: " + trace.toString());
+                        System.out.println("Trace replacement...\n" + "\t\tSecuence: " + fullSecuence.toString() + " < umbral and exists in trace: " + trace.toString() + "\n" + "\t\tMaxContext: " + maxSecuence.toString() + "\n" + "\tTrace before change: " + trace.toString());
                         int iterator = 0;
                         while (iterator < maxSecuence.size()) {
                             if (trace.get(J) != maxSecuence.get(iterator)) {
@@ -262,7 +262,7 @@ public class RepairOutliers {
                             J++;
                             iterator++;
                         }
-                        //System.out.println("\tTrace after change: " + trace.toString() + "\n");
+                        System.out.println("\tTrace after change: " + trace.toString() + "\n");
                     }
                 }
             }

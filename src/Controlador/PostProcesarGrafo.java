@@ -176,7 +176,7 @@ public class PostProcesarGrafo {
      
      
          WFG.clear();
-       
+       /*
       //Modelo 1
       
       WFG.put("X1A,b", 1);
@@ -374,7 +374,7 @@ public class PostProcesarGrafo {
    	[D,f] - 1
       
          */
- /*
+ 
       //Modelo 5 - ciclos
       WFG.put("A1A,b", 1);
       WFG.put("A1A,c", 1);
@@ -404,7 +404,7 @@ public class PostProcesarGrafo {
       BPMN.T.add('e');
       BPMN.T.add('f');
       BPMN.i = 'a';
-         */
+         
         //.....................
         ///
         JoinsFinder jf = new JoinsFinder(BPMN, WFG);
