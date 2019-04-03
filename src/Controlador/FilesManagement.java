@@ -12,6 +12,7 @@ public class FilesManagement {
 
     BPMNModel BPMN;
     boolean Filtering = false;
+    boolean Repaired = false;
     int L;
     int R;
     int K;
@@ -20,9 +21,10 @@ public class FilesManagement {
 
     public LinkedHashMap<String, Character> ActivityList;
 
-    public FilesManagement(BPMNModel bpmn, boolean filtering, int l, int r, int k, double umbral, StringBuilder contextOutput) {
+    public FilesManagement(BPMNModel bpmn, boolean filtering, boolean repaired, int l, int r, int k, double umbral, StringBuilder contextOutput) {
         BPMN = bpmn;
         Filtering = filtering;
+        Repaired = repaired;
         L = l;
         R = r;
         K = k;
@@ -101,10 +103,10 @@ public class FilesManagement {
 
         System.out.println("\nSe han detectado todos los nombres de las actividades:");
 
-        if (Filtering) {
+        if (!Repaired) {
             ActivityList.put("I", 'I');
             ActivityList.put("O", 'O');
-        }
+       }
 
         //recupera el set de tasks T
         Set<Map.Entry<String, Character>> tasks = activityList.entrySet();
@@ -146,6 +148,11 @@ public class FilesManagement {
             IDnext = Integer.parseInt(listCASE_ID.get(j));
 
             if (IDnext != ID) {
+                if(!Repaired){
+                    traces.add(0, 'I');
+                    traces.add('O');
+                }
+                
                 tracesList.put(ID, traces);
                 ID = IDnext;
                 traces = new ArrayList<Character>();
@@ -283,11 +290,16 @@ public class FilesManagement {
                 }
 
             }
+            if(!Repaired){
+                traza.add(0, 'I');
+                traza.add('O');
+            }
+            
             tracesList.put(ID, traza);  //la ultima
             ID++;
 
         }
-        if (Filtering) {
+        if (!Repaired) {
             activityList.put("I", 'I');
             activityList.put("O", 'O');
         }

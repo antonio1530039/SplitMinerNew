@@ -173,12 +173,12 @@ public class PostProcesarGrafo {
         
      
       
-     
+     /*
      
          WFG.clear();
        /*
       //Modelo 1
-      
+      WFG.put("I,a", 1);
       WFG.put("X1A,b", 1);
       WFG.put("X1A,f", 1);
       WFG.put("a,X1A", 1);
@@ -188,6 +188,7 @@ public class PostProcesarGrafo {
       WFG.put("c,e", 1);
       WFG.put("d,e", 1);
       WFG.put("f,A1A", 1);
+      WFG.put("e,O", 1);
       
       BPMN.Gand.clear();
       BPMN.Gor.clear();
@@ -198,14 +199,16 @@ public class PostProcesarGrafo {
       
       
       BPMN.T.clear();
+      BPMN.T.add('I');
       BPMN.T.add('a');
       BPMN.T.add('b');
       BPMN.T.add('f');
       BPMN.T.add('c');
       BPMN.T.add('d');
       BPMN.T.add('e');
+      BPMN.T.add('O');
       
-      BPMN.i = 'a';
+      BPMN.i = 'I';
       /*
       Notation:  a XOR{  b, f} AND{  c, d} e
    	[A,b] - 1
@@ -223,6 +226,7 @@ public class PostProcesarGrafo {
  
      /*
       //Modelo 2
+      WFG.put("I,a", 1);
       WFG.put("A1A,b", 1);
       WFG.put("A1A,c", 1);
       WFG.put("X1A,A1A", 1);
@@ -231,7 +235,7 @@ public class PostProcesarGrafo {
       WFG.put("b,d", 1);
       WFG.put("c,d", 1);
       WFG.put("e,d", 1);
-   
+      WFG.put("d,O", 1);
       
       BPMN.Gand.clear();
       BPMN.Gor.clear();
@@ -243,12 +247,14 @@ public class PostProcesarGrafo {
    
       
       BPMN.T.clear();
+      BPMN.T.add('I');
       BPMN.T.add('a');
       BPMN.T.add('b');
       BPMN.T.add('c');
       BPMN.T.add('e');
       BPMN.T.add('d');
-      BPMN.i = 'a';
+      BPMN.T.add('O');
+      BPMN.i = 'I';
       
       /*
       Notation:  a XOR{  AND{  b, c}, e} d
@@ -268,6 +274,7 @@ public class PostProcesarGrafo {
          */
  /*
       //Modelo 3
+       WFG.put("I,a", 1);
       WFG.put("a,b", 1);
       WFG.put("b,c", 1);
       WFG.put("X1A,d", 1);
@@ -279,6 +286,7 @@ public class PostProcesarGrafo {
       WFG.put("e,X2A", 1);
       WFG.put("g,f", 1);
       WFG.put("h,d", 1);
+       WFG.put("f,O", 1);
    
       
       
@@ -293,6 +301,7 @@ public class PostProcesarGrafo {
       
       
       BPMN.T.clear();
+      BPMN.T.add('I');
       BPMN.T.add('a');
       BPMN.T.add('b');
       BPMN.T.add('c');
@@ -301,7 +310,8 @@ public class PostProcesarGrafo {
       BPMN.T.add('e');
       BPMN.T.add('g');
       BPMN.T.add('f');
-      BPMN.i = 'a';
+      BPMN.T.add('O');
+      BPMN.i = 'I';
       /*
       Notation:  a b c XOR{ , h} d e XOR{ , g} f
    	[a,b] - 1
@@ -320,6 +330,7 @@ public class PostProcesarGrafo {
          */
  /*
       //Modelo 4
+       WFG.put("I,a", 1);
       WFG.put("a,b", 1);
       WFG.put("X1A,c", 1);
       WFG.put("X1A,h", 1);
@@ -333,6 +344,7 @@ public class PostProcesarGrafo {
       WFG.put("h,i", 1);
       WFG.put("i,j", 1);
       WFG.put("j,e", 1);
+       WFG.put("f,O", 1);
    
       BPMN.Gand.clear();
       BPMN.Gor.clear();
@@ -342,6 +354,7 @@ public class PostProcesarGrafo {
       BPMN.Gxor.add("X2A");
       
       BPMN.T.clear();
+      BPMN.T.add('I');
       BPMN.T.add('a');
       BPMN.T.add('b');
       BPMN.T.add('c');
@@ -352,7 +365,8 @@ public class PostProcesarGrafo {
       BPMN.T.add('j');
       BPMN.T.add('g');
       BPMN.T.add('f');
-      BPMN.i = 'a';
+      BPMN.T.add('O');
+      BPMN.i = 'I';
       
       /* 
       
@@ -374,8 +388,9 @@ public class PostProcesarGrafo {
    	[D,f] - 1
       
          */
- 
+ /*
       //Modelo 5 - ciclos
+      WFG.put("I,a", 1);
       WFG.put("A1A,b", 1);
       WFG.put("A1A,c", 1);
       WFG.put("a,A1A", 1);
@@ -385,6 +400,8 @@ public class PostProcesarGrafo {
       WFG.put("e,f", 1);
       WFG.put("f,A1A", 1);
       WFG.put("c,X1A", 1);
+      WFG.put("f,O", 1);
+      WFG.put("d,O", 1);
    
       
       
@@ -397,14 +414,16 @@ public class PostProcesarGrafo {
    
    
       BPMN.T.clear();
+      BPMN.T.add('I');
       BPMN.T.add('a');
       BPMN.T.add('b');
       BPMN.T.add('c');
       BPMN.T.add('d');
       BPMN.T.add('e');
       BPMN.T.add('f');
-      BPMN.i = 'a';
-         
+      BPMN.T.add('O');
+      BPMN.i = 'I';
+         */
         //.....................
         ///
         JoinsFinder jf = new JoinsFinder(BPMN, WFG);

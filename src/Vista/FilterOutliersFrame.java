@@ -109,7 +109,7 @@ public class FilterOutliersFrame extends JFrame {
                 }
 
                 if (filePath != null) {
-                    System.out.println("Exporting log to: " +  filePath.getAbsolutePath() + "/" + fileName + "Repaired.txt");
+                    System.out.println("Exporting log to: " +  filePath.getAbsolutePath() + "/" + fileName + ".repaired");
                     
                     String toSave = "";
                     
@@ -121,9 +121,9 @@ public class FilterOutliersFrame extends JFrame {
                         toSave+="\n";
                     }
                     
-                    try (PrintStream out = new PrintStream(new FileOutputStream(filePath.getAbsolutePath() + "/" + fileName + "Repaired.txt"))) {
+                    try (PrintStream out = new PrintStream(new FileOutputStream(filePath.getAbsolutePath() + "/" + fileName + ".repaired"))) {
                         out.print(toSave);
-                        JOptionPane.showMessageDialog(main, "File: "+ fileName + "Repaired.txt" + " exported!");
+                        JOptionPane.showMessageDialog(main, "File: "+ fileName + ".repaired" + " exported!");
                     } catch (FileNotFoundException ex) {
                         JOptionPane.showMessageDialog(main, "Error while trying to export a file");
                     }

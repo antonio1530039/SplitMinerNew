@@ -49,10 +49,6 @@ public class GatewayLoops {
                 }
                 visited.add(s);
                 sucesores = getAllSucesores(WFG, s, visited);
-                if (sucesores.contains(target)) // 2
-                {
-                    sucesores.remove(target);
-                }
                 adelante.addAll(sucesores);
             }
         }
@@ -60,6 +56,8 @@ public class GatewayLoops {
         return adelante;
 
     }
+    
+
 
     //all nodes following 'task', given the current pruened WFG
     public static LinkedHashSet<String> getSucesoresOAntecesores(String task, LinkedHashMap<String, Integer> WFG, Character type) {
@@ -83,5 +81,6 @@ public class GatewayLoops {
         }
         return x;
     }
+    
 
 }

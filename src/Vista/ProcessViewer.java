@@ -406,7 +406,7 @@ public class ProcessViewer {
                     }
                     StringBuilder contextOutput = new StringBuilder();
                     BPMNModel bpmn = new BPMNModel();
-                    FilesManagement f = new FilesManagement(bpmn, true, left, right, K, u, contextOutput); //boolean Filtering, int l, int r, int k, double umbral
+                    FilesManagement f = new FilesManagement(bpmn, true, false, left, right, K, u, contextOutput); //boolean Filtering, int l, int r, int k, double umbral
                     LinkedHashMap<Integer, ArrayList<Character>> originalTraces; //lista de trazas
                     LinkedHashMap<Integer, ArrayList<Character>> repairedTraces; //lista de trazas
                     Object[] traces = new Object[2];
@@ -470,10 +470,11 @@ public class ProcessViewer {
                 fileChooser.setDialogTitle("Select a dataset file");
                 fileChooser.setAcceptAllFileFilterUsed(false);
                 fileChooser.setFileHidingEnabled(true);
-                fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("TXT, CSV & XES files", "txt", "csv", "xes"));
+                fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("TXT, CSV, XES & Repaired outliers files", "txt", "csv", "xes", "repaired"));
                 fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("TXT files", "txt"));
                 fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("CSV files", "csv"));
                 fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("XES files", "xes"));
+                fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Repaired outliers files", "repaired"));
 
                 if (fileName != null) {
                     fileChooser.setCurrentDirectory(fileName);
@@ -490,7 +491,7 @@ public class ProcessViewer {
 
                     } else {
                         
-                        if (!fileName.getName().endsWith(".txt") && !fileName.getName().endsWith(".csv") && !fileName.getName().endsWith(".xes")) {
+                        if (!fileName.getName().endsWith(".txt") && !fileName.getName().endsWith(".csv") && !fileName.getName().endsWith(".xes") && !fileName.getName().endsWith(".repaired")) {
                             JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido");
                             refreshWindow();
                             return;
@@ -505,11 +506,11 @@ public class ProcessViewer {
                         
                         
                         String filename = fileName.getAbsolutePath();
-                        FilesManagement f = new FilesManagement(wfg.BPMN, false, 0, 0, 0, 0.0, new StringBuilder());
+                        FilesManagement f = new FilesManagement(wfg.BPMN, false,(fileName.getName().endsWith(".repaired")) ? true : false  , 0, 0, 0, 0.0, new StringBuilder());
                         ///////
                         System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
                         try {
-                            if (filename.endsWith(".txt")) {
+                            if (filename.endsWith(".txt") || filename.endsWith(".repaired")) {
                                 tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInputTrazas(filename)[0];
                             } else if (filename.endsWith(".csv")) {
                                 tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInput(filename)[0];
@@ -750,7 +751,7 @@ public class ProcessViewer {
 
         
         System.out.println("====================Loop detection===============");
-        
+       
         
         ArrayList<String> loops = new ArrayList<>();
         

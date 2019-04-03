@@ -36,7 +36,7 @@ public class SplitMinerCL {
         System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
 
         BPMNModel BPMN = new BPMNModel();
-        FilesManagement f = new FilesManagement(BPMN, true , 1, 1, 1, 0.25 , new StringBuilder()); //boolean Filtering, int l, int r, int k, double umbral
+        FilesManagement f = new FilesManagement(BPMN, true , false ,1, 1, 1, 0.25 , new StringBuilder()); //BPMN, boolean Filtering, boolean Repaired, int l, int r, int k, double umbral
         LinkedHashMap<Integer, ArrayList<Character>> tracesList = null; //lista de trazas
 
         try {

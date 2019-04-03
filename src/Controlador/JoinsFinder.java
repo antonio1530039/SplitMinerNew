@@ -13,6 +13,7 @@ import java.util.Map;
 public class JoinsFinder {
 
     LinkedList<String> cloneTask;
+    LinkedList<String> visitedGateways;
     BPMNModel BPMN;
     LinkedHashMap<String, Integer> WFG;
     int numberGatewaysOr = 1;
@@ -20,6 +21,7 @@ public class JoinsFinder {
     public JoinsFinder(BPMNModel bpmn, LinkedHashMap<String, Integer> wfg) {
         this.BPMN = bpmn;
         this.cloneTask = new LinkedList<>();
+        this.visitedGateways = new LinkedList<>();
         
         for(Character c : BPMN.T){
             this.cloneTask.add(c.toString());
@@ -51,6 +53,13 @@ public class JoinsFinder {
     }
 
     public ArrayList<String> conectarCierres(HashMap<String, LinkedList<String>> cierres, StringBuilder notation, String gateway, LinkedList<String> ramas) {
+        ArrayList<String> paraCierre = new ArrayList<>(); //Esta lista es retornada, obtiene el anterior del o de los cierres con las nuevas compuertas creadas  (es utilizado en exploreBranch)        
+        
+        if(visitedGateways.contains(gateway)){
+            return paraCierre;
+        }
+        
+        visitedGateways.add(gateway);
         
         notation.append(" " + gateway + "{ ");
         //Agregar sus ramas a la notacion
@@ -59,7 +68,7 @@ public class JoinsFinder {
         }
         notation.append("}");
         
-        ArrayList<String> paraCierre = new ArrayList<>(); //Esta lista es retornada, obtiene el anterior del o de los cierres con las nuevas compuertas creadas  (es utilizado en exploreBranch)
+        
         if (cierres.size() == 1) { //Cierre del mismo tipo
             String symbol = gateway.substring(0, gateway.length()-1)  + "C";
             //Talvez no es necesario agregar a la lista correspondiente
@@ -143,9 +152,10 @@ public class JoinsFinder {
             }
         } else {
             if ((BPMN.Gand.contains(nodo) || BPMN.Gxor.contains(nodo)) && !nodo.contains("C")) { //es compuerta... resolver
-                LinkedList<String> ramas = new LinkedList<>();
-                HashMap<String, LinkedList<String>> cierresGateway = resolveGateway(nodo, ramas);
-                cierres.addAll(conectarCierres(cierresGateway, notation, nodo, ramas));
+                    LinkedList<String> ramas = new LinkedList<>();
+                    HashMap<String, LinkedList<String>> cierresGateway = resolveGateway(nodo, ramas);
+                    cierres.addAll(conectarCierres(cierresGateway, notation, nodo, ramas));
+                    visitedGateways.add(nodo);
             } else if (cloneTask.contains(nodo)) {//es tarea... agregar a notacion y eliminar de lista
                 notation.append(" " + nodo);
                 cloneTask.remove(nodo);
