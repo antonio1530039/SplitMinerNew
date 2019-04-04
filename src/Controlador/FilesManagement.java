@@ -106,7 +106,7 @@ public class FilesManagement {
         if (!Repaired) {
             ActivityList.put("I", 'I');
             ActivityList.put("O", 'O');
-       }
+        }
 
         //recupera el set de tasks T
         Set<Map.Entry<String, Character>> tasks = activityList.entrySet();

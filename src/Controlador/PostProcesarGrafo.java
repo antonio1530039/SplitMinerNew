@@ -173,10 +173,12 @@ public class PostProcesarGrafo {
         
      
       
-     /*
      
-         WFG.clear();
+     
+         
        /*
+        
+        WFG.clear();
       //Modelo 1
       WFG.put("I,a", 1);
       WFG.put("X1A,b", 1);
@@ -223,7 +225,7 @@ public class PostProcesarGrafo {
    	[d,2] - 1
    	[2,e] - 1
          */
- 
+
      /*
       //Modelo 2
       WFG.put("I,a", 1);
@@ -255,6 +257,7 @@ public class PostProcesarGrafo {
       BPMN.T.add('d');
       BPMN.T.add('O');
       BPMN.i = 'I';
+      BPMN.o = 'O';
       
       /*
       Notation:  a XOR{  AND{  b, c}, e} d

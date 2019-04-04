@@ -91,11 +91,21 @@ public class gJPanel extends JPanel {
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue();
             
-            if (e.type.equals("Task")) {
+            if(e.type.equals("Start")){
+                g.setColor(Color.green);
+                g.drawOval(e.cPosX, e.cPosY, radio, radio);
+                g.setColor(Color.black);
+                g.drawString("Start", e.cPosX + (radio / 3), e.cPosY + (radio / 2));
+            }else if(e.type.equals("End")){
+                g.setColor(Color.red);
+                g.drawOval(e.cPosX, e.cPosY, radio, radio);
+                g.setColor(Color.black);
+                g.drawString("End", e.cPosX + (radio / 3), e.cPosY + (radio / 2));
+            }else if (e.type.equals("Task")) {
                 g.setColor(Color.black);
                 g.drawOval(e.cPosX, e.cPosY, radio, radio);
                 g.drawString(e.Name, e.cPosX + (radio / 2), e.cPosY + (radio / 2));
-            } else {
+            } else if(e.type.equals("Gateway")){
                 
                 //obtencion de color de compuerta
                 Color color = null;

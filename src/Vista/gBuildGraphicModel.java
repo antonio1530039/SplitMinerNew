@@ -200,7 +200,15 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         if( bpmn.Gor.contains(e.Name) || bpmn.Gxor.contains(e.Name) || bpmn.Gand.contains(e.Name)){
             e.type = "Gateway";
         }else{
-            e.type = "Task";
+            
+            if(bpmn.i.toString().equals(e.Name)){
+                e.type = "Start";
+            }else if(bpmn.o.toString().equals(e.Name)){
+                e.type = "End";
+            }else 
+                e.type = "Task";
+            
+            
         }
         
         Elements.put(e.Name, e);
