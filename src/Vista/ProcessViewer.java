@@ -125,7 +125,12 @@ public class ProcessViewer {
 
         if (fileName != null) {
             mine_btn.setVisible(true);
-            filtering_btn.setVisible(true);
+            
+            if(!fileName.getName().endsWith(".repaired")){
+                filtering_btn.setVisible(true);
+            }else{
+                filtering_btn.setVisible(false);
+            }
             titulo_txt.setText(fileName.getName());
             loadFile_pnl.add(titulo_txt);
             if (fileName.getName().toLowerCase().contains(".xes")) {
@@ -701,7 +706,7 @@ public class ProcessViewer {
         System.out.println("PASO2: INCIANDO LA CONSTRUCCION DEL GRAFO QUE MODELA EL CONJUNTO DE TRAZAS.\n");
 
         GenerarGrafo generarGrafo = new GenerarGrafo();
-        generarGrafo.computeGraph(tracesList, wfg.WFG);
+        generarGrafo.computeGraph( tracesList,  wfg.WFG);
 
         System.out.println("\nPASO 3: PREPROCESAMIENTO DEL GRAFO");
 
