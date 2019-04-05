@@ -42,6 +42,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.table.TableColumnModel;
 
 public class ProcessViewer {
 
@@ -58,6 +59,9 @@ public class ProcessViewer {
     Dimension screenSize;
     WFG wfg = new WFG(); //Modelo: grafo y modelo BPMN
     LinkedHashMap<Integer, ArrayList<Character>> tracesList = null;
+    
+    String tasksDescription = "";
+    int biggerTrace = 0;
 
     BPMNModel BPMN;
     LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
@@ -267,12 +271,21 @@ public class ProcessViewer {
     /*
     * Funcion para generar un panel para visualizar tablas con barra de scroll
     **/
-    JPanel buildTablePanel(DefaultTableModel dtb, String title) {
+    JPanel buildTablePanel(DefaultTableModel dtb, String title, int column0Size, int column1Size) {
         /* Se inicializa la tablas*/
         JLabel titleTable_txt = new JLabel(title);
         titleTable_txt.setFont(new Font("Tahoma", Font.BOLD, 18));
-        JScrollPane tbl_sp = new JScrollPane(new JTable(dtb), JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-
+        JTable jtable = new JTable(dtb);
+        
+        jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumnModel columnModel = jtable.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(column0Size);
+        columnModel.getColumn(1).setPreferredWidth(column1Size);
+        
+        
+        JScrollPane tbl_sp = new JScrollPane(jtable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        
+        
         /* Se prepara el panel*/
         JPanel pnl = new JPanel(new BorderLayout());
         pnl.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -289,25 +302,29 @@ public class ProcessViewer {
 
         //JPanel north = new JPanel();
         JPanel south = new JPanel();
+        
+        int sizeOfColumns = screenSize.width / 10;
+        
         if (informationSelected) {
-            JPanel j = buildTablePanel(information_dtm, "Description");
+            JPanel j = buildTablePanel(information_dtm, "Description", sizeOfColumns ,sizeOfColumns);
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         // north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
 
         if (activitiesSelected) {
-            JPanel j = buildTablePanel(activities_dtm, "Activities");
+            JPanel j = buildTablePanel(activities_dtm, "Activities",sizeOfColumns,sizeOfColumns);
+            
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         if (tracesSelected) {
-            JPanel j = buildTablePanel(traces_dtm, "Traces");
+            JPanel j = buildTablePanel(traces_dtm, "Traces",sizeOfColumns/5, biggerTrace*10 );
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         if (modelSelected) {
-            JPanel j = buildTablePanel(model_dtm, "BPMN Model");
+            JPanel j = buildTablePanel(model_dtm, "BPMN Model",sizeOfColumns,sizeOfColumns);
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
@@ -528,6 +545,8 @@ public class ProcessViewer {
                             return;
                         }
 
+                        
+                        tasksDescription = "";
                         ///////
                         // Se prepara la tabla Actividades
                         String[] columnNames = new String[]{"Description", "Item"};
@@ -536,6 +555,7 @@ public class ProcessViewer {
                         for (Map.Entry<String, Character> entry1 : f.ActivityList.entrySet()) {
                             data[i][0] = entry1.getKey();
                             data[i][1] = entry1.getValue().toString();
+                            tasksDescription += " " + data[i][1]  + " : " + data[i][0] + "\n";
                             i++;
                         }
                         // Modelo para la table activities
@@ -545,11 +565,16 @@ public class ProcessViewer {
                         String[] columnNamesTraces = new String[]{"ID", "Traces"};
                         String[][] dataTraces = new String[tracesList.size()][2];
                         i = 0;
+                        biggerTrace =0;
                         System.out.println("\t3. Mostrando TRAZAS IDENTIFICADAS  en el archivo '" + filename + "'.");
                         for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
                             System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
                             dataTraces[i][0] = entry.getKey().toString();
                             dataTraces[i][1] = entry.getValue().toString();
+                            int length = dataTraces[i][1].length();
+                            if(length >= biggerTrace){
+                                biggerTrace = length;
+                            }
                             i++;
                         }
 
@@ -752,6 +777,7 @@ public class ProcessViewer {
 
         this.WFG = wfg.WFG; //asignar el valor actual del grafo (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         this.BPMN = wfg.BPMN;//asignar el valor actual del modelo BPMN (motivos de exportacion de modelo a archivo XML BPMN 2.0)
+        wfg.tasksDescription = this.tasksDescription;
         wfg.notifyAction(); //notificar que el modelo tuvo cambios
 
         

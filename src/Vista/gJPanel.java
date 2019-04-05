@@ -116,22 +116,28 @@ public class gJPanel extends JPanel {
                 } else {
                     color = gatewaysColors.get(name);
                 }
+                
                 g.setColor(color); //se asigna el color a la compuerta
-                g.fillRoundRect(e.cPosX, e.cPosY, radio, radio, radio / 2, radio / 2);
-                //drawDiamond(g, e.cPosX + (radio / 2), e.cPosY + (radio / 2));
+                
+                //g.fillRoundRect(e.cPosX, e.cPosY, radio, radio, radio / 2, radio / 2);
+
+                if(BPMN.Gor.contains(e.Name)){
+                    drawOr(g, e.cPosX + (radio / 2), e.cPosY + (radio / 2));
+                }else if(BPMN.Gand.contains(e.Name)){
+                    drawAnd(g, e.cPosX + (radio / 2), e.cPosY + (radio / 2));
+                }else if(BPMN.Gxor.contains(e.Name)){
+                    drawXor(g, e.cPosX + (radio / 2), e.cPosY + (radio / 2));
+                }
+                
                 //Obtencion de color de texto de la compuerta (para colores fuertes se utiliza color blanco de texto, en caso contrario negro)
-                if (color.getRed() <= 255 / 2 && color.getGreen() <= 255 / 2 && color.getBlue() <= 255 / 2) {
+                /*if (color.getRed() <= 255 / 2 && color.getGreen() <= 255 / 2 && color.getBlue() <= 255 / 2) {
                     g.setColor(Color.white);
                 } else {
                     g.setColor(Color.black);
                 }
+                //Set texto de la compuerta
                 g.drawString(e.Name, e.cPosX + (radio / 2) - (radio / 4), e.cPosY + (radio / 2));
-                
-                
-                /*g.setColor(Color.black);
-                g.fillRoundRect(e.cPosX, e.cPosY, radio, radio, radio / 2, radio / 2);
-                g.setColor(Color.white);
-                g.drawString(e.Name, e.cPosX + (radio / 2) - (radio / 4), e.cPosY + (radio / 2));*/
+                */
             }
             //Dibujar lineas
             if (!e.Antecesores.isEmpty()) {
@@ -165,14 +171,40 @@ public class gJPanel extends JPanel {
         }
     }
 
-    private void drawDiamond(Graphics g, int x, int y) {
+    
+    private Polygon drawDiamond(int x, int y) {
         Polygon p = new Polygon();
         p.addPoint(x, y - (radio / 2));
         p.addPoint(x - (radio / 2), y);
         p.addPoint(x, y + (radio / 2));
         p.addPoint(x + (radio / 2), y);
-        g.drawPolygon(p);
+        return p;
     }
+    
+    
+    private void drawXor(Graphics g, int x, int y) {
+        Polygon p = drawDiamond(x, y);
+        g.fillPolygon(p);
+        g.setColor(Color.white);
+        g.drawLine( x - (radio/6), y - (radio/6), x + (radio/6), y + (radio/6) );
+        g.drawLine( x + (radio/6), y - (radio/6), x - (radio/6), y + (radio/6) );
+    }
+    
+    private void drawOr(Graphics g, int x, int y) {
+        Polygon p = drawDiamond(x, y);
+        g.fillPolygon(p);
+        g.setColor(Color.white);
+        g.drawOval(x - (radio/4), y - (radio/4), radio/2, radio/2 );
+    }
+    
+    private void drawAnd(Graphics g, int x, int y) {
+        Polygon p = drawDiamond(x, y);
+        g.fillPolygon(p);
+        g.setColor(Color.white);
+        g.drawLine(x, y - (radio/4), x , y + (radio/4) );
+        g.drawLine(x - (radio/4), y , x + (radio/4) , y );
+    }
+    
 
     /**
      * procedimiento obtenido de stackoverflow

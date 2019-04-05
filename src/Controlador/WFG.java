@@ -11,6 +11,7 @@ public class WFG extends Observable{
     public LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
     public BPMNModel BPMN = new BPMNModel();
     public String Notation = "";
+    public String tasksDescription = "";
     
     public void notifyAction(){
         System.out.println("Notifying changes to observer ");

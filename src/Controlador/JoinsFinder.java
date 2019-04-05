@@ -45,7 +45,7 @@ public class JoinsFinder {
                 BPMN.Gor.add(orSymbol);
                 String cierre = entry.getKey(); //Recuperar cierre
                 //Obtener antecesores del cierre
-                HashSet<String> antecesores = antecesores(cierre);
+                HashSet<String> antecesores = sucesoresOAntecesores(cierre, 'a');
                 for (String a : antecesores) {
                     WFG.remove(a + "," + cierre); //eliminar la antigua conexion
                     WFG.put(a + "," + orSymbol, 1); //nueva conexion a la compuerta
@@ -157,9 +157,9 @@ public class JoinsFinder {
 
     public ArrayList<String> exploreBranch(String nodo, StringBuilder notation, String fromGateway) {
         ArrayList<String> cierres = new ArrayList<>();
-        if (getNumberEdgesToA(nodo) > 1) {
+        if (getNumberEdges(nodo, "to") > 1) {
             //si este nodo tiene como antecesor la compuerta de donde viene, entonces retornar como cierre: nodo,fromGateway
-            HashSet<String> antecesores = antecesores(nodo);
+            HashSet<String> antecesores = sucesoresOAntecesores(nodo, 'a');
             if (antecesores.contains(fromGateway)) {
                 System.out.println("(getNumberEdgesToA(nodo) > 1)...nodo,FromGateway: '" + nodo + "'," + fromGateway + "' ");
                 cierres.add(nodo + "," + fromGateway);
@@ -179,7 +179,7 @@ public class JoinsFinder {
                 cloneTask.remove(nodo);
                 String s = getSucesorOantecesor(nodo, 's');
                 if (s != null) {
-                    if (getNumberEdgesToA(s) > 1) {
+                    if (getNumberEdges(s, "to") > 1) {
                         cierres.add(s + "," + nodo);
                     } else {
                         cierres = exploreBranch(s, notation, fromGateway);
@@ -217,29 +217,43 @@ public class JoinsFinder {
         }
         List<Map.Entry<String, Integer>> edges = new ArrayList(WFG.entrySet());
         for (Map.Entry<String, Integer> entry : edges) {
-            String c1 = entry.getKey().split(",")[1];
-            if (BPMN.Gor.contains(c1) && getNumberEdgesToA(c1) == 1) {
-                String sucesorDeOr = getSucesorOantecesor(c1, 's');
-                if (BPMN.Gor.contains(sucesorDeOr)) {
-                    WFG.remove(c1 + "," + sucesorDeOr);
-                    Utils.remplazarEdges(c1, sucesorDeOr, WFG);
-                    BPMN.Gor.remove(c1);
+            String[] vals = entry.getKey().split(",");
+            
+            String c0 = vals[0];
+            String c1 = vals[1];
+            
+            if(BPMN.Gor.contains(c0) && BPMN.Gor.contains(c1)){
+                if(getNumberEdges(c1, "to") == 1 && getNumberEdges(c1, "from") == 1){
+                    HashSet<String> sucesores = sucesoresOAntecesores(c1, 's');
+                    for(String s : sucesores){
+                        WFG.remove(c1 + "," + s);
+                        Utils.remplazarEdges(c1, s, WFG);
+                        BPMN.Gor.remove(c1);
+                    }
+                    System.out.println("Or removed: " + c1);
                 }
             }
         }
     }
 
     //all nodes following 'task', given the current pruened WFG
-    public HashSet<String> antecesores(String target) {
+    public HashSet<String> sucesoresOAntecesores(String target, Character type) { //types: s, a
 
         HashSet<String> antecesores = new LinkedHashSet<String>();
 
         for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
             String key = entry.getKey();
             String vals[] = key.split(",");
-            if (target.equals(vals[1])) {
-                antecesores.add(vals[0]);
+            if(type == 'a'){
+                if (target.equals(vals[1])) {
+                    antecesores.add(vals[0]);
+                }
+            }else{
+                if (target.equals(vals[0])) {
+                    antecesores.add(vals[1]);
+                }
             }
+            
 
         }
 
@@ -247,13 +261,20 @@ public class JoinsFinder {
     }
 
     //Encontrar el numero de edges entrantes ( *a )
-    public int getNumberEdgesToA(String a) {
+    public int getNumberEdges(String a, String type) { //types: To , From
         int i = 0;
         for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
-            if (a.equals(entry.getKey().split(",")[1])) {
-                i++;
+            if(type.equals("to")){
+                if (a.equals(entry.getKey().split(",")[1])) {
+                    i++;
+                }
+            }else{
+                if (a.equals(entry.getKey().split(",")[0])) {
+                    i++;
+                }
             }
         }
         return i;
     }
+    
 }

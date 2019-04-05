@@ -22,7 +22,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
+
 import javax.swing.JTextField;
 
 public class gBuildGraphicModel extends JFrame implements Observer, ActionListener {
@@ -40,6 +43,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
     BPMNModel BPMN;
     String currentMode = "";
+    String tasksDescription = "";
     int ScreenWidth;
     int ScreenHeight;
     int PosX;
@@ -52,6 +56,9 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
     JPanel jpanelMenu = new JPanel(new BorderLayout());
     
     JTextArea notationTxt = new JTextArea();
+    
+   JTextArea tasksDescriptionTxt = new JTextArea ( 7, 25);
+    
     public gBuildGraphicModel(LinkedList<Character> tasks) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         ScreenWidth = (int) screenSize.getWidth();
@@ -112,7 +119,21 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         jpanelnotation.add(notationTitle);
         jpanelnotation.add(notationTxt);
         
-       
+        
+        JPanel middlePanel3 = new JPanel ();
+        middlePanel3.setBorder ( new TitledBorder ( new EtchedBorder (), "Tasks" ) );
+        
+        tasksDescriptionTxt.setSize(new Dimension(screenSize.width / 5, screenSize.height / 7));
+        //display3.setText(tasksDescription);
+        JScrollPane scroll3 = new JScrollPane ( tasksDescriptionTxt );
+        scroll3.setVerticalScrollBarPolicy ( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
+        scroll3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        middlePanel3.add ( scroll3 );
+        
+        middlePanel3.setPreferredSize(new Dimension(screenSize.width /5, screenSize.height / 7));
+        jpanelnotation.add(middlePanel3);
+        
+
         jpanelMenu.add(jpanelComponentes, BorderLayout.NORTH);
         jpanelMenu.add(jpanelnotation, BorderLayout.SOUTH);
         add(jpanelMenu, BorderLayout.NORTH);
@@ -224,6 +245,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         WFG = wfg.WFG;
         BPMN = wfg.BPMN;
         notationTxt.setText(wfg.Notation);
+        tasksDescriptionTxt.setText(wfg.tasksDescription);
         buildModel(BPMN, WFG, "All");
     }
 

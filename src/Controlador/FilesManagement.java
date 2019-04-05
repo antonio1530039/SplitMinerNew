@@ -104,8 +104,8 @@ public class FilesManagement {
         System.out.println("\nSe han detectado todos los nombres de las actividades:");
 
         if (!Repaired) {
-            ActivityList.put("I", 'I');
-            ActivityList.put("O", 'O');
+            ActivityList.put("Start", 'I');
+            ActivityList.put("End", 'O');
         }
 
         //recupera el set de tasks T
@@ -300,8 +300,8 @@ public class FilesManagement {
 
         }
         if (!Repaired) {
-            activityList.put("I", 'I');
-            activityList.put("O", 'O');
+            activityList.put("Start", 'I');
+            activityList.put("End", 'O');
         }
 
         this.ActivityList = activityList;
