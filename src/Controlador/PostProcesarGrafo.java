@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -16,12 +17,14 @@ public class PostProcesarGrafo {
     LinkedHashMap<String, Integer> WFG;
     BPMNModel BPMN;
     List<Character> autoLoops = new LinkedList<>();
+    LinkedHashSet<String> shortLoops = new LinkedHashSet<>();
     public String notation = "";
 
-    public PostProcesarGrafo(BPMNModel bpmn, LinkedHashMap<String, Integer> wfg, List<Character> autoLoops) {
-        WFG = wfg;
+    public PostProcesarGrafo(BPMNModel bpmn, WFG wfg, List<Character> autoLoops, LinkedHashSet<String> shortLoops) {
+        WFG = wfg.WFG;
         BPMN = bpmn;
         this.autoLoops = autoLoops;
+        this.shortLoops = shortLoops;
 
         //OCTAVO, SE REMUEVEN COMPUERTAS DUPLICADAS 
         //todas las compuertas XOR y AND se han detectado. Ahora, eliminar compuertas repetidas.
@@ -36,16 +39,23 @@ public class PostProcesarGrafo {
         Utils.mostrarGrafo(2, WFG);
 
         //Y SE DETECTAN 'JOINS'
-        System.out.println("\n\t2.Detectar JOINS (pendiente de realizar)");
+        System.out.println("\n\t2.Detectar JOINS");
         detectarJoins();
         // System.out.println("\t  Resultado:");
         Utils.mostrarGrafo(2, WFG);
+        
+        wfg.WFGAll = (LinkedHashMap) WFG.clone();
 
         //Y SE REINTEGRAN 'AUTOLOPS'
-        System.out.println("\n\t3.Re-integrar autolops al modelo final");
+        System.out.println("\n\t3.Re-integrar autolops y shortLoops al modelo final");
+        
+        System.out.println("\n\t\t autoloops: " + autoLoops.toString());
+        System.out.println("\n\t\t shortLoops: " + shortLoops.toString());
         reintegraALoops();
         System.out.println("\t  Resultado:");
         Utils.mostrarGrafo(2, WFG);
+        wfg.WFGLoops = (LinkedHashMap) WFG.clone();
+        
     }
 
     public void removeDuplicateGates() {
@@ -117,6 +127,16 @@ public class PostProcesarGrafo {
     }
 
     public void reintegraALoops() {
+        
+        //Reintegrar shortLoops
+        for(String l : shortLoops){
+            String[] vals = l.split(",");
+            WFG.put(l, 1);
+            WFG.put(vals[1] + "," + vals[0], 1);
+        }
+        
+        
+        //reintegrar autoloops
         ArrayList<String> keys = new ArrayList<String>();
         Iterator<Map.Entry<String, Integer>> iter = WFG.entrySet().iterator();
         try {
@@ -162,6 +182,9 @@ public class PostProcesarGrafo {
             WFG.put(cl, 1);
 
         }
+        
+        
+        
 
     }
 

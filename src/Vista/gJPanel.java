@@ -105,7 +105,13 @@ public class gJPanel extends JPanel {
                 g.setColor(Color.black);
                 g.drawOval(e.cPosX, e.cPosY, radio, radio);
                 g.drawString(e.Name, e.cPosX + (radio / 2), e.cPosY + (radio / 2));
-            } else if(e.type.equals("Gateway")){
+            } else if(e.type.equals("Autoloop")){
+                g.setColor(Color.black);
+                g.fillOval(e.cPosX, e.cPosY, radio, radio);
+                g.setColor(Color.white);
+                g.drawString(e.Name.charAt(1) + "", e.cPosX + (radio / 2), e.cPosY + (radio / 2));
+            
+            }else if(e.type.equals("Gateway")){
                 
                 //obtencion de color de compuerta
                 Color color = null;
@@ -143,9 +149,13 @@ public class gJPanel extends JPanel {
             if (!e.Antecesores.isEmpty()) {
                 g.setColor(Color.black);
                 for (String antecesor : e.Antecesores) {
+                    Element a = null;
                     if(antecesor.charAt(0) == '@')
-                        continue;
-                    Element a = Elements.get(antecesor);
+                        a = Elements.get(antecesor.charAt(1) + "");
+                    else{
+                        a = Elements.get(antecesor);
+                    }
+                    
                     if(a!=null)
                         drawArrowLine(g, a.cPosX + (2 * (radio / 2)), a.cPosY + (radio / 2), e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
                 }
@@ -157,7 +167,12 @@ public class gJPanel extends JPanel {
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue(); //get the element
             if (x <= (e.cPosX + radio) && y <= (e.cPosY + radio) && x >= e.cPosX && y >= e.cPosY) {
-                ElementSelected = e.Name;
+                if(e.Name.charAt(0) == '@'){
+                    ElementSelected = e.Name.charAt(1) + "";
+                }else{
+                    ElementSelected = e.Name;
+                }
+                
                 break;
             }
         }

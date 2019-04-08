@@ -37,7 +37,7 @@ public class JoinsFinder {
     public String findNotation() {
         StringBuilder notation = new StringBuilder();
         continueExploring(notation, BPMN.i.toString());
-        
+
         System.out.println("Finishing Or joins...");
         for (int i = 0; i < this.cierresOr.size(); i++) {
             for (Map.Entry<String, LinkedList<String>> entry : cierresOr.get(i).entrySet()) {
@@ -87,7 +87,8 @@ public class JoinsFinder {
         notation.append(" " + gateway + "{ ");
         //Agregar sus ramas a la notacion
         for (String rama : ramas) {
-            notation.append(rama + ",");
+            if(!rama.equals(""))
+                notation.append(rama + ",");
         }
         notation.append("}");
 
@@ -215,25 +216,56 @@ public class JoinsFinder {
         if (BPMN.Gor.isEmpty()) {
             return;
         }
-        List<Map.Entry<String, Integer>> edges = new ArrayList(WFG.entrySet());
-        for (Map.Entry<String, Integer> entry : edges) {
-            String[] vals = entry.getKey().split(",");
-            
-            String c0 = vals[0];
-            String c1 = vals[1];
-            
-            if(BPMN.Gor.contains(c0) && BPMN.Gor.contains(c1)){
-                if(getNumberEdges(c1, "to") == 1 && getNumberEdges(c1, "from") == 1){
+        
+        int duplicateOrs = getNumberDuplicateOrs();
+        
+        while(duplicateOrs != 0){
+            List<Map.Entry<String, Integer>> edges = new ArrayList(WFG.entrySet());
+            for (Map.Entry<String, Integer> entry : edges) {
+                String[] vals = entry.getKey().split(",");
+
+                String c0 = vals[0];
+                String c1 = vals[1];
+
+                if (BPMN.Gor.contains(c0) && BPMN.Gor.contains(c1)) {
                     HashSet<String> sucesores = sucesoresOAntecesores(c1, 's');
-                    for(String s : sucesores){
+                    for (String s : sucesores) {
                         WFG.remove(c1 + "," + s);
                         Utils.remplazarEdges(c1, s, WFG);
                         BPMN.Gor.remove(c1);
                     }
                     System.out.println("Or removed: " + c1);
+                    /*if(getNumberEdges(c1, "to") == 1 && getNumberEdges(c1, "from") == 1){
+                        HashSet<String> sucesores = sucesoresOAntecesores(c1, 's');
+                        for(String s : sucesores){
+                            WFG.remove(c1 + "," + s);
+                            Utils.remplazarEdges(c1, s, WFG);
+                            BPMN.Gor.remove(c1);
+                        }
+                        System.out.println("Or removed: " + c1);
+                    }*/
                 }
             }
+            duplicateOrs = getNumberDuplicateOrs();
         }
+        
+    }
+    
+    
+    public int getNumberDuplicateOrs(){
+        int cont = 0;
+        List<Map.Entry<String, Integer>> edges = new ArrayList(WFG.entrySet());
+        for (Map.Entry<String, Integer> entry : edges) {
+            String[] vals = entry.getKey().split(",");
+
+            String c0 = vals[0];
+            String c1 = vals[1];
+
+            if (BPMN.Gor.contains(c0) && BPMN.Gor.contains(c1)) {
+                cont++;
+            }
+        }
+        return cont;
     }
 
     //all nodes following 'task', given the current pruened WFG
@@ -244,16 +276,15 @@ public class JoinsFinder {
         for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
             String key = entry.getKey();
             String vals[] = key.split(",");
-            if(type == 'a'){
+            if (type == 'a') {
                 if (target.equals(vals[1])) {
                     antecesores.add(vals[0]);
                 }
-            }else{
+            } else {
                 if (target.equals(vals[0])) {
                     antecesores.add(vals[1]);
                 }
             }
-            
 
         }
 
@@ -264,11 +295,11 @@ public class JoinsFinder {
     public int getNumberEdges(String a, String type) { //types: To , From
         int i = 0;
         for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
-            if(type.equals("to")){
+            if (type.equals("to")) {
                 if (a.equals(entry.getKey().split(",")[1])) {
                     i++;
                 }
-            }else{
+            } else {
                 if (a.equals(entry.getKey().split(",")[0])) {
                     i++;
                 }
@@ -276,5 +307,5 @@ public class JoinsFinder {
         }
         return i;
     }
-    
+
 }

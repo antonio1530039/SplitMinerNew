@@ -745,12 +745,12 @@ public class ProcessViewer {
         SplitsFinder crearModelo = new SplitsFinder(wfg.BPMN, generarGrafo.firsts, generarGrafo.lasts, wfg.WFG, preprocesarGrafo.parallelRelations);
 
         wfg.WFGSplits = (LinkedHashMap) wfg.WFG.clone();
-
+        
         /////////
         System.out.println("\nPASO 5: POST-PROCESAMIENTO");
 
         //g1.postProcesamiento(BPMN);
-        PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(wfg.BPMN, wfg.WFG, preprocesarGrafo.autoLoops);
+        PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(wfg.BPMN, wfg, preprocesarGrafo.autoLoops, preprocesarGrafo.shortLoops);
 
         wfg.Notation = postprocesamiento.notation;
 

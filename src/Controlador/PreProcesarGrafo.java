@@ -14,6 +14,7 @@ public class PreProcesarGrafo {
    public LinkedHashMap<String, Integer> WFG;
    public LinkedHashMap<Character, LinkedList<Character>> parallelRelations = new LinkedHashMap<Character, LinkedList<Character>>();
    public List<Character> autoLoops = new LinkedList<Character>();
+   public LinkedHashSet<String> shortLoops = new LinkedHashSet<String>();
 
    public PreProcesarGrafo(BPMNModel BPMN, LinkedHashMap<String, Integer> wfg, LinkedHashMap tracesList, LinkedHashSet<Character> firsts, LinkedHashSet<Character> lasts, double percentile, double epsilon) {
         
@@ -95,8 +96,13 @@ public class PreProcesarGrafo {
             third = traza.get(j + 2);
          
             if ((first == third) && (first != second)) {
-               WFG.remove(first + "," + second);
-               WFG.remove(second + "," + third);
+               String shortLoop0 = first + "," + second;
+               String shortLoop1 = second + "," + third;
+                
+               shortLoops.add(shortLoop0); //solo se agrega shortloop0, por que first, second = second, first
+               
+               WFG.remove(shortLoop0);
+               WFG.remove(shortLoop1);
                System.out.println("\t\t... Removiendo shorloop (" + first + "," + second + "," + first + ")");
                shortloops++;
             }
@@ -106,6 +112,7 @@ public class PreProcesarGrafo {
       }
    
       System.out.println("\n\t\tSe removieron '" + shortloops + "' SHORTLOOPs.\n");
+       System.out.println("\n\t\tShort loops: " + shortLoops.toString());
       return shortloops;
    }
    

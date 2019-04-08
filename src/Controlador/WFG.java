@@ -6,8 +6,10 @@ import java.util.Observable;
 
 
 public class WFG extends Observable{
+    public LinkedHashMap<String, Integer> WFGLoops = new LinkedHashMap<>();
     public LinkedHashMap<String, Integer> WFGantesSplits = new LinkedHashMap<>();
     public LinkedHashMap<String, Integer> WFGSplits = new LinkedHashMap<>();
+    public LinkedHashMap<String, Integer> WFGAll = new LinkedHashMap<>();
     public LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
     public BPMNModel BPMN = new BPMNModel();
     public String Notation = "";

@@ -93,9 +93,9 @@ public class SplitMinerCL {
         System.out.println("\nPASO 5: POST-PROCESAMIENTO");
 
         //g1.postProcesamiento(BPMN);
-        PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(BPMN, WFG, preprocesarGrafo.autoLoops);
+        //PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(BPMN, WFG, preprocesarGrafo.autoLoops, preprocesarGrafo.shortLoops);
 
-        System.out.println("Notacion al final: " + postprocesamiento.notation);
+  //      System.out.println("Notacion al final: " + postprocesamiento.notation);
 
     }
 }
