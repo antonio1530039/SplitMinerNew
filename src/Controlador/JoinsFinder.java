@@ -38,6 +38,15 @@ public class JoinsFinder {
         StringBuilder notation = new StringBuilder();
         continueExploring(notation, BPMN.i.toString());
 
+        
+        //System.out.println("Removing extra ors...");
+        //removeExtraOrs();
+        
+        finishOrs();
+        return notation.toString().replace(",}", "}");
+    }
+    
+    public void finishOrs(){
         System.out.println("Finishing Or joins...");
         for (int i = 0; i < this.cierresOr.size(); i++) {
             for (Map.Entry<String, LinkedList<String>> entry : cierresOr.get(i).entrySet()) {
@@ -46,18 +55,27 @@ public class JoinsFinder {
                 String cierre = entry.getKey(); //Recuperar cierre
                 //Obtener antecesores del cierre
                 HashSet<String> antecesores = sucesoresOAntecesores(cierre, 'a');
+                boolean orExists = false;
                 for (String a : antecesores) {
-                    WFG.remove(a + "," + cierre); //eliminar la antigua conexion
-                    WFG.put(a + "," + orSymbol, 1); //nueva conexion a la compuerta
+                    if(BPMN.Gor.contains(a)){
+                        orExists = true;
+                        System.out.println("\t\tSe intentó crear Join: " + orSymbol + " pero el cierre contiene OR (simplificación)");
+                        break;
+                    }
+                    
                 }
-                System.out.println("\t\tJoin: " + orSymbol + " creado");
-                WFG.put(orSymbol + "," + cierre, 1);//Conectar la nueva compuerta al nodo cierre
-                numberGatewaysOr++;
+                
+                if(!orExists){
+                    System.out.println("\t\tJoin: " + orSymbol + " creado");
+                    for(String a:antecesores){
+                        WFG.remove(a + "," + cierre); //eliminar la antigua conexion
+                        WFG.put(a + "," + orSymbol, 1); //nueva conexion a la compuerta
+                    }
+                    WFG.put(orSymbol + "," + cierre, 1);//Conectar la nueva compuerta al nodo cierre
+                    numberGatewaysOr++;
+                }
             }
         }
-        System.out.println("Removing extra ors...");
-        removeExtraOrs();
-        return notation.toString().replace(",}", "}");
     }
 
     public void continueExploring(StringBuilder notation, String actual) {
@@ -235,15 +253,6 @@ public class JoinsFinder {
                         BPMN.Gor.remove(c1);
                     }
                     System.out.println("Or removed: " + c1);
-                    /*if(getNumberEdges(c1, "to") == 1 && getNumberEdges(c1, "from") == 1){
-                        HashSet<String> sucesores = sucesoresOAntecesores(c1, 's');
-                        for(String s : sucesores){
-                            WFG.remove(c1 + "," + s);
-                            Utils.remplazarEdges(c1, s, WFG);
-                            BPMN.Gor.remove(c1);
-                        }
-                        System.out.println("Or removed: " + c1);
-                    }*/
                 }
             }
             duplicateOrs = getNumberDuplicateOrs();
