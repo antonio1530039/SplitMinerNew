@@ -209,12 +209,14 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         if (autoloops) {
             for (Character a : autoLoops) {
                 Element e = elementsToPaint.get(a.toString());
-                e.type = "Autoloop";
+                if(e!=null)
+                    e.type = "Autoloop";
             }
         } else {
             for (Character a : autoLoops) {
                 Element e = elementsToPaint.get(a.toString());
-                e.type = "Task";
+                if(e!=null)
+                    e.type = "Task";
             }
         }
 
@@ -222,16 +224,17 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
             String[] edge = s.split(",");
 
             if (shortloops) {
-
-                elementsToPaint.get(edge[0]).Antecesores.add(edge[1]);
-
-                elementsToPaint.get(edge[1]).Antecesores.add(edge[0]);
+                
+                if(elementsToPaint.containsKey(edge[0]))
+                    elementsToPaint.get(edge[0]).Antecesores.add(edge[1]);
+                if(elementsToPaint.containsKey(edge[1]))
+                    elementsToPaint.get(edge[1]).Antecesores.add(edge[0]);
 
             } else {
-
-                elementsToPaint.get(edge[0]).Antecesores.remove(edge[1]);
-
-                elementsToPaint.get(edge[1]).Antecesores.remove(edge[0]);
+                if(elementsToPaint.containsKey(edge[0]))
+                    elementsToPaint.get(edge[0]).Antecesores.remove(edge[1]);
+                if(elementsToPaint.containsKey(edge[1]))
+                    elementsToPaint.get(edge[1]).Antecesores.remove(edge[0]);
 
             }
 

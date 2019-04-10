@@ -61,6 +61,29 @@ public class Utils {
       return sucesores;
    }
    
+   //all nodes following 'task', given the current pruened WFG
+    public static HashSet<String> sucesoresOAntecesores(String target, Character type, LinkedHashMap<String, Integer> WFG) { //types: s, a
+
+        HashSet<String> antecesores = new LinkedHashSet<String>();
+
+        for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
+            String key = entry.getKey();
+            String vals[] = key.split(",");
+            if (type == 'a') {
+                if (target.equals(vals[1])) {
+                    antecesores.add(vals[0]);
+                }
+            } else {
+                if (target.equals(vals[0])) {
+                    antecesores.add(vals[1]);
+                }
+            }
+
+        }
+
+        return antecesores;
+    }
+   
   
    
    

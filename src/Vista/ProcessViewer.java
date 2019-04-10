@@ -37,6 +37,7 @@ import java.awt.GridBagConstraints;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
@@ -787,9 +788,13 @@ public class ProcessViewer {
 
         
         System.out.println("====================Loop detection===============");
+        
+        LinkedHashSet<String> loops = FindLoops.findLoops(BPMN, postprocesamiento.ordenGateways, WFG, postprocesamiento.cierres);
+        
+        System.out.println("Loops: " + loops.toString());
        
         
-        ArrayList<String> loops = new ArrayList<>();
+       /* ArrayList<String> loops = new ArrayList<>();
         
         for(String gateway : wfg.BPMN.Gxor){
             if(gateway.charAt(gateway.length()-1) == 'A'){
@@ -824,7 +829,7 @@ public class ProcessViewer {
         
         System.out.println("Loops detected: " + loops.toString());
         
-
+    */
         wasMined = true;
         modelSelected = true;
         deploymentSelected = true;

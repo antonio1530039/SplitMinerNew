@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,11 @@ public class PostProcesarGrafo {
     LinkedHashMap<String, Integer> WFG;
     BPMNModel BPMN;
     public String notation = "";
+    
+    //Variables para deteccion futura de loops
+    public LinkedHashSet<String> ordenGateways = new LinkedHashSet<>();
+    public LinkedHashSet<String> cierres = new LinkedHashSet<>();
+    ///
 
     public PostProcesarGrafo(BPMNModel bpmn, LinkedHashMap<String, Integer> wfg) {
         WFG = wfg;
@@ -188,6 +194,7 @@ public class PostProcesarGrafo {
        /*
         
         WFG.clear();
+        /*
       //Modelo 1
       WFG.put("I,a", 1);
       WFG.put("X1A,b", 1);
@@ -412,7 +419,7 @@ public class PostProcesarGrafo {
       WFG.put("e,f", 1);
       WFG.put("f,A1A", 1);
       WFG.put("c,X1A", 1);
-      WFG.put("f,O", 1);
+      //WFG.put("f,O", 1);
       WFG.put("d,O", 1);
    
       
@@ -439,8 +446,10 @@ public class PostProcesarGrafo {
         //.....................
         ///
         JoinsFinder jf = new JoinsFinder(BPMN, WFG);
-
         notation = jf.findNotation();
+        
+        this.ordenGateways = jf.ordenGateways;
+        this.cierres = jf.cierres;
         System.out.println("Notation: " + notation);
 
     }

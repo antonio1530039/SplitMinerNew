@@ -17,6 +17,13 @@ public class JoinsFinder {
     BPMNModel BPMN;
     LinkedHashMap<String, Integer> WFG;
 
+    
+    //Variables para deteccion futura de loops
+    LinkedHashSet<String> ordenGateways = new LinkedHashSet<>();
+    LinkedHashSet<String> cierres = new LinkedHashSet<>();
+    ///
+    
+    
     ArrayList<HashMap<String, LinkedList<String>>> cierresOr = new ArrayList<>();
     ArrayList<String> cierresOrGateways = new ArrayList<>();
 
@@ -26,7 +33,6 @@ public class JoinsFinder {
         this.BPMN = bpmn;
         this.cloneTask = new LinkedList<>();
         this.visitedGateways = new LinkedList<>();
-
         for (Character c : BPMN.T) {
             this.cloneTask.add(c.toString());
         }
@@ -35,31 +41,40 @@ public class JoinsFinder {
     }
 
     public String findNotation() {
-        StringBuilder notation = new StringBuilder();
+        StringBuilder notation = new StringBuilder(); 
         continueExploring(notation, BPMN.i.toString());
-
-        
         //System.out.println("Removing extra ors...");
         //removeExtraOrs();
-        
         finishOrs();
+        System.out.println("Orden de compuertas: " + this.ordenGateways.toString());
+        System.out.println("Cierres: " + this.cierres.toString());
         return notation.toString().replace(",}", "}");
     }
     
     public void finishOrs(){
         System.out.println("Finishing Or joins...");
+        numberGatewaysOr = 1;
         for (int i = 0; i < this.cierresOr.size(); i++) {
             for (Map.Entry<String, LinkedList<String>> entry : cierresOr.get(i).entrySet()) {
                 String orSymbol = "O" + cierresOrGateways.get(i).substring(0, cierresOrGateways.get(i).length() - 1) + "C" + numberGatewaysOr;//Definir el simbolo de la compuerta Or
                 BPMN.Gor.add(orSymbol);
                 String cierre = entry.getKey(); //Recuperar cierre
                 //Obtener antecesores del cierre
-                HashSet<String> antecesores = sucesoresOAntecesores(cierre, 'a');
+                HashSet<String> antecesores = Utils.sucesoresOAntecesores(cierre, 'a', WFG);
                 boolean orExists = false;
                 for (String a : antecesores) {
                     if(BPMN.Gor.contains(a)){
                         orExists = true;
                         System.out.println("\t\tSe intentó crear Join: " + orSymbol + " pero el cierre contiene OR (simplificación)");
+                        BPMN.Gor.remove(orSymbol);
+                        //Remover de las compuertas ordenadas
+                        String toSearch = orSymbol.substring(0, orSymbol.indexOf("C"));
+                        for(String o : (LinkedHashSet<String>) this.ordenGateways.clone()){
+                            if(o.contains(toSearch)){
+                                this.ordenGateways.remove(o);
+                            }
+                        }
+                        
                         break;
                     }
                     
@@ -72,6 +87,7 @@ public class JoinsFinder {
                         WFG.put(a + "," + orSymbol, 1); //nueva conexion a la compuerta
                     }
                     WFG.put(orSymbol + "," + cierre, 1);//Conectar la nueva compuerta al nodo cierre
+                    this.cierres.add(orSymbol); //cierres para deteccion futura de loops
                     numberGatewaysOr++;
                 }
             }
@@ -118,6 +134,7 @@ public class JoinsFinder {
             } else if (BPMN.Gxor.contains(gateway)) {
                 BPMN.Gxor.add(symbol);
             }
+            this.ordenGateways.add(symbol);
             for (Map.Entry<String, LinkedList<String>> entry : cierres.entrySet()) {
                 String cierre = entry.getKey(); //Recuperar cierre
                 LinkedList<String> anteriores = entry.getValue();//Recuperar lista de los anteriores del cierre
@@ -127,10 +144,9 @@ public class JoinsFinder {
                 }
                 System.out.println("\t\tJoin: " + symbol + " creado");
                 WFG.put(symbol + "," + cierre, 1);//Conectar la nueva compuerta al nodo cierre
+                this.cierres.add(symbol); //cierres para deteccion futura de loops
                 paraCierre.add(cierre + "," + symbol);
             }
-            //return paraCierre;
-            //continueExploring(notation, cierre);
         } else if (cierres.size() > 1) { //Cierre de Ors
 
             this.cierresOr.add(cierres);
@@ -140,9 +156,9 @@ public class JoinsFinder {
                 String orSymbol = "O" + gateway.substring(0, gateway.length() - 1) + "C" + numberGatewaysOr;//Definir el simbolo de la compuerta Or
                 String cierre = entry.getKey(); //Recuperar cierre
                 paraCierre.add(cierre + "," + orSymbol);
-
+                this.ordenGateways.add(orSymbol);
+                numberGatewaysOr++;
             }
-            //return paraCierre;
         }
         return paraCierre;
     }
@@ -150,6 +166,7 @@ public class JoinsFinder {
     public HashMap<String, LinkedList<String>> resolveGateway(String gate, LinkedList<String> ramas) {
         HashSet<String> sigs = Utils.successors(gate, WFG);
         HashMap<String, LinkedList<String>> cierres = new HashMap<>();
+        this.ordenGateways.add(gate);
         for (String s : sigs) {
             StringBuilder notationRama = new StringBuilder();
             ArrayList<String> cierreYanteriores = exploreBranch(s, notationRama, gate);
@@ -178,7 +195,7 @@ public class JoinsFinder {
         ArrayList<String> cierres = new ArrayList<>();
         if (getNumberEdges(nodo, "to") > 1) {
             //si este nodo tiene como antecesor la compuerta de donde viene, entonces retornar como cierre: nodo,fromGateway
-            HashSet<String> antecesores = sucesoresOAntecesores(nodo, 'a');
+            HashSet<String> antecesores = Utils.sucesoresOAntecesores(nodo, 'a', WFG);
             if (antecesores.contains(fromGateway)) {
                 System.out.println("(getNumberEdgesToA(nodo) > 1)...nodo,FromGateway: '" + nodo + "'," + fromGateway + "' ");
                 cierres.add(nodo + "," + fromGateway);
@@ -230,75 +247,7 @@ public class JoinsFinder {
         return null;
     }
 
-    public void removeExtraOrs() {
-        if (BPMN.Gor.isEmpty()) {
-            return;
-        }
-        
-        int duplicateOrs = getNumberDuplicateOrs();
-        
-        while(duplicateOrs != 0){
-            List<Map.Entry<String, Integer>> edges = new ArrayList(WFG.entrySet());
-            for (Map.Entry<String, Integer> entry : edges) {
-                String[] vals = entry.getKey().split(",");
-
-                String c0 = vals[0];
-                String c1 = vals[1];
-
-                if (BPMN.Gor.contains(c0) && BPMN.Gor.contains(c1)) {
-                    HashSet<String> sucesores = sucesoresOAntecesores(c1, 's');
-                    for (String s : sucesores) {
-                        WFG.remove(c1 + "," + s);
-                        Utils.remplazarEdges(c1, s, WFG);
-                        BPMN.Gor.remove(c1);
-                    }
-                    System.out.println("Or removed: " + c1);
-                }
-            }
-            duplicateOrs = getNumberDuplicateOrs();
-        }
-        
-    }
     
-    
-    public int getNumberDuplicateOrs(){
-        int cont = 0;
-        List<Map.Entry<String, Integer>> edges = new ArrayList(WFG.entrySet());
-        for (Map.Entry<String, Integer> entry : edges) {
-            String[] vals = entry.getKey().split(",");
-
-            String c0 = vals[0];
-            String c1 = vals[1];
-
-            if (BPMN.Gor.contains(c0) && BPMN.Gor.contains(c1)) {
-                cont++;
-            }
-        }
-        return cont;
-    }
-
-    //all nodes following 'task', given the current pruened WFG
-    public HashSet<String> sucesoresOAntecesores(String target, Character type) { //types: s, a
-
-        HashSet<String> antecesores = new LinkedHashSet<String>();
-
-        for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
-            String key = entry.getKey();
-            String vals[] = key.split(",");
-            if (type == 'a') {
-                if (target.equals(vals[1])) {
-                    antecesores.add(vals[0]);
-                }
-            } else {
-                if (target.equals(vals[0])) {
-                    antecesores.add(vals[1]);
-                }
-            }
-
-        }
-
-        return antecesores;
-    }
 
     //Encontrar el numero de edges entrantes ( *a )
     public int getNumberEdges(String a, String type) { //types: To , From
