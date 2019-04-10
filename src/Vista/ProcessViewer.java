@@ -750,7 +750,7 @@ public class ProcessViewer {
         System.out.println("\nPASO 5: POST-PROCESAMIENTO");
 
         //g1.postProcesamiento(BPMN);
-        PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(wfg.BPMN, wfg, preprocesarGrafo.autoLoops, preprocesarGrafo.shortLoops);
+        PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(wfg.BPMN, wfg.WFG);
 
         wfg.Notation = postprocesamiento.notation;
 
@@ -778,6 +778,11 @@ public class ProcessViewer {
         this.WFG = wfg.WFG; //asignar el valor actual del grafo (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         this.BPMN = wfg.BPMN;//asignar el valor actual del modelo BPMN (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         wfg.tasksDescription = this.tasksDescription;
+        
+        wfg.autoLoops = preprocesarGrafo.autoLoops;
+        wfg.shortLoops = preprocesarGrafo.shortLoops;
+       
+        
         wfg.notifyAction(); //notificar que el modelo tuvo cambios
 
         

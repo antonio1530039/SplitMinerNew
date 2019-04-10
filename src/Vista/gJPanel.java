@@ -109,7 +109,7 @@ public class gJPanel extends JPanel {
                 g.setColor(Color.black);
                 g.fillOval(e.cPosX, e.cPosY, radio, radio);
                 g.setColor(Color.white);
-                g.drawString(e.Name.charAt(1) + "", e.cPosX + (radio / 2), e.cPosY + (radio / 2));
+                g.drawString(e.Name, e.cPosX + (radio / 2), e.cPosY + (radio / 2));
             
             }else if(e.type.equals("Gateway")){
                 

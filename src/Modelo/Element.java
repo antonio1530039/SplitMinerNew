@@ -1,13 +1,14 @@
 package Modelo;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 public class Element {
     
     public String Name;
     public int cPosX;
     public int cPosY;
-    public ArrayList<String> Antecesores;
+    public LinkedHashSet<String> Antecesores;
     public String type;
     
     
@@ -16,7 +17,7 @@ public class Element {
         this.cPosX = 0;
         this.cPosY = 0;
         this.type = "";
-        Antecesores = new ArrayList<>();
+        Antecesores = new LinkedHashSet<>();
     }
     
     public Element(String name){
@@ -24,7 +25,7 @@ public class Element {
         this.cPosX = 0;
         this.cPosY = 0;
         this.type="";
-        Antecesores = new ArrayList<>();
+        Antecesores = new LinkedHashSet<>();
     }
     
     

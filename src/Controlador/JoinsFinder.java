@@ -64,7 +64,7 @@ public class JoinsFinder {
                     }
                     
                 }
-                
+                //Aqui se verifica si al menos un antecesor del cierre es una compuerta OR, entonces no colocar este cierre para evitar la serializacion de estas compuertas
                 if(!orExists){
                     System.out.println("\t\tJoin: " + orSymbol + " creado");
                     for(String a:antecesores){

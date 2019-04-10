@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,15 +14,11 @@ public class PostProcesarGrafo {
 
     LinkedHashMap<String, Integer> WFG;
     BPMNModel BPMN;
-    List<Character> autoLoops = new LinkedList<>();
-    LinkedHashSet<String> shortLoops = new LinkedHashSet<>();
     public String notation = "";
 
-    public PostProcesarGrafo(BPMNModel bpmn, WFG wfg, List<Character> autoLoops, LinkedHashSet<String> shortLoops) {
-        WFG = wfg.WFG;
+    public PostProcesarGrafo(BPMNModel bpmn, LinkedHashMap<String, Integer> wfg) {
+        WFG = wfg;
         BPMN = bpmn;
-        this.autoLoops = autoLoops;
-        this.shortLoops = shortLoops;
 
         //OCTAVO, SE REMUEVEN COMPUERTAS DUPLICADAS 
         //todas las compuertas XOR y AND se han detectado. Ahora, eliminar compuertas repetidas.
@@ -43,18 +37,16 @@ public class PostProcesarGrafo {
         detectarJoins();
         // System.out.println("\t  Resultado:");
         Utils.mostrarGrafo(2, WFG);
-        
-        wfg.WFGAll = (LinkedHashMap) WFG.clone();
 
         //Y SE REINTEGRAN 'AUTOLOPS'
-        System.out.println("\n\t3.Re-integrar autolops y shortLoops al modelo final");
+        /*System.out.println("\n\t3.Re-integrar autolops y shortLoops al modelo final");
         
         System.out.println("\n\t\t autoloops: " + autoLoops.toString());
         System.out.println("\n\t\t shortLoops: " + shortLoops.toString());
         reintegraALoops();
         System.out.println("\t  Resultado:");
+        */
         Utils.mostrarGrafo(2, WFG);
-        wfg.WFGLoops = (LinkedHashMap) WFG.clone();
         
     }
 
@@ -126,7 +118,7 @@ public class PostProcesarGrafo {
 
     }
 
-    public void reintegraALoops() {
+    /*public void reintegraALoops() {
         
         //Reintegrar shortLoops
         for(String l : shortLoops){
@@ -186,18 +178,12 @@ public class PostProcesarGrafo {
         
         
 
-    }
+    }*/
 
     public void detectarJoins() {
 
         System.out.println("\t\tDetectando joins y creando noatación...");
         //Lo siguiente es a manera de prueba.....................
- 
-        
-     
-      
-     
-     
          
        /*
         

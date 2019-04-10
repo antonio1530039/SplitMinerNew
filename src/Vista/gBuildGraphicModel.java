@@ -1,5 +1,6 @@
 package Vista;
 
+import Controlador.Utils;
 import Controlador.WFG;
 import Modelo.BPMNModel;
 import Modelo.Element;
@@ -11,7 +12,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,13 +34,18 @@ import javax.swing.JTextField;
 
 public class gBuildGraphicModel extends JFrame implements Observer, ActionListener {
 
-    private JRadioButton antesSplitsRadio, splitsRadio, todoRadio, loopsRadio;
+    private JRadioButton antesSplitsRadio, splitsRadio, todoRadio;
     private ButtonGroup bg;
 
-    private LinkedHashMap<String, Integer> WFGLoops;
     private LinkedHashMap<String, Integer> WFGantesSplits;
     private LinkedHashMap<String, Integer> WFGSplits;
     private LinkedHashMap<String, Integer> WFG;
+
+    public List<Character> autoLoops = new LinkedList<Character>();
+    public LinkedHashSet<String> shortLoops = new LinkedHashSet<String>();
+
+    boolean autoloops = false;
+    boolean shortloops = false;
 
     private LinkedList<String> showTasks;
 
@@ -60,6 +68,9 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
     JTextArea notationTxt = new JTextArea();
 
     JTextArea tasksDescriptionTxt = new JTextArea(7, 25);
+
+    JCheckBox autoloopsCheck = new JCheckBox("Autoloops");
+    JCheckBox shortloopsCheck = new JCheckBox("Shortloops");
 
     public gBuildGraphicModel(LinkedList<Character> tasks) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -88,23 +99,24 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         todoRadio = new JRadioButton("All");
         todoRadio.setBounds(10, 80, widthComponent, 30);
         todoRadio.addActionListener(this);
+        todoRadio.setSelected(true);
         jpanelComponentes.add(todoRadio);
         bg.add(todoRadio);
 
-        loopsRadio = new JRadioButton("All with loops");
-        loopsRadio.setBounds(10, 80, widthComponent, 30);
-        loopsRadio.setSelected(true);
-        loopsRadio.addActionListener(this);
-        jpanelComponentes.add(loopsRadio);
-        bg.add(loopsRadio);
-        int y = 110;
+        autoloopsCheck.setBounds(10, 10, widthComponent, 30);
+        autoloopsCheck.addActionListener(this);
+        jpanelComponentes.add(autoloopsCheck);
+
+        shortloopsCheck.setBounds(10, 10, widthComponent, 30);
+        shortloopsCheck.addActionListener(this);
+        jpanelComponentes.add(shortloopsCheck);
+
         for (Character t : tasks) {
             JCheckBox ch = new JCheckBox(t.toString());
-            ch.setBounds(10, y, widthComponent, 30);
+            ch.setBounds(10, 10, widthComponent, 30);
             ch.setSelected(true);
             ch.addActionListener(this);
             jpanelComponentes.add(ch);
-            y += 30;
             showTasks.add(t.toString());
         }
 
@@ -112,10 +124,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         notationTxt.setText("");
         notationTxt.setFont(notationTxt.getFont().deriveFont(20f));
         notationTxt.setEditable(true);
-        /*StyledDocument doc = notationTxt.getStyledDocument();
-        SimpleAttributeSet center = new SimpleAttributeSet();
-        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
-        doc.setParagraphAttributes(0, doc.getLength(), center, false);*/
+
         JTextField notationTitle = new JTextField("Notation: ");
         notationTitle.setBounds(5, 5, ScreenWidth, ScreenWidth);
         notationTitle.setFont(notationTitle.getFont().deriveFont(20f));
@@ -123,18 +132,18 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         jpanelnotation.add(notationTitle);
         jpanelnotation.add(notationTxt);
 
-        JPanel middlePanel3 = new JPanel();
-        middlePanel3.setBorder(new TitledBorder(new EtchedBorder(), "Tasks"));
+        JPanel tasksPanel = new JPanel();
+        tasksPanel.setBorder(new TitledBorder(new EtchedBorder(), "Tasks description"));
 
         tasksDescriptionTxt.setSize(new Dimension(screenSize.width / 5, screenSize.height / 7));
         //display3.setText(tasksDescription);
         JScrollPane scroll3 = new JScrollPane(tasksDescriptionTxt);
         scroll3.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scroll3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        middlePanel3.add(scroll3);
+        tasksPanel.add(scroll3);
 
-        middlePanel3.setPreferredSize(new Dimension(screenSize.width / 5, screenSize.height / 7));
-        jpanelnotation.add(middlePanel3);
+        tasksPanel.setPreferredSize(new Dimension(screenSize.width / 5, screenSize.height / 7));
+        jpanelnotation.add(tasksPanel);
 
         jpanelMenu.add(jpanelComponentes, BorderLayout.NORTH);
         jpanelMenu.add(jpanelnotation, BorderLayout.SOUTH);
@@ -145,16 +154,17 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
     public void buildModel(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG, String mode) {
         this.remove(jpanelGrafica);
         currentMode = mode;
+        HashMap<String, Element> elementsToPaint = null;
         if (ElementsSaved.containsKey(mode)) {
-            HashMap<String, Element> elements = (HashMap<String, Element>) ElementsSaved.get(mode).clone();
-            List<Map.Entry<String, Element>> elems = new ArrayList(elements.entrySet());
+            elementsToPaint = (HashMap<String, Element>) ElementsSaved.get(mode).clone();
+            List<Map.Entry<String, Element>> elems = new ArrayList(elementsToPaint.entrySet());
             for (Map.Entry<String, Element> entry : elems) {
                 String key = entry.getKey();
                 if (!showTasks.contains(key) && key.length() == 1) {
-                    elements.remove(entry.getKey());
+                    elementsToPaint.remove(entry.getKey());
                 }
             }
-            jpanelGrafica = new gJPanel(ScreenWidth, ScreenHeight, elements, BPMN);
+
         } else {
             //posicion inicial del primer elemento en el canvas
             PosX = ScreenWidth / 15;
@@ -182,18 +192,52 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                     Elements.get(realSucesor).Antecesores.add(actual);
                 }
             }
-            HashMap<String, Element> elements = (HashMap<String, Element>) Elements.clone();
-            List<Map.Entry<String, Element>> elems = new ArrayList(elements.entrySet());
+            elementsToPaint = (HashMap<String, Element>) Elements.clone();
+            List<Map.Entry<String, Element>> elems = new ArrayList(elementsToPaint.entrySet());
             for (Map.Entry<String, Element> entry : elems) {
                 String key = entry.getKey();
                 if (!showTasks.contains(key) && key.length() == 1) {
-                    elements.remove(entry.getKey());
+                    elementsToPaint.remove(entry.getKey());
 
                 }
             }
-            jpanelGrafica = new gJPanel(ScreenWidth, ScreenHeight, elements, BPMN);
+
             ElementsSaved.put(mode, Elements);
         }
+
+        //Verificar si los autoloops estan activados
+        if (autoloops) {
+            for (Character a : autoLoops) {
+                Element e = elementsToPaint.get(a.toString());
+                e.type = "Autoloop";
+            }
+        } else {
+            for (Character a : autoLoops) {
+                Element e = elementsToPaint.get(a.toString());
+                e.type = "Task";
+            }
+        }
+
+        for (String s : shortLoops) {
+            String[] edge = s.split(",");
+
+            if (shortloops) {
+
+                elementsToPaint.get(edge[0]).Antecesores.add(edge[1]);
+
+                elementsToPaint.get(edge[1]).Antecesores.add(edge[0]);
+
+            } else {
+
+                elementsToPaint.get(edge[0]).Antecesores.remove(edge[1]);
+
+                elementsToPaint.get(edge[1]).Antecesores.remove(edge[0]);
+
+            }
+
+        }
+
+        jpanelGrafica = new gJPanel(ScreenWidth, ScreenHeight, elementsToPaint, BPMN);
         add(jpanelGrafica);
         revalidate();
     }
@@ -210,15 +254,12 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
             } else if (bpmn.o.toString().equals(e.Name)) {
                 e.type = "End";
             } else {
-
                 if (e.Name.charAt(0) == '@') {
                     e.type = "Autoloop";
                 } else {
                     e.type = "Task";
                 }
-
             }
-
         }
 
         Elements.put((e.Name.charAt(0) == '@') ? e.Name.charAt(1) + "" : e.Name, e);
@@ -233,52 +274,56 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
     @Override
     public void update(Observable o, Object arg) {
-        System.out.println("Actualización de Observable!");
+        System.out.println("Actualización de Observable");
         WFG wfg = (WFG) o;
         WFGantesSplits = wfg.WFGantesSplits;
         WFGSplits = wfg.WFGSplits;
-        WFG = wfg.WFGAll;
-        WFGLoops = wfg.WFGLoops;
+        WFG = wfg.WFG;
         BPMN = wfg.BPMN;
+        autoLoops = wfg.autoLoops;
+        shortLoops = wfg.shortLoops;
         notationTxt.setText(wfg.Notation);
         tasksDescriptionTxt.setText(wfg.tasksDescription);
-        buildModel(BPMN, WFGLoops, "All with loops");
+        buildModel(BPMN, WFG, "All");
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+
         if (e.getSource().getClass().isInstance(new JCheckBox())) {
             JCheckBox c = (JCheckBox) e.getSource();
+            String label = c.getText();
 
-            if (c.isSelected() && !showTasks.contains(c.getText())) {
-                showTasks.add(c.getText());
-            } else if (!c.isSelected()) {
-                showTasks.remove(c.getText());
-            }
-
-            if (currentMode.equals("All with loops")) {
-                buildModel(BPMN, WFGLoops, "All with loops");
-            } else if (currentMode.equals("All")) {
-                buildModel(BPMN, WFG, "All");
-            } else if (currentMode.equals("Splits")) {
-                buildModel(BPMN, WFGSplits, "Splits");
+            if (c.isSelected()) {
+                if (label.equals("Autoloops")) {
+                    autoloops = true;
+                } else if (label.equals("Shortloops")) {
+                    shortloops = true;
+                }
             } else {
-                buildModel(BPMN, WFGantesSplits, "BeforeSplits");
+                if (label.equals("Autoloops")) {
+                    autoloops = false;
+                } else if (label.equals("Shortloops")) {
+                    shortloops = false;
+                }
             }
 
-        } else {
-            if (antesSplitsRadio.isSelected()) {
-                buildModel(BPMN, WFGantesSplits, "BeforeSplits");
+            if (c.isSelected() && !showTasks.contains(label)) {
+                showTasks.add(label);
+            } else if (!c.isSelected()) {
+                showTasks.remove(label);
             }
-            if (splitsRadio.isSelected()) {
-                buildModel(BPMN, WFGSplits, "Splits");
-            }
-            if (todoRadio.isSelected()) {
-                buildModel(BPMN, WFG, "All");
-            }
-            if (loopsRadio.isSelected()) {
-                buildModel(BPMN, WFGLoops, "All with loops");
-            }
+
+        }
+
+        if (antesSplitsRadio.isSelected()) {
+            buildModel(BPMN, WFGantesSplits, "BeforeSplits");
+        }
+        if (splitsRadio.isSelected()) {
+            buildModel(BPMN, WFGSplits, "Splits");
+        }
+        if (todoRadio.isSelected()) {
+            buildModel(BPMN, WFG, "All");
         }
     }
 
