@@ -48,6 +48,8 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
     boolean shortloops = false;
 
     private LinkedList<String> showTasks;
+    
+    private HashMap<String, ArrayList<String>> quiebres= new HashMap<>();
 
     private HashMap<String, HashMap<String, Element>> ElementsSaved;
 
@@ -185,11 +187,11 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 //procesar sucesor
                 if (!Elements.containsKey(realSucesor)) {
                     Element Esucesor = new Element(sucesor);
-                    Esucesor.Antecesores.add(actual);
+                    Esucesor.Antecesores.put(actual, new ArrayList<String>());
                     processElement(Esucesor, PosX, PosY, BPMN, Elements);
 
                 } else {
-                    Elements.get(realSucesor).Antecesores.add(actual);
+                    Elements.get(realSucesor).Antecesores.put(actual, new ArrayList<String>());
                 }
             }
             elementsToPaint = (HashMap<String, Element>) Elements.clone();
@@ -225,16 +227,40 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
             if (shortloops) {
                 
-                if(elementsToPaint.containsKey(edge[0]))
-                    elementsToPaint.get(edge[0]).Antecesores.add(edge[1]);
-                if(elementsToPaint.containsKey(edge[1]))
-                    elementsToPaint.get(edge[1]).Antecesores.add(edge[0]);
+                if(elementsToPaint.containsKey(edge[0])){
+                    //Verificar si se tienen quiebres guardados
+                    ArrayList<String> quiebres = this.quiebres.get(edge[1]);
+                    if(quiebres!=null){
+                        elementsToPaint.get(edge[0]).Antecesores.put(edge[1], this.quiebres.get(edge[1]) );
+                    }else{
+                        elementsToPaint.get(edge[0]).Antecesores.put(edge[1], new ArrayList<>() );
+                    }
+                }
+                if(elementsToPaint.containsKey(edge[1])){
+                    ArrayList<String> quiebres = this.quiebres.get(edge[0]);
+                    if(quiebres!=null){
+                        elementsToPaint.get(edge[1]).Antecesores.put(edge[0], this.quiebres.get(edge[0]) );
+                    }else{
+                        elementsToPaint.get(edge[1]).Antecesores.put(edge[0], new ArrayList<>() );
+                    }
+                }
+                    
 
             } else {
-                if(elementsToPaint.containsKey(edge[0]))
+                if(elementsToPaint.containsKey(edge[0])){
+                    //Antes de borrar, guardar quiebres
+                    
+                    this.quiebres.put( edge[1]  , elementsToPaint.get(edge[0]).Antecesores.get(edge[1]));
+                    
                     elementsToPaint.get(edge[0]).Antecesores.remove(edge[1]);
-                if(elementsToPaint.containsKey(edge[1]))
+                }
+                    
+                if(elementsToPaint.containsKey(edge[1])){
+                    //Antes de borrar, guardar quiebres
+                    this.quiebres.put( edge[0]  , elementsToPaint.get(edge[1]).Antecesores.get(edge[0]));
                     elementsToPaint.get(edge[1]).Antecesores.remove(edge[0]);
+                }
+                    
 
             }
 
