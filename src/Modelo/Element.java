@@ -8,7 +8,7 @@ public class Element {
     public String Name;
     public int cPosX;
     public int cPosY;
-    public LinkedHashSet<String> Antecesores;
+    public LinkedHashSet<String> Antecesores; 
     public String type;
     
     

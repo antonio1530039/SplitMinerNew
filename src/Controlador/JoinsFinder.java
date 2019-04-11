@@ -96,6 +96,7 @@ public class JoinsFinder {
 
     public void continueExploring(StringBuilder notation, String actual) {
         if (cloneTask.contains(actual)) { //verificar que actual sea una tarea
+            this.ordenGateways.add(actual);
             notation.append(" " + actual);
             cloneTask.remove(actual);
             continueExploring(notation, getSucesorOantecesor(actual, 's'));
@@ -212,6 +213,7 @@ public class JoinsFinder {
                 visitedGateways.add(nodo);
             } else if (cloneTask.contains(nodo)) {//es tarea... agregar a notacion y eliminar de lista
                 notation.append(" " + nodo);
+                this.ordenGateways.add(nodo);
                 cloneTask.remove(nodo);
                 String s = getSucesorOantecesor(nodo, 's');
                 if (s != null) {
