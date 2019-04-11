@@ -10,7 +10,7 @@ public class Element {
     public int cPosX;
     public int cPosY;
     //public LinkedHashSet<String> Antecesores; 
-    public HashMap<String, ArrayList<String>> Antecesores;
+    public HashMap<String, ArrayList<Element>> Antecesores;
     
     public String type;
     

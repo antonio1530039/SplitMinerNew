@@ -68,12 +68,14 @@ public class JoinsFinder {
                         System.out.println("\t\tSe intentó crear Join: " + orSymbol + " pero el cierre contiene OR (simplificación)");
                         BPMN.Gor.remove(orSymbol);
                         //Remover de las compuertas ordenadas
-                        String toSearch = orSymbol.substring(0, orSymbol.indexOf("C"));
+                        /*String toSearch = orSymbol.substring(0, orSymbol.indexOf("C"));
+                        System.out.println("TOsearch: " + toSearch);
                         for(String o : (LinkedHashSet<String>) this.ordenGateways.clone()){
                             if(o.contains(toSearch)){
                                 this.ordenGateways.remove(o);
+                                
                             }
-                        }
+                        }*/
                         
                         break;
                     }
@@ -87,6 +89,7 @@ public class JoinsFinder {
                         WFG.put(a + "," + orSymbol, 1); //nueva conexion a la compuerta
                     }
                     WFG.put(orSymbol + "," + cierre, 1);//Conectar la nueva compuerta al nodo cierre
+
                     this.cierres.add(orSymbol); //cierres para deteccion futura de loops
                     numberGatewaysOr++;
                 }
@@ -96,7 +99,6 @@ public class JoinsFinder {
 
     public void continueExploring(StringBuilder notation, String actual) {
         if (cloneTask.contains(actual)) { //verificar que actual sea una tarea
-            this.ordenGateways.add(actual);
             notation.append(" " + actual);
             cloneTask.remove(actual);
             continueExploring(notation, getSucesorOantecesor(actual, 's'));
@@ -213,7 +215,6 @@ public class JoinsFinder {
                 visitedGateways.add(nodo);
             } else if (cloneTask.contains(nodo)) {//es tarea... agregar a notacion y eliminar de lista
                 notation.append(" " + nodo);
-                this.ordenGateways.add(nodo);
                 cloneTask.remove(nodo);
                 String s = getSucesorOantecesor(nodo, 's');
                 if (s != null) {

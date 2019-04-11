@@ -49,7 +49,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
     private LinkedList<String> showTasks;
     
-    private HashMap<String, ArrayList<String>> quiebres= new HashMap<>();
+    private HashMap<String, ArrayList<Element>> quiebres= new HashMap<>();
 
     private HashMap<String, HashMap<String, Element>> ElementsSaved;
 
@@ -187,11 +187,11 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 //procesar sucesor
                 if (!Elements.containsKey(realSucesor)) {
                     Element Esucesor = new Element(sucesor);
-                    Esucesor.Antecesores.put(actual, new ArrayList<String>());
+                    Esucesor.Antecesores.put(actual, new ArrayList<Element>());
                     processElement(Esucesor, PosX, PosY, BPMN, Elements);
 
                 } else {
-                    Elements.get(realSucesor).Antecesores.put(actual, new ArrayList<String>());
+                    Elements.get(realSucesor).Antecesores.put(actual, new ArrayList<Element>());
                 }
             }
             elementsToPaint = (HashMap<String, Element>) Elements.clone();
@@ -229,7 +229,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 
                 if(elementsToPaint.containsKey(edge[0])){
                     //Verificar si se tienen quiebres guardados
-                    ArrayList<String> quiebres = this.quiebres.get(edge[1]);
+                    ArrayList<Element> quiebres = this.quiebres.get(edge[1]);
                     if(quiebres!=null){
                         elementsToPaint.get(edge[0]).Antecesores.put(edge[1], this.quiebres.get(edge[1]) );
                     }else{
@@ -237,7 +237,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                     }
                 }
                 if(elementsToPaint.containsKey(edge[1])){
-                    ArrayList<String> quiebres = this.quiebres.get(edge[0]);
+                    ArrayList<Element> quiebres = this.quiebres.get(edge[0]);
                     if(quiebres!=null){
                         elementsToPaint.get(edge[1]).Antecesores.put(edge[0], this.quiebres.get(edge[0]) );
                     }else{
