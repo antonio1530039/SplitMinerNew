@@ -2,9 +2,8 @@ package Modelo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 
-public class Element {
+public class Element implements Comparable{
     
     public String Name;
     public int cPosX;
@@ -29,6 +28,16 @@ public class Element {
         this.cPosY = 0;
         this.type="";
         Antecesores = new HashMap<>();
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return (cPosX + "").compareTo( (((Element)o).cPosX + "") );
+    }
+    
+    @Override
+    public String toString(){
+        return "Name: " + Name;
     }
     
     

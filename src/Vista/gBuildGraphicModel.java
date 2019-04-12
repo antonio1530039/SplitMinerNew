@@ -49,8 +49,10 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
     private LinkedList<String> showTasks;
     
+    
     private HashMap<String, ArrayList<Element>> quiebres= new HashMap<>();
-
+    public int[] breaks= new int[1];
+    
     private HashMap<String, HashMap<String, Element>> ElementsSaved;
 
     BPMNModel BPMN;
@@ -84,6 +86,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         setTitle("Model");
         setSize(ScreenWidth, ScreenHeight);
         setVisible(true);
+        breaks[0] = 0;
 
         bg = new ButtonGroup();
         int widthComponent = (ScreenWidth / 15) - 10;
@@ -266,7 +269,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
         }
 
-        jpanelGrafica = new gJPanel(ScreenWidth, ScreenHeight, elementsToPaint, BPMN);
+        jpanelGrafica = new gJPanel(ScreenWidth, ScreenHeight, elementsToPaint, BPMN, breaks);
         add(jpanelGrafica);
         revalidate();
     }

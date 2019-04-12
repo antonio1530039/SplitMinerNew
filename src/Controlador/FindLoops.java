@@ -1,5 +1,6 @@
 package Controlador;
 
+import static Controlador.GatewayLoops.getSucesoresOAntecesores;
 import Modelo.BPMNModel;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,10 +36,10 @@ public class FindLoops {
                 if (!cierres.contains(x)) {
                     continue;
                 }
-                if (ordenG.indexOf(x) < ordenG.indexOf(s)) {
+                if (esMenorQue(x,s, WFG)) {
                     continue;
                 } else {
-                    loops.add(s + "," + x);
+                        loops.add(s + "," + x);
                 }
 
             }
@@ -46,6 +47,38 @@ public class FindLoops {
         }
 
         return loops;
+    }
+    
+    public static boolean esMenorQue(String x, String s, LinkedHashMap<String, Integer> WFG){
+        LinkedHashSet<String> antecesores = getAllSucesores(WFG, s, new ArrayList<>(), 'a');
+        
+        return antecesores.contains(x);
+    }
+    
+    public static LinkedHashSet<String> getAllSucesores(LinkedHashMap<String, Integer> WFG, String target, ArrayList<String> visited, Character type) {
+        LinkedHashSet<String> adelante = new LinkedHashSet<>();
+
+        LinkedHashSet<String> sucesores = getSucesoresOAntecesores(target, WFG, type);
+        if (sucesores.contains(target)) // 2
+        {
+            sucesores.remove(target);
+        }
+        adelante.addAll(sucesores);
+
+        while (!sucesores.isEmpty()) {
+            for (String s : (LinkedHashSet<String>) sucesores.clone()) {
+                if(visited.contains(s)){
+                    sucesores.clear();
+                    continue;
+                }
+                visited.add(s);
+                sucesores = getAllSucesores(WFG, s, visited, type);
+                adelante.addAll(sucesores);
+            }
+        }
+
+        return adelante;
+
     }
 
     public static LinkedHashSet<String> getAllSplits(BPMNModel bpmn) {

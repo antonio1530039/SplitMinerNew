@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class gJPanel extends JPanel {
     HashMap<String, Color> gatewaysColors = new HashMap<>();
     public BPMNModel BPMN;
 
-    public gJPanel(int width, int height, HashMap<String, Element> elements, BPMNModel bpmn) {
+    public gJPanel(int width, int height, HashMap<String, Element> elements, BPMNModel bpmn, int[] breaks) {
         Elements = elements;
         ScreenWidth = width;
         ScreenHeight = height;
@@ -36,6 +37,49 @@ public class gJPanel extends JPanel {
         gatewaysColors = new HashMap<>();
         setBackground(new Color(255, 255, 255));
         setSize(ScreenWidth, ScreenHeight);
+
+        List<Map.Entry<String, Element>> elems = new ArrayList(Elements.entrySet());
+        for (Map.Entry<String, Element> entry : elems) {
+            Element e = entry.getValue();
+
+            
+            List<Map.Entry<String, ArrayList<Element>>> antes = new ArrayList(e.Antecesores.entrySet());
+            for (Map.Entry<String, ArrayList<Element>> registro : antes) {
+                String antecesor = registro.getKey();
+                Element a = null;
+                if (antecesor.charAt(0) == '@') {
+                    a = Elements.get(antecesor.charAt(1) + "");
+                } else {
+                    a = Elements.get(antecesor);
+                }
+                if (a != null) {
+                    if (registro.getValue().size() > 0) { //verificar que existan quiebres
+                        String aName = "";
+                        if (a.Name.charAt(0) == '@') {
+                            aName = a.Name.charAt(1) + "";
+                        } else {
+                            aName = a.Name;
+                        }
+
+                        ArrayList<Element> quiebres = registro.getValue();
+                        List<Element> quiebresList = new ArrayList(quiebres);
+                        for (Element q : quiebresList) {
+                            String qName = "";
+                            if (q.Name.charAt(0) == '@') {
+                                qName = q.Name.charAt(1) + "";
+                            } else {
+                                qName = q.Name;
+                            }
+
+                            this.Elements.put(qName, q);
+                        }
+
+                    }
+                }
+
+            }
+
+        }
 
         this.addMouseListener(new MouseListener() {
             @Override
@@ -57,7 +101,13 @@ public class gJPanel extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent me) {
-                clickAt(me.getX(), me.getY());
+                if (me.getClickCount() == 2 && !me.isConsumed()) {
+                    me.consume();
+                    doubleClick(me.getX(), me.getY());
+                } else {
+                    clickAt(me.getX(), me.getY());
+                }
+
             }
         });
 
@@ -77,6 +127,9 @@ public class gJPanel extends JPanel {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+
+        System.out.println(Elements.toString());
+
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue();
 
@@ -102,7 +155,7 @@ public class gJPanel extends JPanel {
 
             } else if (e.type.equals("Break")) {
                 g.setColor(Color.black);
-                g.fillOval(e.cPosX - (radio/18) , e.cPosY - (radio/18) , radio / 4, radio / 4);
+                g.fillOval(e.cPosX - (radio / 18), e.cPosY - (radio / 18), radio / 4, radio / 4);
                 g.setColor(Color.white);
                 //g.drawString("", e.cPosX + (radio / 2), e.cPosY + (radio / 2));
 
@@ -140,6 +193,7 @@ public class gJPanel extends JPanel {
                 g.drawString(e.Name, e.cPosX + (radio / 2) - (radio / 4), e.cPosY + (radio / 2));
                  */
             }
+
             //Dibujar lineas
             if (!e.Antecesores.isEmpty()) {
                 g.setColor(Color.black);
@@ -154,11 +208,15 @@ public class gJPanel extends JPanel {
                     }
                     if (a != null) {
                         if (registro.getValue().size() > 0) { //verificar que existan quiebres
+
+                            ArrayList<Element> quiebres = registro.getValue();
+                            Collections.sort(quiebres, Collections.reverseOrder());
+
                             int x1 = a.cPosX + (2 * (radio / 2));
                             int y1 = a.cPosY + (radio / 2);
-                            for (Element quiebre : registro.getValue()) {
-                                int x2 = quiebre.cPosX, y2 = quiebre.cPosY;
 
+                            for (int i = quiebres.size() - 1; i > -1; i--) {
+                                int x2 = quiebres.get(i).cPosX, y2 = quiebres.get(i).cPosY;
                                 drawArrowLine(g, x1, y1, x2, y2, ScreenWidth / 300, ScreenWidth / 300);
                                 x1 = x2;
                                 y1 = y2;
@@ -189,129 +247,54 @@ public class gJPanel extends JPanel {
             }
         }
 
-        if (ElementSelected.equals("")) {
-            System.out.println("Verificando si es quiebre");
-            boolean breakhappened = false;
-            //Verificar si dio clic en una linea
-            List<Map.Entry<String, Element>> entries = new ArrayList(Elements.entrySet());
-            for (Map.Entry<String, Element> entry : entries) {
-                Element e = entry.getValue(); //get the element
-                String eName = "";
-                if (e.Name.charAt(0) == '@') {
-                    eName = e.Name.charAt(1) + "";
+    }
+
+    public void doubleClick(int x, int y) {
+        
+        clickAt(x,y);
+        
+        if(ElementSelected.contains("break")){
+            Elements.remove(ElementSelected);
+            repaint();
+            return;
+        }
+
+        //if (ElementSelected.equals("")) {
+        //Verificar si es un quiebre
+        boolean breakhappened = false;
+        //Verificar si dio clic en una linea
+        List<Map.Entry<String, Element>> entries = new ArrayList(Elements.entrySet());
+        for (Map.Entry<String, Element> entry : entries) {
+            Element e = entry.getValue(); //get the element
+            String eName = "";
+            if (e.Name.charAt(0) == '@') {
+                eName = e.Name.charAt(1) + "";
+            } else {
+                eName = e.Name;
+            }
+
+            for (Map.Entry<String, ArrayList<Element>> registro : e.Antecesores.entrySet()) {
+                String antecesor = registro.getKey();
+                Element a = null;
+                if (antecesor.charAt(0) == '@') {
+                    a = Elements.get(antecesor.charAt(1) + "");
                 } else {
-                    eName = e.Name;
+                    a = Elements.get(antecesor);
                 }
+                if (a != null) {
+                    if (registro.getValue().size() > 0) { //verificar que existan quiebres
+                        int x1 = a.cPosX + radio;
+                        int y1 = a.cPosY + (radio / 2);
 
-                for (Map.Entry<String, ArrayList<Element>> registro : e.Antecesores.entrySet()) {
-                    String antecesor = registro.getKey();
-                    Element a = null;
-                    if (antecesor.charAt(0) == '@') {
-                        a = Elements.get(antecesor.charAt(1) + "");
-                    } else {
-                        a = Elements.get(antecesor);
-                    }
-                    if (a != null) {
-                        if (registro.getValue().size() > 0) { //verificar que existan quiebres
-                           /* int x1 = a.cPosX + (2 * (radio / 2));
-                            int y1 = a.cPosY + (radio / 2);
-                            for (Element quiebre : registro.getValue()) {
-                                int x2 = quiebre.cPosX, y2 = quiebre.cPosY + radio + 10;
-
-                                //if (isPointInLine(x, y, x1, y1, x2, y2)) {
-                                if (x >= x1
-                                        && y <= y2
-                                        && x <= x2
-                                        && y >= y1) {
-                                    //if (x >= x1 && x <= x2 && y >= e.cPosY + 10 && y >= e.cPosY + radio + 10) {
-                                    System.out.println("Quiebre en: " + x + "," + y + " / Entre: " + e.Name + " - " + antecesor);
-                                    Element elemento = new Element();
-                                    elemento.Name = "break" + breaks;
-                                    elemento.type = "Break";
-                                    elemento.cPosX = x;
-                                    elemento.cPosY = y;
-                                    this.Elements.put("break" + breaks, elemento);
-                                    ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
-                                    if (br != null) {
-                                        br.add(elemento);
-                                        //Elements.get(e.Name).Antecesores.put(antecesor, br);
-                                    } else {
-                                        ArrayList<Element> br2 = new ArrayList<>();
-                                        br2.add(elemento);
-                                        Elements.get(eName).Antecesores.put(antecesor, br2);
-                                    }
-                                    breaks++;
-                                    repaint();
-                                    breakhappened = true;
-                                    break;
-                                }
-                                x1 = x2;
-                                y1 = y2;
-                            }
-
-                            // if (x >= x1 && x <= e.cPosX && y >= e.cPosY + 10 && y >= e.cPosY + radio + 10) {
-                            if (x >= x1
-                                    && y <= e.cPosY + radio + 10
-                                    && x <= e.cPosX
-                                    && y >= y1) {
-                                System.out.println("Quiebre en: " + x + "," + y + " / Entre: " + e.Name + " - " + antecesor);
-                                Element elemento = new Element();
-                                elemento.Name = "break" + breaks;
-                                elemento.type = "Break";
-                                elemento.cPosX = x;
-                                elemento.cPosY = y;
-                                this.Elements.put("break" + breaks, elemento);
-                                ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
-                                if (br != null) {
-                                    br.add(elemento);
-                                    //Elements.get(e.Name).Antecesores.put(antecesor, br);
-                                } else {
-                                    ArrayList<Element> br2 = new ArrayList<>();
-                                    br2.add(elemento);
-                                    Elements.get(eName).Antecesores.put(antecesor, br2);
-                                }
-
-                                this.breaks++;
-                                repaint();
-                                breakhappened = true;
-                                break;
-                            }
-                            //drawArrowLine(g, x1, y1, e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
-                            */
-                        } else {
-
-                            //verificar limite
-                            // if(checkForLineInaPoint( Double.parseDouble((a.cPosX + (2 * (radio / 2))) + "") , Double.parseDouble( (a.cPosY + (radio / 2)) + "" ), Double.parseDouble((e.cPosX) + "") , Double.parseDouble((e.cPosY + (radio / 2))+ ""), Double.parseDouble(x + "" ), Double.parseDouble(y + "") )){
-                            // if (isPointInLine(x, y, a.cPosX + (2 * (radio / 2)), a.cPosY + (radio / 2), e.cPosX, e.cPosY + (radio / 2))) {
-                            int x1 = a.cPosX + radio;
-                            int y1 = a.cPosY + (radio / 2);
-                            int x2 = e.cPosX;
-                            int y2 = e.cPosY + (radio / 2);
+                        for (Element quiebre : registro.getValue()) {
+                            int x2 = quiebre.cPosX, y2 = quiebre.cPosY + (radio / 2);
 
                             if (x1 >= x2) {
                                 if (x <= x1 && x >= x2) {
                                     if (y1 >= y2) {
                                         if (y <= y1 && y >= y2) {
                                             //quiebre
-                                            System.out.println("Quiebre en: " + x + "," + y + " / Entre: " + e.Name + " - " + antecesor);
-                                            Element elemento = new Element();
-                                            elemento.Name = "break" + breaks;
-                                            elemento.type = "Break";
-                                            elemento.cPosX = x;
-                                            elemento.cPosY = y;
-                                            this.Elements.put("break" + breaks, elemento);
-
-                                            ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
-                                            if (br != null) {
-                                                br.add(elemento);
-                                                //Elements.get(e.Name).Antecesores.put(antecesor, br);
-                                            } else {
-                                                ArrayList<Element> br2 = new ArrayList<>();
-                                                br2.add(elemento);
-                                                Elements.get(eName).Antecesores.put(antecesor, br2);
-                                            }
-                                            breaks++;
-                                            repaint();
+                                            realizarQuiebre(eName, antecesor, x, y);
                                             breakhappened = true;
                                             break;
                                         }
@@ -319,26 +302,7 @@ public class gJPanel extends JPanel {
                                     } else {
                                         if (y <= y2 && y >= y1) {
                                             //quiebre
-
-                                            System.out.println("Quiebre en: " + x + "," + y + " / Entre: " + e.Name + " - " + antecesor);
-                                            Element elemento = new Element();
-                                            elemento.Name = "break" + breaks;
-                                            elemento.type = "Break";
-                                            elemento.cPosX = x;
-                                            elemento.cPosY = y;
-                                            this.Elements.put("break" + breaks, elemento);
-
-                                            ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
-                                            if (br != null) {
-                                                br.add(elemento);
-                                                //Elements.get(e.Name).Antecesores.put(antecesor, br);
-                                            } else {
-                                                ArrayList<Element> br2 = new ArrayList<>();
-                                                br2.add(elemento);
-                                                Elements.get(eName).Antecesores.put(antecesor, br2);
-                                            }
-                                            breaks++;
-                                            repaint();
+                                            realizarQuiebre(eName, antecesor, x, y);
                                             breakhappened = true;
                                             break;
                                         }
@@ -349,25 +313,7 @@ public class gJPanel extends JPanel {
                                     if (y1 >= y2) {
                                         if (y <= y1 && y >= y2) {
                                             //quiebre
-                                            System.out.println("Quiebre en: " + x + "," + y + " / Entre: " + e.Name + " - " + antecesor);
-                                            Element elemento = new Element();
-                                            elemento.Name = "break" + breaks;
-                                            elemento.type = "Break";
-                                            elemento.cPosX = x;
-                                            elemento.cPosY = y;
-                                            this.Elements.put("break" + breaks, elemento);
-
-                                            ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
-                                            if (br != null) {
-                                                br.add(elemento);
-                                                //Elements.get(e.Name).Antecesores.put(antecesor, br);
-                                            } else {
-                                                ArrayList<Element> br2 = new ArrayList<>();
-                                                br2.add(elemento);
-                                                Elements.get(eName).Antecesores.put(antecesor, br2);
-                                            }
-                                            breaks++;
-                                            repaint();
+                                            realizarQuiebre(eName, antecesor, x, y);
                                             breakhappened = true;
                                             break;
                                         }
@@ -375,25 +321,7 @@ public class gJPanel extends JPanel {
                                     } else {
                                         if (y <= y2 && y >= y1) {
                                             //quiebre
-                                            System.out.println("Quiebre en: " + x + "," + y + " / Entre: " + e.Name + " - " + antecesor);
-                                            Element elemento = new Element();
-                                            elemento.Name = "break" + breaks;
-                                            elemento.type = "Break";
-                                            elemento.cPosX = x;
-                                            elemento.cPosY = y;
-                                            this.Elements.put("break" + breaks, elemento);
-
-                                            ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
-                                            if (br != null) {
-                                                br.add(elemento);
-                                                //Elements.get(e.Name).Antecesores.put(antecesor, br);
-                                            } else {
-                                                ArrayList<Element> br2 = new ArrayList<>();
-                                                br2.add(elemento);
-                                                Elements.get(eName).Antecesores.put(antecesor, br2);
-                                            }
-                                            breaks++;
-                                            repaint();
+                                            realizarQuiebre(eName, antecesor, x, y);
                                             breakhappened = true;
                                             break;
                                         }
@@ -401,16 +329,132 @@ public class gJPanel extends JPanel {
                                 }
                             }
 
+                            x1 = x2;
+                            y1 = y2;
                         }
-                        //drawArrowLine(g, a.cPosX + radio), a.cPosY + (radio / 2), e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
+
+                        int x2 = e.cPosX;
+                        int y2 = e.cPosY + (radio / 2);
+                        if (x1 >= x2) {
+                            if (x <= x1 && x >= x2) {
+                                if (y1 >= y2) {
+                                    if (y <= y1 && y >= y2) {
+                                        //quiebre
+                                        realizarQuiebre(eName, antecesor, x, y);
+                                        breakhappened = true;
+                                        break;
+                                    }
+
+                                } else {
+                                    if (y <= y2 && y >= y1) {
+                                        //quiebre
+                                        realizarQuiebre(eName, antecesor, x, y);
+                                        breakhappened = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            if (x <= x2 && x >= x1) {
+                                if (y1 >= y2) {
+                                    if (y <= y1 && y >= y2) {
+                                        //quiebre
+                                        realizarQuiebre(eName, antecesor, x, y);
+                                        breakhappened = true;
+                                        break;
+                                    }
+
+                                } else {
+                                    if (y <= y2 && y >= y1) {
+                                        //quiebre
+                                        realizarQuiebre(eName, antecesor, x, y);
+                                        breakhappened = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        //drawArrowLine(g, x1, y1, e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
+                    } else {
+
+                        //verificar limite
+                        // if(checkForLineInaPoint( Double.parseDouble((a.cPosX + (2 * (radio / 2))) + "") , Double.parseDouble( (a.cPosY + (radio / 2)) + "" ), Double.parseDouble((e.cPosX) + "") , Double.parseDouble((e.cPosY + (radio / 2))+ ""), Double.parseDouble(x + "" ), Double.parseDouble(y + "") )){
+                        // if (isPointInLine(x, y, a.cPosX + (2 * (radio / 2)), a.cPosY + (radio / 2), e.cPosX, e.cPosY + (radio / 2))) {
+                        int x1 = a.cPosX + radio;
+                        int y1 = a.cPosY + (radio / 2);
+                        int x2 = e.cPosX;
+                        int y2 = e.cPosY + (radio / 2);
+
+                        if (x1 >= x2) {
+                            if (x <= x1 && x >= x2) {
+                                if (y1 >= y2) {
+                                    if (y <= y1 && y >= y2) {
+                                        //quiebre
+                                        realizarQuiebre(eName, antecesor, x, y);
+                                        breakhappened = true;
+                                        break;
+                                    }
+
+                                } else {
+                                    if (y <= y2 && y >= y1) {
+                                        //quiebre
+                                        realizarQuiebre(eName, antecesor, x, y);
+                                        breakhappened = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            if (x <= x2 && x >= x1) {
+                                if (y1 >= y2) {
+                                    if (y <= y1 && y >= y2) {
+                                        //quiebre
+                                        realizarQuiebre(eName, antecesor, x, y);
+                                        breakhappened = true;
+                                        break;
+                                    }
+
+                                } else {
+                                    if (y <= y2 && y >= y1) {
+                                        //quiebre
+                                        realizarQuiebre(eName, antecesor, x, y);
+                                        breakhappened = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
                     }
-                }
-                if (breakhappened) {
-                    break;
+                    //Linea normal drawArrowLine(g, a.cPosX + radio), a.cPosY + (radio / 2), e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
                 }
             }
-
+            if (breakhappened) {
+                break;
+            }
         }
+
+        //}
+    }
+
+    public void realizarQuiebre(String eName, String antecesor, int x, int y) {
+        Element elemento = new Element();
+        elemento.Name = "break" + breaks;
+        elemento.type = "Break";
+        elemento.cPosX = x;
+        elemento.cPosY = y;
+        this.Elements.put("break" + breaks, elemento);
+        ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
+        if (br != null) {
+            br.add(elemento);
+        } else {
+            ArrayList<Element> br2 = new ArrayList<>();
+            br2.add(elemento);
+            Elements.get(eName).Antecesores.put(antecesor, br2);
+        }
+        breaks++;
+        repaint();
     }
 
     public void dragElementSelected(int x, int y) {
@@ -418,13 +462,12 @@ public class gJPanel extends JPanel {
             Element e = Elements.get(ElementSelected);
             if (e != null) {
                 if (ElementSelected.contains("break")) {
-                    Elements.get(ElementSelected).cPosX = x - (radio/18) ; //reasignar posicion al arrastrar mouse, para que el elemento quede en el centro del cursor
+                    Elements.get(ElementSelected).cPosX = x - (radio / 18); //reasignar posicion al arrastrar mouse, para que el elemento quede en el centro del cursor
                     Elements.get(ElementSelected).cPosY = y - (radio / 18);
                 } else {
                     Elements.get(ElementSelected).cPosX = x - (radio / 2); //reasignar posicion al arrastrar mouse, para que el elemento quede en el centro del cursor
                     Elements.get(ElementSelected).cPosY = y - (radio / 2);
                 }
-
                 repaint();
             }
 
@@ -486,23 +529,6 @@ public class gJPanel extends JPanel {
 
         g.drawLine(x1, y1, x2, y2);
         g.fillPolygon(xpoints, ypoints, 3);
-    }
-
-    private boolean isPointInLine(int x, int y, int x1, int y1, int x2, int y2) {
-        System.out.println("isPointInLine=====");
-        double m = (y2 - y1 + 0.0) / (x2 - x1 + 0.0);
-
-        double left = y - y1;
-
-        double right = (m * x) - (m * x1);
-        System.out.println("m= " + m);
-        System.out.println("left= " + left);
-        System.out.println("right= " + right);
-        System.out.println("======");
-        if (left == right) {
-            return true;
-        }
-        return false;
     }
 
 }
