@@ -1,27 +1,18 @@
 package Controlador;
 
-import static Controlador.GatewayLoops.getSucesoresOAntecesores;
 import Modelo.BPMNModel;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
+import java.util.Map;
 
 public class FindLoops {
 
-    public static LinkedHashSet<String> findLoops(BPMNModel BPMN, LinkedHashSet<String> orderGateways, LinkedHashMap<String, Integer> WFG, LinkedHashSet<String> cierres) {
+    public static LinkedHashSet<String> findLoops(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG) {
         LinkedHashSet<String> loops = new LinkedHashSet<>();
         LinkedHashSet<String> splits = getAllSplits(BPMN);
-
-        LinkedList<String> ordenG = new LinkedList<>();
-
-        ordenG.addAll(orderGateways);
-
         System.out.println("Splits: " + splits.toString());
-        System.out.println("Cierres: " + cierres.toString());
-        System.out.println("OrdenGateways: " + ordenG.toString());
-
         for (String s : splits) {
 
             HashSet<String> E = Utils.sucesoresOAntecesores(s, 'a', WFG);
@@ -33,13 +24,12 @@ public class FindLoops {
             //for e(x,s)
             for (String x : E) {
                 //verificar si no es cierre
-                if (!cierres.contains(x)) {
+                //if (!cierres.contains(x)) {
+                if (BPMN.T.contains(x.charAt(0))) {
                     continue;
                 }
-                if (esMenorQue(x,s, WFG)) {
-                    continue;
-                } else {
-                        loops.add(s + "," + x);
+                if (!esMenorQue(x, s, WFG)) {
+                    loops.add(s + "," + x);
                 }
 
             }
@@ -48,13 +38,19 @@ public class FindLoops {
 
         return loops;
     }
-    
-    public static boolean esMenorQue(String x, String s, LinkedHashMap<String, Integer> WFG){
+
+    public static boolean esMenorQue(String x, String s, LinkedHashMap<String, Integer> WFG) {
         LinkedHashSet<String> antecesores = getAllSucesores(WFG, s, new ArrayList<>(), 'a');
-        
+
+        LinkedHashSet<String> sucesores = getAllSucesores(WFG, s, new ArrayList<>(), 's');
+
+        if (antecesores.contains(x) && sucesores.contains(x)) {
+            return false;
+        }
+
         return antecesores.contains(x);
     }
-    
+
     public static LinkedHashSet<String> getAllSucesores(LinkedHashMap<String, Integer> WFG, String target, ArrayList<String> visited, Character type) {
         LinkedHashSet<String> adelante = new LinkedHashSet<>();
 
@@ -67,7 +63,7 @@ public class FindLoops {
 
         while (!sucesores.isEmpty()) {
             for (String s : (LinkedHashSet<String>) sucesores.clone()) {
-                if(visited.contains(s)){
+                if (visited.contains(s)) {
                     sucesores.clear();
                     continue;
                 }
@@ -81,25 +77,39 @@ public class FindLoops {
 
     }
 
+    //all nodes following 'task', given the current pruened WFG
+    public static LinkedHashSet<String> getSucesoresOAntecesores(String task, LinkedHashMap<String, Integer> WFG, Character type) {
+        LinkedHashSet<String> x = new LinkedHashSet<>();
+        for (Map.Entry<String, Integer> entry : WFG.entrySet()) {
+            String key = entry.getKey();
+            String vals[] = key.split(",");
+            String c;
+            if (type == 'a') {
+                c = vals[1];
+            } else {
+                c = vals[0];
+            }
+            if (task.equals(c)) {
+                if (type == 'a') {
+                    x.add(vals[0]);
+                } else {
+                    x.add(vals[1]);
+                }
+            }
+        }
+        return x;
+    }
+
     public static LinkedHashSet<String> getAllSplits(BPMNModel bpmn) {
         LinkedHashSet<String> splits = new LinkedHashSet<>();
         for (String gateway : bpmn.Gand) {
-           // if (gateway.charAt(gateway.length() - 1) == 'A') {
-                System.out.println("\t\tSplit gateway: " + gateway);
-                splits.add(gateway);
-           // }
-
+            splits.add(gateway);
         }
         for (String gateway : bpmn.Gxor) {
-           // if (gateway.charAt(gateway.length() - 1) == 'A') {
-                System.out.println("\t\tSplit gateway: " + gateway);
-                splits.add(gateway);
-          //  }
-
+            splits.add(gateway);
         }
 
         for (String gateway : bpmn.Gor) {
-            System.out.println("\t\tSplit gateway: " + gateway);
             splits.add(gateway);
         }
         return splits;

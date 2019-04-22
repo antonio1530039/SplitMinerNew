@@ -21,7 +21,7 @@ public class gJPanel extends JPanel {
     int ScreenHeight;
     int radio;
 
-    int breaks = 0;
+    int[] breaks;
     String ElementSelected = "";
     public HashMap<String, Element> Elements = new HashMap<>();
     HashMap<String, Color> gatewaysColors = new HashMap<>();
@@ -34,6 +34,7 @@ public class gJPanel extends JPanel {
         radio = ScreenWidth / 28;
         ElementSelected = "";
         BPMN = bpmn;
+        this.breaks = breaks;
         gatewaysColors = new HashMap<>();
         setBackground(new Color(255, 255, 255));
         setSize(ScreenWidth, ScreenHeight);
@@ -128,8 +129,6 @@ public class gJPanel extends JPanel {
     public void paint(Graphics g) {
         super.paint(g);
 
-        System.out.println(Elements.toString());
-
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue();
 
@@ -181,7 +180,7 @@ public class gJPanel extends JPanel {
                 } else if (BPMN.Gxor.contains(e.Name)) {
                     drawXor(g, e.cPosX + (radio / 2), e.cPosY + (radio / 2));
                 }
-                g.drawString(e.Name, e.cPosX + (radio / 2) - (radio / 4), e.cPosY + (radio / 2));
+                //g.drawString(e.Name, e.cPosX + (radio / 2) - (radio / 4), e.cPosY + (radio / 2));
 
                 //Obtencion de color de texto de la compuerta (para colores fuertes se utiliza color blanco de texto, en caso contrario negro)
                 /*if (color.getRed() <= 255 / 2 && color.getGreen() <= 255 / 2 && color.getBlue() <= 255 / 2) {
@@ -440,11 +439,11 @@ public class gJPanel extends JPanel {
 
     public void realizarQuiebre(String eName, String antecesor, int x, int y) {
         Element elemento = new Element();
-        elemento.Name = "break" + breaks;
+        elemento.Name = "break" + breaks[0];
         elemento.type = "Break";
         elemento.cPosX = x;
         elemento.cPosY = y;
-        this.Elements.put("break" + breaks, elemento);
+        this.Elements.put("break" + breaks[0], elemento);
         ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
         if (br != null) {
             br.add(elemento);
@@ -453,7 +452,7 @@ public class gJPanel extends JPanel {
             br2.add(elemento);
             Elements.get(eName).Antecesores.put(antecesor, br2);
         }
-        breaks++;
+        breaks[0]++;
         repaint();
     }
 

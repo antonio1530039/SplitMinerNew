@@ -789,7 +789,7 @@ public class ProcessViewer {
         
         System.out.println("====================Loop detection===============");
         
-        LinkedHashSet<String> loops = FindLoops.findLoops(BPMN, postprocesamiento.ordenGateways, WFG, postprocesamiento.cierres);
+        LinkedHashSet<String> loops = FindLoops.findLoops(BPMN, WFG);
         
         System.out.println("Loops: " + loops.toString());
        

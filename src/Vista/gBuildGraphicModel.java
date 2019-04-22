@@ -51,7 +51,8 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
     
     
     private HashMap<String, ArrayList<Element>> quiebres= new HashMap<>();
-    public int[] breaks= new int[1];
+    
+    public int[] breaks = {1};
     
     private HashMap<String, HashMap<String, Element>> ElementsSaved;
 
