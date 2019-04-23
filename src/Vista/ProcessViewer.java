@@ -754,6 +754,13 @@ public class ProcessViewer {
         PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(wfg.BPMN, wfg.WFG);
 
         wfg.Notation = postprocesamiento.notation;
+        
+        System.out.println("====================Loop detection===============");
+        
+        String finalNotation = FindLoops.findLoops(wfg.BPMN, wfg.WFG, wfg.Notation, postprocesamiento.cierres);
+        
+        wfg.Notation = finalNotation;
+        
 
         System.out.println("Notacion al final: " + wfg.Notation);
 
@@ -787,11 +794,7 @@ public class ProcessViewer {
         wfg.notifyAction(); //notificar que el modelo tuvo cambios
 
         
-        System.out.println("====================Loop detection===============");
         
-        LinkedHashSet<String> loops = FindLoops.findLoops(BPMN, WFG);
-        
-        System.out.println("Loops: " + loops.toString());
        
         
        /* ArrayList<String> loops = new ArrayList<>();

@@ -9,10 +9,11 @@ import java.util.Map;
 
 public class FindLoops {
 
-    public static LinkedHashSet<String> findLoops(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG) {
+    public static String findLoops(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG, String notation, LinkedHashSet<String> cierres) {
         LinkedHashSet<String> loops = new LinkedHashSet<>();
         LinkedHashSet<String> splits = getAllSplits(BPMN);
         System.out.println("Splits: " + splits.toString());
+
         for (String s : splits) {
 
             HashSet<String> E = Utils.sucesoresOAntecesores(s, 'a', WFG);
@@ -24,19 +25,62 @@ public class FindLoops {
             //for e(x,s)
             for (String x : E) {
                 //verificar si no es cierre
-                //if (!cierres.contains(x)) {
-                if (BPMN.T.contains(x.charAt(0))) {
+                if (!cierres.contains(x)) {
                     continue;
                 }
                 if (!esMenorQue(x, s, WFG)) {
                     loops.add(s + "," + x);
                 }
-
             }
 
         }
 
-        return loops;
+        return formatNotation(loops, notation);
+    }
+
+    public static String formatNotation(LinkedHashSet<String> loops, String notation) {
+        
+        if(loops.size()==0)
+            return notation;
+        
+        StringBuilder newNotation = new StringBuilder();
+        for (String l : loops) {
+
+            String[] vals = l.split(",");
+            String cierre = vals[1];
+
+            notation = notation.replace(vals[0], "@{" + vals[0]);
+
+            int indexOfcierre = notation.indexOf(cierre.substring(0, cierre.indexOf("C")) + "A");
+            int openGates = -1;
+
+            int terminoLoop = -1;
+
+            for (int i = indexOfcierre; i < notation.length(); i++) {
+                if (notation.charAt(i) == '{') {
+                    openGates++;
+                } else if (notation.charAt(i) == '}') {
+                    if (openGates == 0) {
+                        terminoLoop = i;
+                        break;
+                    } else {
+                        openGates--;
+                    }
+                }
+            }
+
+            for (int i = 0; i < notation.length(); i++) {
+                newNotation.append(notation.charAt(i));
+
+                if (i == terminoLoop) {
+                    newNotation.append("}");
+                }
+            }
+
+           
+        }
+
+        return newNotation.toString();
     }
 
     public static boolean esMenorQue(String x, String s, LinkedHashMap<String, Integer> WFG) {

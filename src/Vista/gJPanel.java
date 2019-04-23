@@ -216,7 +216,8 @@ public class gJPanel extends JPanel {
 
                             for (int i = quiebres.size() - 1; i > -1; i--) {
                                 int x2 = quiebres.get(i).cPosX, y2 = quiebres.get(i).cPosY;
-                                drawArrowLine(g, x1, y1, x2, y2, ScreenWidth / 300, ScreenWidth / 300);
+                                //drawArrowLine(g, x1, y1, x2, y2, ScreenWidth / 300, ScreenWidth / 300);
+                                g.drawLine(x1, y1, x2, y2);
                                 x1 = x2;
                                 y1 = y2;
                             }
@@ -445,6 +446,13 @@ public class gJPanel extends JPanel {
         elemento.cPosY = y;
         this.Elements.put("break" + breaks[0], elemento);
         ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
+        
+        if(br.size() > 1){
+            this.Elements.remove("break" + breaks[0]);
+            return;
+        }
+            
+        
         if (br != null) {
             br.add(elemento);
         } else {
