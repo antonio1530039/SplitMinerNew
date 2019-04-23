@@ -191,7 +191,7 @@ public class PostProcesarGrafo {
         System.out.println("\t\tDetectando joins y creando noatación...");
         //Lo siguiente es a manera de prueba.....................
          
-       
+       /*
         
         WFG.clear();
         /*
@@ -407,7 +407,7 @@ public class PostProcesarGrafo {
    	[D,f] - 1
       
          */
- 
+ /*
       //Modelo 5 - ciclos
       WFG.put("I,a", 1);
       WFG.put("A1A,b", 1);
@@ -442,7 +442,7 @@ public class PostProcesarGrafo {
       BPMN.T.add('f');
       BPMN.T.add('O');
       BPMN.i = 'I';
-         
+         */
         //.....................
         ///
         JoinsFinder jf = new JoinsFinder(BPMN, WFG);
