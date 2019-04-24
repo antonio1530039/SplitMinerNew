@@ -147,15 +147,17 @@ public class FindLoops {
     public static LinkedHashSet<String> getAllSplits(BPMNModel bpmn) {
         LinkedHashSet<String> splits = new LinkedHashSet<>();
         for (String gateway : bpmn.Gand) {
-            splits.add(gateway);
+            if(gateway.charAt(gateway.length()-1) == 'A')
+                splits.add(gateway);
         }
         for (String gateway : bpmn.Gxor) {
-            splits.add(gateway);
+            if(gateway.charAt(gateway.length()-1) == 'A')
+                splits.add(gateway);
         }
 
-        for (String gateway : bpmn.Gor) {
+        /*for (String gateway : bpmn.Gor) {
             splits.add(gateway);
-        }
+        }*/
         return splits;
     }
 

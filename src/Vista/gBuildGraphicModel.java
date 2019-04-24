@@ -1,5 +1,6 @@
 package Vista;
 
+import Controlador.ReadXES;
 import Controlador.Utils;
 import Controlador.WFG;
 import Modelo.BPMNModel;
@@ -10,6 +11,7 @@ import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,8 +23,10 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -76,6 +80,8 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
     JCheckBox autoloopsCheck = new JCheckBox("Autoloops");
     JCheckBox shortloopsCheck = new JCheckBox("Shortloops");
+    
+    ActionListener helpBtnAction;
 
     public gBuildGraphicModel(LinkedList<Character> tasks) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -150,6 +156,25 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
         tasksPanel.setPreferredSize(new Dimension(screenSize.width / 5, screenSize.height / 7));
         jpanelnotation.add(tasksPanel);
+        
+        
+        JButton helpBtn = new JButton("How to create breaks?");
+        
+        
+        
+        JFrame main = this;
+        
+        helpBtnAction = new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                
+                JOptionPane.showMessageDialog(main, "* Double click on a line: creates a break\n * Double click on a break: hides the break\n * Right click in a break: deletes the break");
+
+            }
+        };
+        
+        helpBtn.addActionListener(helpBtnAction);
+        
+        jpanelComponentes.add(helpBtn);
 
         jpanelMenu.add(jpanelComponentes, BorderLayout.NORTH);
         jpanelMenu.add(jpanelnotation, BorderLayout.SOUTH);

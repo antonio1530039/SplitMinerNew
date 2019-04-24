@@ -43,7 +43,6 @@ public class gJPanel extends JPanel {
         for (Map.Entry<String, Element> entry : elems) {
             Element e = entry.getValue();
 
-            
             List<Map.Entry<String, ArrayList<Element>>> antes = new ArrayList(e.Antecesores.entrySet());
             for (Map.Entry<String, ArrayList<Element>> registro : antes) {
                 String antecesor = registro.getKey();
@@ -102,11 +101,16 @@ public class gJPanel extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent me) {
+                clickAt(me.getX(), me.getY());
                 if (me.getClickCount() == 2 && !me.isConsumed()) {
                     me.consume();
                     doubleClick(me.getX(), me.getY());
                 } else {
-                    clickAt(me.getX(), me.getY());
+                    if (me.getButton() == MouseEvent.BUTTON3) { //right click
+                        rightClick();
+                    }
+
+                   
                 }
 
             }
@@ -154,7 +158,7 @@ public class gJPanel extends JPanel {
 
             } else if (e.type.equals("Break")) {
                 g.setColor(Color.black);
-                g.fillOval(e.cPosX - (radio / 18), e.cPosY - (radio / 18), radio / 4, radio / 4);
+                g.fillOval(e.cPosX - (radio / 16), e.cPosY - (radio / 16), radio / 4, radio / 4);
                 g.setColor(Color.white);
                 //g.drawString("", e.cPosX + (radio / 2), e.cPosY + (radio / 2));
 
@@ -248,12 +252,30 @@ public class gJPanel extends JPanel {
         }
 
     }
+    
+    public void rightClick(){
+        if (ElementSelected.contains("break")) {
+
+            Element elementSelected = Elements.get(ElementSelected);
+
+            //public HashMap<String, Element> Elements = new HashMap<>();
+            for (Map.Entry<String, Element> entry : Elements.entrySet()) {
+                Element e = entry.getValue();
+                //public HashMap<String, ArrayList<Element>> Antecesores;
+                for (Map.Entry<String, ArrayList<Element>> ant : e.Antecesores.entrySet()) {
+                    ant.getValue().remove(elementSelected);
+                }
+            }
+
+            Elements.remove(ElementSelected);
+            repaint();
+        }
+    }
 
     public void doubleClick(int x, int y) {
-        
-        clickAt(x,y);
-        
-        if(ElementSelected.contains("break")){
+
+        if (ElementSelected.contains("break")) {
+
             Elements.remove(ElementSelected);
             repaint();
             return;
@@ -446,13 +468,11 @@ public class gJPanel extends JPanel {
         elemento.cPosY = y;
         this.Elements.put("break" + breaks[0], elemento);
         ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
-        
-        if(br.size() > 1){
+
+        /*if(br.size() > 1){
             this.Elements.remove("break" + breaks[0]);
             return;
-        }
-            
-        
+        }*/
         if (br != null) {
             br.add(elemento);
         } else {
@@ -469,8 +489,8 @@ public class gJPanel extends JPanel {
             Element e = Elements.get(ElementSelected);
             if (e != null) {
                 if (ElementSelected.contains("break")) {
-                    Elements.get(ElementSelected).cPosX = x - (radio / 18); //reasignar posicion al arrastrar mouse, para que el elemento quede en el centro del cursor
-                    Elements.get(ElementSelected).cPosY = y - (radio / 18);
+                    Elements.get(ElementSelected).cPosX = x - (radio / 16); //reasignar posicion al arrastrar mouse, para que el elemento quede en el centro del cursor
+                    Elements.get(ElementSelected).cPosY = y - (radio / 16);
                 } else {
                     Elements.get(ElementSelected).cPosX = x - (radio / 2); //reasignar posicion al arrastrar mouse, para que el elemento quede en el centro del cursor
                     Elements.get(ElementSelected).cPosY = y - (radio / 2);

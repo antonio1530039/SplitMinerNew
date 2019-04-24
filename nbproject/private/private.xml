@@ -3,12 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/SplitMinerNew/src/Vista/ProcessViewer.java</file>
-            <file>file:/D:/SplitMinerNew/src/Vista/FilterOutliersFrame.java</file>
-            <file>file:/D:/SplitMinerNew/src/Controlador/FindLoops.java</file>
-            <file>file:/D:/SplitMinerNew/src/Vista/gJPanel.java</file>
-            <file>file:/D:/SplitMinerNew/src/Controlador/PostProcesarGrafo.java</file>
-            <file>file:/D:/SplitMinerNew/src/Controlador/JoinsFinder.java</file>
+            <file>file:/home/cti/Escritorio/SplitMiner/src/Controlador/PostProcesarGrafo.java</file>
+            <file>file:/home/cti/Escritorio/SplitMiner/src/Controlador/FindLoops.java</file>
+            <file>file:/home/cti/Escritorio/SplitMiner/src/Vista/gBuildGraphicModel.java</file>
+            <file>file:/home/cti/Escritorio/SplitMiner/src/Modelo/Element.java</file>
+            <file>file:/home/cti/Escritorio/SplitMiner/src/Vista/ProcessViewer.java</file>
+            <file>file:/home/cti/Escritorio/SplitMiner/src/Vista/gJPanel.java</file>
         </group>
     </open-files>
 </project-private>
