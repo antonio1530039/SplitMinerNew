@@ -5,6 +5,7 @@
         <group>
             <file>file:/home/cti/Escritorio/SplitMiner/src/Controlador/PostProcesarGrafo.java</file>
             <file>file:/home/cti/Escritorio/SplitMiner/src/Controlador/FindLoops.java</file>
+            <file>file:/home/cti/Escritorio/SplitMiner/src/Controlador/FilesManagement.java</file>
             <file>file:/home/cti/Escritorio/SplitMiner/src/Vista/gBuildGraphicModel.java</file>
             <file>file:/home/cti/Escritorio/SplitMiner/src/Modelo/Element.java</file>
             <file>file:/home/cti/Escritorio/SplitMiner/src/Vista/ProcessViewer.java</file>

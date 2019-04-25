@@ -514,7 +514,7 @@ public class ProcessViewer {
 
                     } else {
                         
-                        if (!fileName.getName().endsWith(".txt") && !fileName.getName().endsWith(".csv") && !fileName.getName().endsWith(".xes") && !fileName.getName().endsWith(".repaired")) {
+                        if (!fileName.getName().toLowerCase().endsWith(".txt") && !fileName.getName().toLowerCase().endsWith(".csv") && !fileName.getName().toLowerCase().endsWith(".xes") && !fileName.getName().toLowerCase().endsWith(".repaired")) {
                             JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido");
                             refreshWindow();
                             return;
@@ -533,16 +533,18 @@ public class ProcessViewer {
                         ///////
                         System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
                         try {
-                            if (filename.endsWith(".txt") || filename.endsWith(".repaired")) {
+                            if (filename.toLowerCase().endsWith(".txt") || filename.toLowerCase().endsWith(".repaired")) {
                                 tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInputTrazas(filename)[0];
-                            } else if (filename.endsWith(".csv")) {
+                            } else if (filename.toLowerCase().endsWith(".csv")) {
                                 tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInput(filename)[0];
                             } else {
-                                JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido.");
+                                JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido. Intente realizar alguna conversión a un formato válido.");
+                                refreshWindow();
                                 return;
                             }
                         } catch (Exception e) {
-                            JOptionPane.showMessageDialog(main_frm, "El archivo '" + filename + "' no se puede abrir.");
+                            JOptionPane.showMessageDialog(main_frm, "El archivo '" + filename + "' no se puede abrir. Intente realizar alguna conversión a un formato válido.");
+                            refreshWindow();
                             return;
                         }
 

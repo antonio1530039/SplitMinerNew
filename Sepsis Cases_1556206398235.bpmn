@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<definitions id="definitions_5b6b2156-e7d3-454e-96a3-ab7914ed05cf" targetNamespace="xMiner" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
+  <process id="BPMNModel">
+    <startEvent id="start">
+      <outgoing>start-I</outgoing>
+    </startEvent>
+    <userTask id="I" name="I">
+      <incoming>start-I</incoming>
+      <outgoing>I-a</outgoing>
+    </userTask>
+    <sequenceFlow id="start-I" sourceRef="start" targetRef="I"/>
+    <userTask id="a" name="a">
+      <incoming>I-a</incoming>
+      <outgoing>a-b</outgoing>
+    </userTask>
+    <sequenceFlow id="I-a" sourceRef="I" targetRef="a"/>
+    <userTask id="b" name="b">
+      <incoming>a-b</incoming>
+      <outgoing>b-OX2C4</outgoing>
+    </userTask>
+    <sequenceFlow id="a-b" sourceRef="a" targetRef="b"/>
+    <exclusiveGateway id="X1A">
+      <incoming>c-X1A</incoming>
+      <outgoing>X1A-p</outgoing>
+      <outgoing>X1A-k</outgoing>
+      <outgoing>X1A-n</outgoing>
+      <outgoing>X1A-o</outgoing>
+      <outgoing>X1A-OA1C1</outgoing>
+    </exclusiveGateway>
+    <userTask id="p" name="p">
+      <incoming>X1A-p</incoming>
+      <outgoing>p-OX1C3</outgoing>
+    </userTask>
+    <sequenceFlow id="X1A-p" sourceRef="X1A" targetRef="p"/>
+    <userTask id="k" name="k">
+      <incoming>X1A-k</incoming>
+      <outgoing>k-OX1C3</outgoing>
+    </userTask>
+    <sequenceFlow id="X1A-k" sourceRef="X1A" targetRef="k"/>
+    <userTask id="n" name="n">
+      <incoming>X1A-n</incoming>
+      <outgoing>n-OX1C3</outgoing>
+    </userTask>
+    <sequenceFlow id="X1A-n" sourceRef="X1A" targetRef="n"/>
+    <userTask id="o" name="o">
+      <incoming>X1A-o</incoming>
+      <outgoing>o-OX1C3</outgoing>
+    </userTask>
+    <sequenceFlow id="X1A-o" sourceRef="X1A" targetRef="o"/>
+    <userTask id="c" name="c">
+      <incoming>X2A-c</incoming>
+      <outgoing>c-X1A</outgoing>
+    </userTask>
+    <sequenceFlow id="c-X1A" sourceRef="c" targetRef="X1A"/>
+    <exclusiveGateway id="X2A">
+      <incoming>X3A-X2A</incoming>
+      <outgoing>X2A-c</outgoing>
+      <outgoing>X2A-j</outgoing>
+      <outgoing>X2A-OX2C5</outgoing>
+    </exclusiveGateway>
+    <sequenceFlow id="X2A-c" sourceRef="X2A" targetRef="c"/>
+    <userTask id="j" name="j">
+      <incoming>X2A-j</incoming>
+      <outgoing>j-OX2C4</outgoing>
+    </userTask>
+    <sequenceFlow id="X2A-j" sourceRef="X2A" targetRef="j"/>
+    <parallelGateway id="A1A">
+      <incoming>X3A-A1A</incoming>
+      <outgoing>A1A-d</outgoing>
+      <outgoing>A1A-OA1C2</outgoing>
+    </parallelGateway>
+    <userTask id="d" name="d">
+      <incoming>A1A-d</incoming>
+      <outgoing>d-OA1C1</outgoing>
+    </userTask>
+    <sequenceFlow id="A1A-d" sourceRef="A1A" targetRef="d"/>
+    <exclusiveGateway id="X3A">
+      <incoming>e-X3A</incoming>
+      <outgoing>X3A-A1A</outgoing>
+      <outgoing>X3A-X2A</outgoing>
+    </exclusiveGateway>
+    <sequenceFlow id="X3A-A1A" sourceRef="X3A" targetRef="A1A"/>
+    <sequenceFlow id="X3A-X2A" sourceRef="X3A" targetRef="X2A"/>
+    <userTask id="e" name="e">
+      <incoming>OX2C4-e</incoming>
+      <outgoing>e-X3A</outgoing>
+    </userTask>
+    <sequenceFlow id="e-X3A" sourceRef="e" targetRef="X3A"/>
+    <exclusiveGateway id="X4A">
+      <incoming>g-X4A</incoming>
+      <outgoing>X4A-m</outgoing>
+      <outgoing>X4A-X4C</outgoing>
+    </exclusiveGateway>
+    <userTask id="m" name="m">
+      <incoming>X4A-m</incoming>
+      <outgoing>m-X4C</outgoing>
+    </userTask>
+    <sequenceFlow id="X4A-m" sourceRef="X4A" targetRef="m"/>
+    <userTask id="g" name="g">
+      <incoming>OA1C1-g</incoming>
+      <outgoing>g-X4A</outgoing>
+    </userTask>
+    <sequenceFlow id="g-X4A" sourceRef="g" targetRef="X4A"/>
+    <exclusiveGateway id="X5A">
+      <incoming>h-X5A</incoming>
+      <outgoing>X5A-l</outgoing>
+      <outgoing>X5A-OA1C2</outgoing>
+      <outgoing>X5A-OX5C6</outgoing>
+    </exclusiveGateway>
+    <userTask id="l" name="l">
+      <incoming>X5A-l</incoming>
+      <outgoing>l-OX5C6</outgoing>
+    </userTask>
+    <sequenceFlow id="X5A-l" sourceRef="X5A" targetRef="l"/>
+    <userTask id="h" name="h">
+      <incoming>OX2C5-h</incoming>
+      <outgoing>h-X5A</outgoing>
+    </userTask>
+    <sequenceFlow id="h-X5A" sourceRef="h" targetRef="X5A"/>
+    <exclusiveGateway id="X4C">
+      <incoming>m-X4C</incoming>
+      <incoming>X4A-X4C</incoming>
+      <outgoing>X4C-OX1C3</outgoing>
+    </exclusiveGateway>
+    <sequenceFlow id="m-X4C" sourceRef="m" targetRef="X4C"/>
+    <sequenceFlow id="X4A-X4C" sourceRef="X4A" targetRef="X4C"/>
+    <userTask id="f" name="f">
+      <incoming>OX5C6-f</incoming>
+      <outgoing>f-OA1C1</outgoing>
+    </userTask>
+    <userTask id="OA1C1" name="OA1C1">
+      <incoming>f-OA1C1</incoming>
+      <incoming>d-OA1C1</incoming>
+      <incoming>X1A-OA1C1</incoming>
+      <outgoing>OA1C1-g</outgoing>
+    </userTask>
+    <sequenceFlow id="f-OA1C1" sourceRef="f" targetRef="OA1C1"/>
+    <sequenceFlow id="d-OA1C1" sourceRef="d" targetRef="OA1C1"/>
+    <sequenceFlow id="X1A-OA1C1" sourceRef="X1A" targetRef="OA1C1"/>
+    <sequenceFlow id="OA1C1-g" sourceRef="OA1C1" targetRef="g"/>
+    <userTask id="OA1C2" name="OA1C2">
+      <incoming>A1A-OA1C2</incoming>
+      <incoming>X5A-OA1C2</incoming>
+      <outgoing>OA1C2-i</outgoing>
+    </userTask>
+    <sequenceFlow id="A1A-OA1C2" sourceRef="A1A" targetRef="OA1C2"/>
+    <sequenceFlow id="X5A-OA1C2" sourceRef="X5A" targetRef="OA1C2"/>
+    <userTask id="i" name="i">
+      <incoming>OA1C2-i</incoming>
+      <outgoing>i-OX2C5</outgoing>
+    </userTask>
+    <sequenceFlow id="OA1C2-i" sourceRef="OA1C2" targetRef="i"/>
+    <userTask id="OX1C3" name="OX1C3">
+      <incoming>k-OX1C3</incoming>
+      <incoming>n-OX1C3</incoming>
+      <incoming>o-OX1C3</incoming>
+      <incoming>p-OX1C3</incoming>
+      <incoming>X4C-OX1C3</incoming>
+      <outgoing>OX1C3-O</outgoing>
+    </userTask>
+    <sequenceFlow id="k-OX1C3" sourceRef="k" targetRef="OX1C3"/>
+    <sequenceFlow id="n-OX1C3" sourceRef="n" targetRef="OX1C3"/>
+    <sequenceFlow id="o-OX1C3" sourceRef="o" targetRef="OX1C3"/>
+    <sequenceFlow id="p-OX1C3" sourceRef="p" targetRef="OX1C3"/>
+    <sequenceFlow id="X4C-OX1C3" sourceRef="X4C" targetRef="OX1C3"/>
+    <userTask id="O" name="O">
+      <incoming>OX1C3-O</incoming>
+      <outgoing>O-end</outgoing>
+    </userTask>
+    <sequenceFlow id="OX1C3-O" sourceRef="OX1C3" targetRef="O"/>
+    <userTask id="OX2C4" name="OX2C4">
+      <incoming>b-OX2C4</incoming>
+      <incoming>j-OX2C4</incoming>
+      <outgoing>OX2C4-e</outgoing>
+    </userTask>
+    <sequenceFlow id="b-OX2C4" sourceRef="b" targetRef="OX2C4"/>
+    <sequenceFlow id="j-OX2C4" sourceRef="j" targetRef="OX2C4"/>
+    <sequenceFlow id="OX2C4-e" sourceRef="OX2C4" targetRef="e"/>
+    <userTask id="OX2C5" name="OX2C5">
+      <incoming>i-OX2C5</incoming>
+      <incoming>X2A-OX2C5</incoming>
+      <outgoing>OX2C5-h</outgoing>
+    </userTask>
+    <sequenceFlow id="i-OX2C5" sourceRef="i" targetRef="OX2C5"/>
+    <sequenceFlow id="X2A-OX2C5" sourceRef="X2A" targetRef="OX2C5"/>
+    <sequenceFlow id="OX2C5-h" sourceRef="OX2C5" targetRef="h"/>
+    <userTask id="OX5C6" name="OX5C6">
+      <incoming>l-OX5C6</incoming>
+      <incoming>X5A-OX5C6</incoming>
+      <outgoing>OX5C6-f</outgoing>
+    </userTask>
+    <sequenceFlow id="l-OX5C6" sourceRef="l" targetRef="OX5C6"/>
+    <sequenceFlow id="X5A-OX5C6" sourceRef="X5A" targetRef="OX5C6"/>
+    <sequenceFlow id="OX5C6-f" sourceRef="OX5C6" targetRef="f"/>
+    <endEvent id="end">
+      <incoming>O-end</incoming>
+    </endEvent>
+    <sequenceFlow id="O-end" sourceRef="O" targetRef="end"/>
+  </process>
+</definitions>
