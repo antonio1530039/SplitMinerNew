@@ -39,13 +39,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import javax.swing.JApplet;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.table.TableColumnModel;
 
-public class ProcessViewer {
+public class ProcessViewer  extends JApplet{
 
     private JFrame main_frm;
     private File fileName;
