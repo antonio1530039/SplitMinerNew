@@ -1,60 +1,10 @@
 package splitminer;
 
 import Vista.*;
-import java.io.IOException;
-import java.io.PrintWriter;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-public class SplitMiner extends HttpServlet{
+public class SplitMiner{
     
-    public void doGet(HttpServletRequest req, HttpServletResponse response) throws IOException{
-        response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-        
-        
-        out.println("<html>");
-        out.println("<body>");
-        out.println("<applet code='Vista.ProcessViewer.class' width='350' height='350'>");
-        out.println("<param name='message' value='Welcome to the world of Applet'>>");
-        out.println("</applet>");
-        out.println("</body>");
-        out.println("</html>");
-        
-        /*
-        
-        <!DOCTYPE html>
-
-<html>
-
-<head>
-
-<meta charset="ISO-8859-1">
-
-<title>Insert title here</title>
-
-</head>
-
-<body>
-
-<applet code="AppletDemo.class"width="350"height="350">
-
-<param name="message"value="Welcome to the world of Applet">
-
-</applet>
-
-</body>
-
-</html>
-        
-        
-        */
-        
-        
-        
-       // ProcessViewer processViewer = new ProcessViewer();
-    }
+  
     
     
 

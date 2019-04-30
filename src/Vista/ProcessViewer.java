@@ -46,9 +46,9 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.table.TableColumnModel;
 
-public class ProcessViewer  extends JApplet{
+public class ProcessViewer extends JFrame{
 
-    private JFrame main_frm;
+    private JFrame main_frm = new JFrame("Process Viewer");;
     private File fileName;
     private JTextField epsilon_textField = new JTextField("0.3", 5), percentil_textField = new JTextField("0.4", 5);
     private JPanel loadFile_pnl, menu_pnl, viewer_pnl, raw_pnl;
@@ -69,6 +69,8 @@ public class ProcessViewer  extends JApplet{
     LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
 
     public ProcessViewer() {
+        main_frm = this;
+       
         Toolkit t = Toolkit.getDefaultToolkit();
         screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // Se consigue el tama�o de la ventana
         // Valores de inicio de porgrama
@@ -375,7 +377,7 @@ public class ProcessViewer  extends JApplet{
     }
 
     private void buildWindow() {
-        main_frm = new JFrame("Process Viewer");
+        //main_frm = new JFrame("Process Viewer");
         main_frm.setLayout(new BorderLayout());
         main_frm.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -816,9 +818,9 @@ public class ProcessViewer  extends JApplet{
 
     void refreshWindow() {
         // Se quitan los paneles del frame
-        main_frm.remove(loadFile_pnl);
-        main_frm.remove(menu_pnl);
-        main_frm.remove(viewer_pnl);
+        this.remove(loadFile_pnl);
+        this.remove(menu_pnl);
+        this.remove(viewer_pnl);
 
         // Se construyen y revalidan los frames
         buildLoadFile();
@@ -831,12 +833,12 @@ public class ProcessViewer  extends JApplet{
         viewer_pnl.validate();
 
         // Se agregan los nuevos paneles al frame
-        main_frm.add(loadFile_pnl, BorderLayout.NORTH);
-        main_frm.add(menu_pnl, BorderLayout.WEST);
-        main_frm.add(viewer_pnl, BorderLayout.CENTER);
+        this.add(loadFile_pnl, BorderLayout.NORTH);
+        this.add(menu_pnl, BorderLayout.WEST);
+        this.add(viewer_pnl, BorderLayout.CENTER);
 
         // Se revalida el frame
-        SwingUtilities.updateComponentTreeUI(main_frm);
+        SwingUtilities.updateComponentTreeUI(this);
 
     }
 
