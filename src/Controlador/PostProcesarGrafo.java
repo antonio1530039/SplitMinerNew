@@ -447,8 +447,6 @@ public class PostProcesarGrafo {
         ///
         JoinsFinder jf = new JoinsFinder(BPMN, WFG);
         notation = jf.findNotation();
-        
-        this.ordenGateways = jf.ordenGateways;
         this.cierres = jf.cierres;
         System.out.println("Notation: " + notation);
 

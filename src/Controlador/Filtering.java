@@ -260,7 +260,7 @@ public class Filtering {
             n = e.tarjet;
             fe = e.freq;
             Cmax = Math.min(Cf.get(p),fe);
-               
+            
             if (Cmax > Cf.get(n)) {
                
                if (Cf.containsKey(n))

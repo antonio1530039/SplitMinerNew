@@ -450,7 +450,7 @@ public class ProcessViewer  extends JApplet{
                     originalTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[0];
                     repairedTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[1];
 
-                    FilterOutliersFrame fof = new FilterOutliersFrame(originalTraces, repairedTraces, contextOutput.toString(), fileName.getName().substring(0, fileName.getName().indexOf(".")));
+                    FilterOutliersFrame fof = new FilterOutliersFrame(originalTraces, repairedTraces, contextOutput.toString(), fileName.getName().substring(0, fileName.getName().indexOf(".")), tasksDescription);
 
                 } else {
                     JOptionPane.showMessageDialog(main_frm, "Ingrese todos los parámetros para realizar el filtrado!");
@@ -710,6 +710,11 @@ public class ProcessViewer  extends JApplet{
 
         //double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
         //double epsilon = 0.3;
+        
+        wfg.WFG.clear();
+        wfg.WFGSplits.clear();
+        wfg.WFGantesSplits.clear();
+        
         if (!epsilon_textField.getText().equals("") || !percentil_textField.getText().equals("")) {
             try {
                 epsilon = Double.parseDouble(epsilon_textField.getText());
@@ -739,6 +744,13 @@ public class ProcessViewer  extends JApplet{
 
         System.out.println("\nPASO 3: PREPROCESAMIENTO DEL GRAFO");
 
+        
+        System.out.println("BPMN: " + wfg.BPMN.toString());
+        System.out.println("tracesList: " + tracesList.toString());
+        System.out.println("generarGrafo.firsts: " + generarGrafo.firsts.toString());
+        System.out.println("generarGrafo.lasts: " + generarGrafo.lasts.toString());
+        System.out.println("umbral: " + umbral);
+        System.out.println("epsilon: " + epsilon);
         PreProcesarGrafo preprocesarGrafo = new PreProcesarGrafo(wfg.BPMN, wfg.WFG, tracesList, generarGrafo.firsts, generarGrafo.lasts, umbral, epsilon);
 
         wfg.WFGantesSplits = (LinkedHashMap) wfg.WFG.clone();
@@ -795,47 +807,6 @@ public class ProcessViewer  extends JApplet{
        
         
         wfg.notifyAction(); //notificar que el modelo tuvo cambios
-
-        
-        
-       
-        
-       /* ArrayList<String> loops = new ArrayList<>();
-        
-        for(String gateway : wfg.BPMN.Gxor){
-            if(gateway.charAt(gateway.length()-1) == 'A'){
-                System.out.println("\t\tSplit gateway: " + gateway);
-                System.out.println("\t\t\tTrying to find a loop...");
-                ArrayList<String> loopsInG = GatewayLoops.findLoops(WFG, gateway);
-                for(String l : loopsInG){
-                    String[] vals = l.split(",");
-                    if( !(loops.contains(loops) || loops.contains(vals[1] + "," + vals[0]))){
-                        loops.add(l);
-                    }
-                    
-                }
-            }
-        }
-        
-        
-        for(String gateway : wfg.BPMN.Gand){
-            if(gateway.charAt(gateway.length()-1) == 'A'){
-                System.out.println("\t\tSplit gateway: " + gateway);
-                System.out.println("\t\t\tTrying to find a loop...");
-                 ArrayList<String> loopsInG = GatewayLoops.findLoops(WFG, gateway);
-                for(String l : loopsInG){
-                    String[] vals = l.split(",");
-                    if( !(loops.contains(loops) || loops.contains(vals[1] + "," + vals[0]))){
-                        loops.add(l);
-                    }
-                    
-                }
-            }
-        }
-        
-        System.out.println("Loops detected: " + loops.toString());
-        
-    */
         wasMined = true;
         modelSelected = true;
         deploymentSelected = true;

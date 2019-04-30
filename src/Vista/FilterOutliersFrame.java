@@ -33,7 +33,7 @@ public class FilterOutliersFrame extends JFrame {
 
     JPanel jpanelComponentes = new JPanel();
 
-    public FilterOutliersFrame(LinkedHashMap<Integer, ArrayList<Character>> originalTraces, LinkedHashMap<Integer, ArrayList<Character>> repairedTraces, String contextOutput, String fileName) {
+    public FilterOutliersFrame(LinkedHashMap<Integer, ArrayList<Character>> originalTraces, LinkedHashMap<Integer, ArrayList<Character>> repairedTraces, String contextOutput, String fileName, String tasksDescription) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int ScreenWidth = (int) screenSize.getWidth();
         int ScreenHeight = (int) screenSize.getHeight();
@@ -71,19 +71,38 @@ public class FilterOutliersFrame extends JFrame {
         //contexts output
 
         JPanel middlePanel3 = new JPanel ();
-        middlePanel3.setBorder ( new TitledBorder ( new EtchedBorder (), "Significant contexts values" ) );
-        JTextArea display3 = new JTextArea ( 20, 50);
+        middlePanel3.setBorder ( new TitledBorder ( new EtchedBorder (), "Significant contexts values and tasks description" ) );
+        
+        JTextArea display3 = new JTextArea ( 20, 40);
         display3.setSize(new Dimension(screenSize.width / 2, screenSize.height / 3 ));
-        display3.setText(contextOutput);
+        display3.setText("*Significant contexts*\n\n" + contextOutput);
         JScrollPane scroll3 = new JScrollPane ( display3 );
         scroll3.setVerticalScrollBarPolicy ( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
         scroll3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        
+        
+        
+        JTextArea display4 = new JTextArea ( 20, 20);
+        display4.setSize(new Dimension(screenSize.width / 2, screenSize.height / 3 ));
+        display4.setText("*Tasks description*\n\n" + tasksDescription);
+        JScrollPane scroll4 = new JScrollPane ( display4 );
+        scroll4.setVerticalScrollBarPolicy ( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
+        scroll4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        
+        
         middlePanel3.add ( scroll3 );
+        middlePanel3.add ( scroll4 );
         
         middlePanel3.setPreferredSize(new Dimension(screenSize.width / 2, screenSize.height / 3));
         
+        
+
+        
+        
+        
         JPanel jpanelComponentes2 = new JPanel();
         jpanelComponentes2.add(middlePanel3);
+        
         
         JFrame main = this;
         

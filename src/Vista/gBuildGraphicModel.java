@@ -340,6 +340,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         BPMN = wfg.BPMN;
         autoLoops = wfg.autoLoops;
         shortLoops = wfg.shortLoops;
+        System.out.println("Shortloops: " + shortLoops.toString());
         notationTxt.setText(wfg.Notation);
         tasksDescriptionTxt.setText(wfg.tasksDescription);
         buildModel(BPMN, WFG, "All");

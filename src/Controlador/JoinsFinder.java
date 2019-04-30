@@ -18,16 +18,17 @@ public class JoinsFinder {
     LinkedHashMap<String, Integer> WFG;
 
     
-    //Variables para deteccion futura de loops
-    LinkedHashSet<String> ordenGateways = new LinkedHashSet<>();
+    //Variables para deteccion futura de loops de compuertas
     LinkedHashSet<String> cierres = new LinkedHashSet<>();
     ///
     
     
+    //Variables para creacion de compuertas OR
     ArrayList<HashMap<String, LinkedList<String>>> cierresOr = new ArrayList<>();
     ArrayList<String> cierresOrGateways = new ArrayList<>();
-
     int numberGatewaysOr = 1;
+    //
+    
 
     public JoinsFinder(BPMNModel bpmn, LinkedHashMap<String, Integer> wfg) {
         this.BPMN = bpmn;
@@ -46,8 +47,6 @@ public class JoinsFinder {
         //System.out.println("Removing extra ors...");
         //removeExtraOrs();
         finishOrs();
-        System.out.println("Orden de compuertas: " + this.ordenGateways.toString());
-        System.out.println("Cierres: " + this.cierres.toString());
         return notation.toString().replace(",}", "}");
     }
     
@@ -137,7 +136,6 @@ public class JoinsFinder {
             } else if (BPMN.Gxor.contains(gateway)) {
                 BPMN.Gxor.add(symbol);
             }
-            this.ordenGateways.add(symbol);
             for (Map.Entry<String, LinkedList<String>> entry : cierres.entrySet()) {
                 String cierre = entry.getKey(); //Recuperar cierre
                 LinkedList<String> anteriores = entry.getValue();//Recuperar lista de los anteriores del cierre
@@ -159,7 +157,6 @@ public class JoinsFinder {
                 String orSymbol = "O" + gateway.substring(0, gateway.length() - 1) + "C" + numberGatewaysOr;//Definir el simbolo de la compuerta Or
                 String cierre = entry.getKey(); //Recuperar cierre
                 paraCierre.add(cierre + "," + orSymbol);
-                this.ordenGateways.add(orSymbol);
                 numberGatewaysOr++;
             }
         }
@@ -169,7 +166,6 @@ public class JoinsFinder {
     public HashMap<String, LinkedList<String>> resolveGateway(String gate, LinkedList<String> ramas) {
         HashSet<String> sigs = Utils.successors(gate, WFG);
         HashMap<String, LinkedList<String>> cierres = new HashMap<>();
-        this.ordenGateways.add(gate);
         for (String s : sigs) {
             StringBuilder notationRama = new StringBuilder();
             ArrayList<String> cierreYanteriores = exploreBranch(s, notationRama, gate);
@@ -260,7 +256,7 @@ public class JoinsFinder {
                 if (a.equals(entry.getKey().split(",")[1])) {
                     i++;
                 }
-            } else {
+            } else if(type.equals("from")) {
                 if (a.equals(entry.getKey().split(",")[0])) {
                     i++;
                 }

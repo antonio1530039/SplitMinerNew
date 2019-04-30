@@ -213,18 +213,29 @@ public class gJPanel extends JPanel {
                         if (registro.getValue().size() > 0) { //verificar que existan quiebres
 
                             ArrayList<Element> quiebres = registro.getValue();
-                            Collections.sort(quiebres, Collections.reverseOrder());
+                            //Collections.sort(quiebres, Collections.reverseOrder());
 
                             int x1 = a.cPosX + (2 * (radio / 2));
                             int y1 = a.cPosY + (radio / 2);
 
-                            for (int i = quiebres.size() - 1; i > -1; i--) {
+                            /*for (int i = quiebres.size() - 1; i > -1; i--) {
+                                int x2 = quiebres.get(i).cPosX, y2 = quiebres.get(i).cPosY;
+                                //drawArrowLine(g, x1, y1, x2, y2, ScreenWidth / 300, ScreenWidth / 300);
+                                g.drawLine(x1, y1, x2, y2);
+                                x1 = x2;
+                                y1 = y2;
+                            }*/
+                            
+                            for (int i = 0; i < quiebres.size(); i++) {
                                 int x2 = quiebres.get(i).cPosX, y2 = quiebres.get(i).cPosY;
                                 //drawArrowLine(g, x1, y1, x2, y2, ScreenWidth / 300, ScreenWidth / 300);
                                 g.drawLine(x1, y1, x2, y2);
                                 x1 = x2;
                                 y1 = y2;
                             }
+                            
+                            
+                            
                             drawArrowLine(g, x1, y1, e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
                         } else {
                             drawArrowLine(g, a.cPosX + (2 * (radio / 2)), a.cPosY + (radio / 2), e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
