@@ -8,6 +8,7 @@ import Modelo.Element;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,7 +37,7 @@ import javax.swing.border.TitledBorder;
 
 import javax.swing.JTextField;
 
-public class gBuildGraphicModel extends JFrame implements Observer, ActionListener {
+public class gBuildGraphicModel extends JPanel implements Observer, ActionListener {
 
     private JRadioButton antesSplitsRadio, splitsRadio, todoRadio;
     private ButtonGroup bg;
@@ -90,8 +91,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         ElementsSaved = new HashMap<>();
         showTasks = new LinkedList<>();
 
-        setTitle("Model");
-        setSize(ScreenWidth, ScreenHeight);
+        setSize(ScreenWidth/10, ScreenHeight/10);
         setVisible(true);
         breaks[0] = 0;
 
@@ -157,12 +157,12 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         tasksPanel.setPreferredSize(new Dimension(screenSize.width / 5, screenSize.height / 7));
         jpanelnotation.add(tasksPanel);
         
-        
+    /*      
         JButton helpBtn = new JButton("How to create breaks?");
         
         
         
-        JFrame main = this;
+      JFrame main = this;
         
         helpBtnAction = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -173,13 +173,17 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         };
         
         helpBtn.addActionListener(helpBtnAction);
-        
+    
         jpanelComponentes.add(helpBtn);
-
+    */
         jpanelMenu.add(jpanelComponentes, BorderLayout.NORTH);
         jpanelMenu.add(jpanelnotation, BorderLayout.SOUTH);
         add(jpanelMenu, BorderLayout.NORTH);
 
+    }
+    
+    public void paint(Graphics g){
+        super.paint(g);
     }
 
     public void buildModel(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG, String mode) {
@@ -296,6 +300,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         }
 
         jpanelGrafica = new gJPanel(ScreenWidth, ScreenHeight, elementsToPaint, BPMN, breaks);
+       jpanelGrafica.setPreferredSize(new Dimension(this.ScreenWidth, this.ScreenHeight));
         add(jpanelGrafica);
         revalidate();
     }
