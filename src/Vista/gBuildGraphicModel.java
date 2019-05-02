@@ -8,6 +8,7 @@ import Modelo.Element;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -27,6 +28,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -97,6 +99,11 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
 
         bg = new ButtonGroup();
         int widthComponent = (ScreenWidth / 15) - 10;
+        
+        JLabel title = new JLabel("Graphic model");
+        title.setFont(new Font("Tahoma", Font.BOLD, 18));
+        
+        jpanelComponentes.add(title);
 
         antesSplitsRadio = new JRadioButton("Before splits");
         antesSplitsRadio.setBounds(10, 20, widthComponent, 30);
@@ -137,17 +144,17 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
         notationTxt.setFont(notationTxt.getFont().deriveFont(20f));
         notationTxt.setEditable(true);
 
-        JTextField notationTitle = new JTextField("Notation: ");
+        JLabel notationTitle = new JLabel("Notation: ");
         notationTitle.setBounds(5, 5, ScreenWidth, ScreenWidth);
         notationTitle.setFont(notationTitle.getFont().deriveFont(20f));
-        notationTitle.setEditable(false);
         jpanelnotation.add(notationTitle);
         jpanelnotation.add(notationTxt);
 
         JPanel tasksPanel = new JPanel();
         tasksPanel.setBorder(new TitledBorder(new EtchedBorder(), "Tasks description"));
-
-        tasksDescriptionTxt.setSize(new Dimension(screenSize.width / 5, screenSize.height / 7));
+        
+        //tasksDescriptionTxt.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 14));
+        tasksDescriptionTxt.setPreferredSize(new Dimension(50, 50));
         //display3.setText(tasksDescription);
         JScrollPane scroll3 = new JScrollPane(tasksDescriptionTxt);
         scroll3.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);

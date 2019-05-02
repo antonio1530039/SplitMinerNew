@@ -37,6 +37,8 @@ import java.awt.Frame;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.io.File;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -47,11 +49,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.table.TableColumnModel;
+import static org.codehaus.groovy.tools.shell.util.Logger.io;
 
 public class ProcessViewer extends JApplet {
 
     private JApplet main_frm = new JApplet();
-    private String fileName, directory;
+    private File fileName;
     private JTextField epsilon_textField = new JTextField("0.3", 5), percentil_textField = new JTextField("0.4", 5);
     private JPanel loadFile_pnl, menu_pnl, viewer_pnl, raw_pnl;
     private JButton information_btn, traces_btn, activities_btn, loadFile_btn, exportAsCSV_btn, deployment_btn, model_btn, exportAsBPMN_btn, mine_btn, convertToXES_btn, filtering_btn;
@@ -63,16 +66,23 @@ public class ProcessViewer extends JApplet {
     Dimension screenSize;
     WFG wfg = new WFG(); //Modelo: grafo y modelo BPMN
     LinkedHashMap<Integer, ArrayList<Character>> tracesList = null;
-
+    
+    JPanel Panel1 = new JPanel();
+    JPanel Panel2 = new JPanel();
+    JPanel Panel3 = new JPanel();
+    
     String tasksDescription = "";
     int biggerTrace = 0;
 
     BPMNModel BPMN;
     LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
 
-    public void init() {
+    public ProcessViewer(){
+
         screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         //main_frm = this;
+        
+        main_frm = this;
 
         Toolkit t = Toolkit.getDefaultToolkit();
         screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // Se consigue el tama�o de la ventana
@@ -84,8 +94,7 @@ public class ProcessViewer extends JApplet {
         deploymentSelected = false;
         wasMined = false;
         deployment = "";
-        fileName = "";
-        directory = "";
+        fileName = null;
         wasLoaded = false;
 
         // Se generan las acciones
@@ -139,17 +148,16 @@ public class ProcessViewer extends JApplet {
         filtering_btn = new JButton("Filtering outliers");
         filtering_btn.addActionListener(filtering_btnAction);
 
-        if (!fileName.equals("")) {
+        if (fileName!=null) {
             mine_btn.setVisible(true);
-
-            if (!fileName.endsWith(".repaired")) {
+            if (!fileName.getName().endsWith(".repaired")) {
                 filtering_btn.setVisible(true);
             } else {
                 filtering_btn.setVisible(false);
             }
-            titulo_txt.setText(fileName);
+            titulo_txt.setText(fileName.getName());
             loadFile_pnl.add(titulo_txt);
-            if (fileName.toLowerCase().contains(".xes")) {
+            if (fileName.getName().toLowerCase().contains(".xes")) {
                 convertToXES_btn.setVisible(true);
             } else {
                 convertToXES_btn.setVisible(false);
@@ -395,20 +403,31 @@ public class ProcessViewer extends JApplet {
         
         
          */
-        this.add(loadFile_pnl, BorderLayout.NORTH);
-        this.add(menu_pnl, BorderLayout.WEST);
-        this.add(viewer_pnl, BorderLayout.CENTER);
+        this.Panel2.setLayout(new BorderLayout());
+        
+        this.Panel1.removeAll();
+        this.Panel1.setLayout(new BorderLayout());
+        this.Panel1.add(loadFile_pnl, BorderLayout.NORTH);
+        this.Panel1.add(menu_pnl, BorderLayout.WEST);
+        this.Panel1.add(viewer_pnl, BorderLayout.CENTER);
+        
+        
+        this.add(Panel1, BorderLayout.NORTH);
+        
+        this.Panel1.revalidate();
+        this.Panel1.repaint();
+
         // this.pack();
 
         this.setVisible(true);
     }
 
-    private void initializeActions() {
+     private void initializeActions() {
 
         mine_btnAction = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (fileName != null) {
-                    execute(directory);
+                    execute(fileName.getAbsolutePath());
                     refreshWindow();
                 } else {
                     JOptionPane.showMessageDialog(main_frm, "No file selected");
@@ -445,23 +464,33 @@ public class ProcessViewer extends JApplet {
                     LinkedHashMap<Integer, ArrayList<Character>> repairedTraces; //lista de trazas
                     Object[] traces = new Object[2];
                     try {
-                        if (fileName.endsWith(".txt")) {
-                            traces = f.readDataInputTrazas(directory);
-                        } else if (directory.endsWith(".csv")) {
-                            traces = f.readDataInput(directory);
+                        if (fileName.getAbsolutePath().endsWith(".txt")) {
+                            traces = f.readDataInputTrazas(fileName.getAbsolutePath());
+                        } else if (fileName.getAbsolutePath().endsWith(".csv")) {
+                            traces = f.readDataInput(fileName.getAbsolutePath());
                         } else {
                             JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido.");
                             return;
                         }
                     } catch (Exception e) {
-                        JOptionPane.showMessageDialog(main_frm, "El archivo '" + directory + "' no se puede abrir.");
+                        JOptionPane.showMessageDialog(main_frm, "El archivo '" + fileName.getAbsolutePath() + "' no se puede abrir.");
                         return;
                     }
                     originalTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[0];
                     repairedTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[1];
 
-                    FilterOutliersFrame fof = new FilterOutliersFrame(originalTraces, repairedTraces, contextOutput.toString(), fileName.substring(0, fileName.indexOf(".")), tasksDescription);
+                    FilterOutliersFrame fof = new FilterOutliersFrame(originalTraces, repairedTraces, contextOutput.toString(), fileName.getName().substring(0, fileName.getName().indexOf(".")), tasksDescription);
 
+                    remove(Panel2);
+                    Panel3.removeAll();
+                    
+                    Panel3.add(fof);
+                    add(Panel3, BorderLayout.SOUTH);
+                    Panel3.revalidate();
+                    Panel3.repaint();
+                    
+                    
+                    
                 } else {
                     JOptionPane.showMessageDialog(main_frm, "Ingrese todos los parámetros para realizar el filtrado!");
                 }
@@ -471,13 +500,11 @@ public class ProcessViewer extends JApplet {
         convertToXES_btnAction = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (fileName != null) {
-                    if (fileName.toLowerCase().contains(".xes")) {
-                        String name = fileName;
+                    if (fileName.getName().toLowerCase().contains(".xes")) {
+                        String name = fileName.getName();
                         try {
-                            String path = ReadXES.XESTOTXT(directory, name.substring(0, name.indexOf(".")));
-                            File f = new File(path);
-                            fileName = f.getName();
-                            directory = f.getAbsolutePath();
+                            String path = ReadXES.XESTOTXT(fileName.getAbsolutePath(), name.substring(0, name.indexOf(".")));
+                            fileName = new File(path);
                             refreshWindow();
                             JOptionPane.showMessageDialog(main_frm, "File converted!\nPath: " + path + "\nNow you can mine it");
 
@@ -500,14 +527,7 @@ public class ProcessViewer extends JApplet {
                 = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
 
-                Frame parent = new Frame();
-                FileDialog fd = new FileDialog(parent, "Please choose a file:",
-                        FileDialog.LOAD);
-                fd.show();
-                
-
                 /* Se escoge el archivo */
- /* 
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 fileChooser.setDialogTitle("Select a dataset file");
@@ -518,93 +538,102 @@ public class ProcessViewer extends JApplet {
                 fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("CSV files", "csv"));
                 fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("XES files", "xes"));
                 fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Repaired outliers files", "repaired"));
-                 */
-                fileName = fd.getFile();
-                directory = fd.getDirectory() + fileName;
 
-                if ((fileName == null) || (fileName.equals(""))) {
-                    System.out.println("Error en el archivo.");
+                if (fileName != null) {
+                    fileChooser.setCurrentDirectory(fileName);
+                }
 
-                } else {
+                int result = fileChooser.showOpenDialog(fileChooser);
 
-                    if (!fileName.toLowerCase().endsWith(".txt") && !fileName.toLowerCase().endsWith(".csv") && !fileName.toLowerCase().endsWith(".xes") && !fileName.toLowerCase().endsWith(".repaired")) {
-                        JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido");
-                        refreshWindow();
-                        return;
-                    }
-                    
-                    
+                if (result != JFileChooser.CANCEL_OPTION) {
 
-                    //Reiniciar contenedores
-                    tracesList = null;
-                    wfg = new WFG();
-                    wasMined = false;
-                    modelSelected = false;
-                    deploymentSelected = false;
+                    fileName = fileChooser.getSelectedFile();
 
-                    FilesManagement f = new FilesManagement(wfg.BPMN, false, (fileName.endsWith(".repaired")) ? true : false, 0, 0, 0, 0.0, new StringBuilder());
-                    ///////
-                    System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + directory + "' E IDENTIFICAR TAREAS.");
-                    try {
-                        if (directory.toLowerCase().endsWith(".txt") || directory.toLowerCase().endsWith(".repaired")) {
-                            tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInputTrazas(directory)[0];
-                        } else if (directory.toLowerCase().endsWith(".csv")) {
-                            tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInput(directory)[0];
-                        } else {
-                            JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido. Intente realizar alguna conversión a un formato válido.");
+                    if ((fileName == null) || (fileName.getName().equals(""))) {
+                        System.out.println("Error en el archivo.");
+
+                    } else {
+                        
+                        if (!fileName.getName().toLowerCase().endsWith(".txt") && !fileName.getName().toLowerCase().endsWith(".csv") && !fileName.getName().toLowerCase().endsWith(".xes") && !fileName.getName().toLowerCase().endsWith(".repaired")) {
+                            JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido");
                             refreshWindow();
                             return;
                         }
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(main_frm, "El archivo '" + directory + "' no se puede abrir. Intente realizar alguna conversión a un formato válido. EXCEPTION: " + e.getMessage());
-                        refreshWindow();
-                        return;
-                    }
-
-                    tasksDescription = "";
-                    ///////
-                    // Se prepara la tabla Actividades
-                    String[] columnNames = new String[]{"Description", "Item"};
-                    String[][] data = new String[f.ActivityList.size()][2];
-                    int i = 0;
-                    for (Map.Entry<String, Character> entry1 : f.ActivityList.entrySet()) {
-                        data[i][0] = entry1.getKey();
-                        data[i][1] = entry1.getValue().toString();
-                        tasksDescription += " " + data[i][1] + " : " + data[i][0] + "\n";
-                        i++;
-                    }
-                    // Modelo para la table activities
-                    activities_dtm = new DefaultTableModel(data, columnNames);
-                    ////////
-                    // Se prepara la tabla traces
-                    String[] columnNamesTraces = new String[]{"ID", "Traces"};
-                    String[][] dataTraces = new String[tracesList.size()][2];
-                    i = 0;
-                    biggerTrace = 0;
-                    System.out.println("\t3. Mostrando TRAZAS IDENTIFICADAS  en el archivo '" + directory + "'.");
-                    for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
-                        System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
-                        dataTraces[i][0] = entry.getKey().toString();
-                        dataTraces[i][1] = entry.getValue().toString();
-                        int length = dataTraces[i][1].length();
-                        if (length >= biggerTrace) {
-                            biggerTrace = length;
+                        
+                        //Reiniciar contenedores
+                        tracesList = null;
+                        wfg = new WFG();
+                        wasMined = false;
+                        modelSelected = false;
+                        deploymentSelected = false;
+                        
+                        
+                        String filename = fileName.getAbsolutePath();
+                        FilesManagement f = new FilesManagement(wfg.BPMN, false,(fileName.getName().endsWith(".repaired")) ? true : false  , 0, 0, 0, 0.0, new StringBuilder());
+                        ///////
+                        System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
+                        try {
+                            if (filename.toLowerCase().endsWith(".txt") || filename.toLowerCase().endsWith(".repaired")) {
+                                tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInputTrazas(filename)[0];
+                            } else if (filename.toLowerCase().endsWith(".csv")) {
+                                tracesList = (LinkedHashMap<Integer, ArrayList<Character>>) f.readDataInput(filename)[0];
+                            } else {
+                                JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido. Intente realizar alguna conversión a un formato válido.");
+                                refreshWindow();
+                                return;
+                            }
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(main_frm, "El archivo '" + filename + "' no se puede abrir. Intente realizar alguna conversión a un formato válido.");
+                            refreshWindow();
+                            return;
                         }
-                        i++;
+
+                        
+                        tasksDescription = "";
+                        ///////
+                        // Se prepara la tabla Actividades
+                        String[] columnNames = new String[]{"Description", "Item"};
+                        String[][] data = new String[f.ActivityList.size()][2];
+                        int i = 0;
+                        for (Map.Entry<String, Character> entry1 : f.ActivityList.entrySet()) {
+                            data[i][0] = entry1.getKey();
+                            data[i][1] = entry1.getValue().toString();
+                            tasksDescription += " " + data[i][1]  + " : " + data[i][0] + "\n";
+                            i++;
+                        }
+                        // Modelo para la table activities
+                        activities_dtm = new DefaultTableModel(data, columnNames);
+                        ////////
+                        // Se prepara la tabla traces
+                        String[] columnNamesTraces = new String[]{"ID", "Traces"};
+                        String[][] dataTraces = new String[tracesList.size()][2];
+                        i = 0;
+                        biggerTrace =0;
+                        System.out.println("\t3. Mostrando TRAZAS IDENTIFICADAS  en el archivo '" + filename + "'.");
+                        for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
+                            System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
+                            dataTraces[i][0] = entry.getKey().toString();
+                            dataTraces[i][1] = entry.getValue().toString();
+                            int length = dataTraces[i][1].length();
+                            if(length >= biggerTrace){
+                                biggerTrace = length;
+                            }
+                            i++;
+                        }
+
+                        // Modelo para la table traces
+                        traces_dtm = new DefaultTableModel(dataTraces, columnNamesTraces);
+
+                        // Se prepara el modelo para la table infrmation
+                        String[] columnNamesInfo = new String[]{"", ""};
+                        String[][] columnNamesdataInfo = f.showDataInfo(tracesList);
+                        information_dtm = new DefaultTableModel(columnNamesdataInfo, columnNamesInfo);
+                        wasLoaded = true;
+                        activitiesSelected = true;
+                        tracesSelected = true; 
+                        informationSelected = true;
+                        
                     }
-
-                    // Modelo para la table traces
-                    traces_dtm = new DefaultTableModel(dataTraces, columnNamesTraces);
-
-                    // Se prepara el modelo para la table infrmation
-                    String[] columnNamesInfo = new String[]{"", ""};
-                    String[][] columnNamesdataInfo = f.showDataInfo(tracesList);
-                    information_dtm = new DefaultTableModel(columnNamesdataInfo, columnNamesInfo);
-                    wasLoaded = true;
-                    activitiesSelected = true;
-                    tracesSelected = true;
-                    informationSelected = true;
-
                     refreshWindow();
                 }
             }
@@ -632,7 +661,7 @@ public class ProcessViewer extends JApplet {
                 }
 
                 if (filePath != null) {
-                    BPMNFiles bpmnFiles = new BPMNFiles(WFG, BPMN, filePath.getAbsolutePath() + "/" + fileName.substring(0, fileName.indexOf(".")));
+                    BPMNFiles bpmnFiles = new BPMNFiles(WFG, BPMN, filePath.getAbsolutePath() + "/" + fileName.getName().substring(0, fileName.getName().indexOf(".")));
                     JOptionPane.showMessageDialog(main_frm, "File exported!");
                 }
 
@@ -712,6 +741,7 @@ public class ProcessViewer extends JApplet {
         };
 
     }
+
 
     public void execute(String filename) {
         double epsilon = 0.0, umbral = 0.0;
@@ -819,29 +849,26 @@ public class ProcessViewer extends JApplet {
         repaint();
         
          */
-        this.getContentPane().removeAll();
-        this.invalidate();
-        this.validate();
-        this.repaint();
-        this.add(view, BorderLayout.SOUTH);
+        
+        this.remove(Panel3);
+        
+        this.Panel2.removeAll();
+        this.Panel2.add(view);
+        this.add(Panel2, BorderLayout.SOUTH);
+        this.Panel2.revalidate();
+        this.Panel2.repaint();
         refreshWindow();
-        invalidate();
-        validate();
-        repaint();
 
         // Se revalida el frame
         //SwingUtilities.updateComponentTreeUI(this);
     }
 
     void refreshWindow() {
-        // Se quitan los paneles del frame
-
-        this.remove(loadFile_pnl);
-        this.remove(menu_pnl);
-        this.remove(viewer_pnl);
-        loadFile_pnl = new JPanel();
-        menu_pnl = new JPanel();
-        viewer_pnl = new JPanel();
+        
+        
+        this.Panel1.remove(loadFile_pnl);
+        this.Panel1.remove(menu_pnl);
+        this.Panel1.remove(viewer_pnl);
 
         // Se construyen y revalidan los frames
         buildLoadFile();
@@ -852,11 +879,19 @@ public class ProcessViewer extends JApplet {
         raw_pnl.validate();
         buildViewer();
         viewer_pnl.validate();
+        
+        
+        this.Panel1.add(loadFile_pnl, BorderLayout.NORTH);
+        this.Panel1.add(menu_pnl, BorderLayout.WEST);
+        this.Panel1.add(viewer_pnl, BorderLayout.CENTER);
+        
+        
+        this.add(Panel1, BorderLayout.NORTH);
+        
+        this.Panel1.revalidate();
+        this.Panel1.repaint();
 
-        // Se agregan los nuevos paneles al frame
-        this.add(loadFile_pnl, BorderLayout.NORTH);
-        this.add(menu_pnl, BorderLayout.WEST);
-        this.add(viewer_pnl, BorderLayout.CENTER);
+        // this.pack();
 
         /*JPanel north = new JPanel();
         north.setPreferredSize( new Dimension(screenSize.width/2, screenSize.height/2));
@@ -868,8 +903,7 @@ public class ProcessViewer extends JApplet {
         this.add(north, BorderLayout.NORTH);*/
         // Se revalida el frame
         //SwingUtilities.updateComponentTreeUI(this);
-        invalidate();
-        validate();
+        revalidate();
         repaint();
 
     }

@@ -29,12 +29,13 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
-public class FilterOutliersFrame extends JFrame {
+public class FilterOutliersFrame extends JPanel {
 
     JPanel jpanelComponentes = new JPanel();
 
     public FilterOutliersFrame(LinkedHashMap<Integer, ArrayList<Character>> originalTraces, LinkedHashMap<Integer, ArrayList<Character>> repairedTraces, String contextOutput, String fileName, String tasksDescription) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLayout(new BorderLayout());
         int ScreenWidth = (int) screenSize.getWidth();
         int ScreenHeight = (int) screenSize.getHeight();
         
@@ -58,6 +59,10 @@ public class FilterOutliersFrame extends JFrame {
         
         // Modelo para la table traces
         DefaultTableModel originalTracesDTM = new DefaultTableModel(dataTraces, columnNamesTraces);
+        
+         JLabel title = new JLabel("Filtering outliers");
+        title.setFont(new Font("Tahoma", Font.BOLD, 18));
+        add(title);
         
         
         JPanel j = buildTablePanel(originalTracesDTM, "Traces");
@@ -104,7 +109,7 @@ public class FilterOutliersFrame extends JFrame {
         jpanelComponentes2.add(middlePanel3);
         
         
-        JFrame main = this;
+        JPanel main = this;
         
         JButton save = new JButton("Save repaired log");
         ActionListener save_actionListener = new ActionListener() {
@@ -162,7 +167,7 @@ public class FilterOutliersFrame extends JFrame {
         
         add(jpanelComponentes2, BorderLayout.SOUTH);
 
-        setTitle("Filter Outliers output");
+       // setTitle("Filter Outliers output");
         setSize(ScreenWidth, ScreenHeight);
         setVisible(true);
     }

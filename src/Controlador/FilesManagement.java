@@ -36,14 +36,13 @@ public class FilesManagement {
 // public LinkedHashMap<Integer, ArrayList<Character>> readDataInput(String filename) throws Exception {
         ArrayList<ArrayList<String>> bitacora = new ArrayList<ArrayList<String>>();
 
-        
-        ///http://faculty.kutztown.edu/spiegel/CSc421/SigningAnApplet.htm
         int index;
         int i = 0;
         String inputLine = null;
         
-        File[] files = new File(filename).listFiles();
-        BufferedReader rd = new BufferedReader(new FileReader(files[0]));
+      
+        
+        BufferedReader rd = new BufferedReader(new FileReader(new File(filename)));
 
         if (filename.contains(".csv")) {
             inputLine = rd.readLine();                    //first line is the header, next lines are the data
@@ -254,8 +253,7 @@ public class FilesManagement {
         int ID = 0;
 
         String inputLine = null;
-         File[] files = new File(filename).listFiles();
-        BufferedReader rd = new BufferedReader(new FileReader(files[0]));
+        BufferedReader rd = new BufferedReader(new FileReader(new File(filename)));
 
         ArrayList<Character> traza = null;
 
