@@ -6,6 +6,7 @@ import Controlador.WFG;
 import Modelo.BPMNModel;
 import Modelo.Element;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -79,11 +80,10 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
 
     JTextArea notationTxt = new JTextArea();
 
-    JTextArea tasksDescriptionTxt = new JTextArea(7, 25);
+    JTextArea tasksDescriptionTxt = new JTextArea(5, 20);
 
     JCheckBox autoloopsCheck = new JCheckBox("Autoloops");
     JCheckBox shortloopsCheck = new JCheckBox("Shortloops");
-    
     ActionListener helpBtnAction;
 
     public gBuildGraphicModel(LinkedList<Character> tasks) {
@@ -150,11 +150,12 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
         jpanelnotation.add(notationTitle);
         jpanelnotation.add(notationTxt);
 
+        
+        
         JPanel tasksPanel = new JPanel();
         tasksPanel.setBorder(new TitledBorder(new EtchedBorder(), "Tasks description"));
-        
-        //tasksDescriptionTxt.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 14));
-        tasksDescriptionTxt.setPreferredSize(new Dimension(50, 50));
+
+        tasksDescriptionTxt.setSize(new Dimension(screenSize.width / 5, screenSize.height / 7));
         //display3.setText(tasksDescription);
         JScrollPane scroll3 = new JScrollPane(tasksDescriptionTxt);
         scroll3.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -163,7 +164,6 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
 
         tasksPanel.setPreferredSize(new Dimension(screenSize.width / 5, screenSize.height / 7));
         jpanelnotation.add(tasksPanel);
-        
     /*      
         JButton helpBtn = new JButton("How to create breaks?");
         
@@ -185,6 +185,7 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
     */
         jpanelMenu.add(jpanelComponentes, BorderLayout.NORTH);
         jpanelMenu.add(jpanelnotation, BorderLayout.SOUTH);
+        jpanelMenu.setBackground(new Color(222,222,222));
         add(jpanelMenu, BorderLayout.NORTH);
 
     }
@@ -354,7 +355,9 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
         shortLoops = wfg.shortLoops;
         System.out.println("Shortloops: " + shortLoops.toString());
         notationTxt.setText(wfg.Notation);
-        tasksDescriptionTxt.setText(wfg.tasksDescription);
+
+        tasksDescriptionTxt.setText("*Tasks description*\n\n" + wfg.tasksDescription + "\n\n");
+        
         buildModel(BPMN, WFG, "All");
     }
 

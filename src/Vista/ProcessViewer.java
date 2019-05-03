@@ -633,6 +633,12 @@ public class ProcessViewer extends JApplet {
                         tracesSelected = true; 
                         informationSelected = true;
                         
+                        
+                        remove(Panel3);
+                        remove(Panel2);
+                        
+                        
+                        
                     }
                     refreshWindow();
                 }

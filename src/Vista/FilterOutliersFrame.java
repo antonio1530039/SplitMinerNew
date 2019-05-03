@@ -2,6 +2,7 @@ package Vista;
 
 import Controlador.BPMNFiles;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -38,79 +39,71 @@ public class FilterOutliersFrame extends JPanel {
         this.setLayout(new BorderLayout());
         int ScreenWidth = (int) screenSize.getWidth();
         int ScreenHeight = (int) screenSize.getHeight();
-        
+
         // Se prepara la tabla traces
-       // String[] columnNamesTraces = new String[]{"ID", "Original Traces", "Repaired Traces"};
+        // String[] columnNamesTraces = new String[]{"ID", "Original Traces", "Repaired Traces"};
         String[] columnNamesTraces = new String[]{"Original Traces", "Repaired Traces"};
         String[][] dataTraces = new String[originalTraces.size()][3];
         int i = 0;
         for (Map.Entry<Integer, ArrayList<Character>> entry : originalTraces.entrySet()) {
-           // dataTraces[i][0] = entry.getKey().toString();
+            // dataTraces[i][0] = entry.getKey().toString();
             dataTraces[i][0] = entry.getValue().toString();
             i++;
         }
 
-               
         i = 0;
         for (Map.Entry<Integer, ArrayList<Character>> entry : repairedTraces.entrySet()) {
             dataTraces[i][1] = entry.getValue().toString();
             i++;
         }
-        
+
         // Modelo para la table traces
         DefaultTableModel originalTracesDTM = new DefaultTableModel(dataTraces, columnNamesTraces);
-        
-         JLabel title = new JLabel("Filtering outliers");
-        title.setFont(new Font("Tahoma", Font.BOLD, 18));
-        add(title);
-        
-        
-        JPanel j = buildTablePanel(originalTracesDTM, "Traces");
-        j.setPreferredSize(new Dimension(screenSize.width - (screenSize.width/100)*5 , screenSize.height / 2));
-        
-        jpanelComponentes.add(j);
-        
-        add(jpanelComponentes, BorderLayout.NORTH);
 
+        JLabel title = new JLabel("Filtering outliers");
+        title.setFont(new Font("Tahoma", Font.BOLD, 18));
+
+        JPanel superior = new JPanel();
+
+        superior.setLayout(new BorderLayout());
+        superior.add(title, BorderLayout.NORTH);
+
+        JPanel j = buildTablePanel(originalTracesDTM, "Traces");
+        j.setPreferredSize(new Dimension(screenSize.width - (screenSize.width / 100) * 5, screenSize.height / 2));
+
+        jpanelComponentes.add(j);
+
+        superior.add(jpanelComponentes);
+        add(superior, BorderLayout.NORTH);
 
         //contexts output
+        JPanel middlePanel3 = new JPanel();
+        middlePanel3.setBorder(new TitledBorder(new EtchedBorder(), "Significant contexts values and tasks description"));
 
-        JPanel middlePanel3 = new JPanel ();
-        middlePanel3.setBorder ( new TitledBorder ( new EtchedBorder (), "Significant contexts values and tasks description" ) );
-        
-        JTextArea display3 = new JTextArea ( 20, 40);
-        display3.setSize(new Dimension(screenSize.width / 2, screenSize.height / 3 ));
+        JTextArea display3 = new JTextArea(12, 30);
+        display3.setSize(new Dimension(screenSize.width / 2, screenSize.height / 3));
         display3.setText("*Significant contexts*\n\n" + contextOutput);
-        JScrollPane scroll3 = new JScrollPane ( display3 );
-        scroll3.setVerticalScrollBarPolicy ( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
+        JScrollPane scroll3 = new JScrollPane(display3);
+        scroll3.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scroll3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        
-        
-        
-        JTextArea display4 = new JTextArea ( 20, 20);
-        display4.setSize(new Dimension(screenSize.width / 2, screenSize.height / 3 ));
-        display4.setText("*Tasks description*\n\n" + tasksDescription);
-        JScrollPane scroll4 = new JScrollPane ( display4 );
-        scroll4.setVerticalScrollBarPolicy ( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
-        scroll4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        
-        
-        middlePanel3.add ( scroll3 );
-        middlePanel3.add ( scroll4 );
-        
-        middlePanel3.setPreferredSize(new Dimension(screenSize.width / 2, screenSize.height / 3));
-        
-        
 
-        
-        
-        
+        JTextArea display4 = new JTextArea(12, 15);
+        display4.setSize(new Dimension(screenSize.width / 2, screenSize.height / 3));
+        display4.setText("*Tasks description*\n\n" + tasksDescription);
+        JScrollPane scroll4 = new JScrollPane(display4);
+        scroll4.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scroll4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+        middlePanel3.add(scroll3);
+        middlePanel3.add(scroll4);
+
+        middlePanel3.setPreferredSize(new Dimension(screenSize.width / 2, screenSize.height / 3));
+
         JPanel jpanelComponentes2 = new JPanel();
         jpanelComponentes2.add(middlePanel3);
-        
-        
+
         JPanel main = this;
-        
+
         JButton save = new JButton("Save repaired log");
         ActionListener save_actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -131,47 +124,41 @@ public class FilterOutliersFrame extends JPanel {
                 }
 
                 if (filePath != null) {
-                    System.out.println("Exporting log to: " +  filePath.getAbsolutePath() + "/" + fileName + ".repaired");
-                    
+                    System.out.println("Exporting log to: " + filePath.getAbsolutePath() + "/" + fileName + ".repaired");
+
                     String toSave = "";
-                    
+
                     for (Map.Entry<Integer, ArrayList<Character>> entry : repairedTraces.entrySet()) {
-                        for(Character c : entry.getValue()){
+                        for (Character c : entry.getValue()) {
                             toSave += c + ";";
                         }
                         toSave = toSave.substring(0, toSave.lastIndexOf(";"));
-                        toSave+="\n";
+                        toSave += "\n";
                     }
-                    
+
                     try (PrintStream out = new PrintStream(new FileOutputStream(filePath.getAbsolutePath() + "/" + fileName + ".repaired"))) {
                         out.print(toSave);
-                        JOptionPane.showMessageDialog(main, "File: "+ fileName + ".repaired" + " exported!");
+                        JOptionPane.showMessageDialog(main, "File: " + fileName + ".repaired" + " exported!");
                     } catch (FileNotFoundException ex) {
                         JOptionPane.showMessageDialog(main, "Error while trying to export a file");
                     }
-                    
-                    
-                  
-                }
 
+                }
 
             }
         };
-        
+
         save.addActionListener(save_actionListener);
-        
-        
-       jpanelComponentes2.add(save);
-        
-        
-        
+
+        jpanelComponentes2.add(save);
+
         add(jpanelComponentes2, BorderLayout.SOUTH);
 
-       // setTitle("Filter Outliers output");
+        // setTitle("Filter Outliers output");
         setSize(ScreenWidth, ScreenHeight);
         setVisible(true);
     }
-    
+
     JPanel buildTablePanel(DefaultTableModel dtb, String title) {
         /* Se inicializa la tablas*/
         JLabel titleTable_txt = new JLabel(title);
