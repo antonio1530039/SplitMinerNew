@@ -1,6 +1,6 @@
 package splitminer;
 
-import Vista.*;
+import VistaEscritorio.ProcessViewer;
 
 public class SplitMiner{
     
