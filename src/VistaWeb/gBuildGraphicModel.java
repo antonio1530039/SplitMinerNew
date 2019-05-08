@@ -164,12 +164,12 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
 
         tasksPanel.setPreferredSize(new Dimension(screenSize.width / 5, screenSize.height / 7));
         jpanelnotation.add(tasksPanel);
-    /*      
+        
         JButton helpBtn = new JButton("How to create breaks?");
         
         
         
-      JFrame main = this;
+      JPanel main = this;
         
         helpBtnAction = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -182,7 +182,7 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
         helpBtn.addActionListener(helpBtnAction);
     
         jpanelComponentes.add(helpBtn);
-    */
+    
         jpanelMenu.add(jpanelComponentes, BorderLayout.NORTH);
         jpanelMenu.add(jpanelnotation, BorderLayout.SOUTH);
         jpanelMenu.setBackground(new Color(222,222,222));
