@@ -546,7 +546,7 @@ public class ProcessViewer extends JFrame{
                                 return;
                             }
                         } catch (Exception e) {
-                            JOptionPane.showMessageDialog(main_frm, "El archivo '" + filename + "' no se puede abrir. Intente realizar alguna conversión a un formato válido.");
+                            JOptionPane.showMessageDialog(main_frm, "El archivo '" + filename + "' no se puede abrir. Intente realizar alguna conversión a un formato válido." );
                             refreshWindow();
                             return;
                         }

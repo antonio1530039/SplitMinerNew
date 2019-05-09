@@ -107,8 +107,8 @@ public class FilesManagement {
         System.out.println("\nSe han detectado todos los nombres de las actividades:");
 
         if (!Repaired) {
-            ActivityList.put("Start", 'I');
-            ActivityList.put("End", 'O');
+            activityList.put("Start", 'I');
+            activityList.put("End", 'O');
         }
 
         //recupera el set de tasks T
