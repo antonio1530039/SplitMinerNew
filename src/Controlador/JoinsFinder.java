@@ -12,24 +12,24 @@ import java.util.Map;
 
 public class JoinsFinder {
 
-    LinkedList<String> cloneTask;
-    LinkedList<String> visitedGateways;
+    LinkedList<String> cloneTask; //Lista de tareas visitadas
+
+    LinkedList<String> visitedGateways;//Lista de compuertas visitadas
+
     BPMNModel BPMN;
+
     LinkedHashMap<String, Integer> WFG;
 
-    
     //Variables para deteccion futura de loops de compuertas
     LinkedHashSet<String> cierres = new LinkedHashSet<>();
-    ///
-    
-    
+
     //Variables para creacion de compuertas OR
-    ArrayList<HashMap<String, LinkedList<String>>> cierresOr = new ArrayList<>();
+    ArrayList<HashMap<String, LinkedList<String>>> cierresOr = new ArrayList<>(); //Se almacena la información de las compuertas OR identificadas
     ArrayList<String> cierresOrGateways = new ArrayList<>();
     int numberGatewaysOr = 1;
-    //
-    
+    ///////////////////
 
+    //Constructor
     public JoinsFinder(BPMNModel bpmn, LinkedHashMap<String, Integer> wfg) {
         this.BPMN = bpmn;
         this.cloneTask = new LinkedList<>();
@@ -41,16 +41,21 @@ public class JoinsFinder {
         this.WFG = wfg;//Para utilizar funciones y obtener el grafo
     }
 
+    //Función que realiza la creación de cierres y de la notación, retorna la notación
     public String findNotation() {
-        StringBuilder notation = new StringBuilder(); 
+        StringBuilder notation = new StringBuilder();
         continueExploring(notation, BPMN.i.toString());
-        //System.out.println("Removing extra ors...");
-        //removeExtraOrs();
         finishOrs();
         return notation.toString().replace(",}", "}");
     }
+
     
-    public void finishOrs(){
+    /*
+    Procedimiento que realiza la creación de compuertas de tipo OR, esto se realiza al final 
+        (cuando se identifican todas las compuertas homogeneas)
+        De forma paralela a la creación de las compuertas OR, se realiza la simplificación de estas compuertas.
+    */
+    public void finishOrs() {
         System.out.println("Finishing Or joins...");
         numberGatewaysOr = 1;
         for (int i = 0; i < this.cierresOr.size(); i++) {
@@ -62,28 +67,18 @@ public class JoinsFinder {
                 HashSet<String> antecesores = Utils.sucesoresOAntecesores(cierre, 'a', WFG);
                 boolean orExists = false;
                 for (String a : antecesores) {
-                    if(BPMN.Gor.contains(a)){
+                    if (BPMN.Gor.contains(a)) {
                         orExists = true;
                         System.out.println("\t\tSe intentó crear Join: " + orSymbol + " pero el cierre contiene OR (simplificación)");
                         BPMN.Gor.remove(orSymbol);
-                        //Remover de las compuertas ordenadas
-                        /*String toSearch = orSymbol.substring(0, orSymbol.indexOf("C"));
-                        System.out.println("TOsearch: " + toSearch);
-                        for(String o : (LinkedHashSet<String>) this.ordenGateways.clone()){
-                            if(o.contains(toSearch)){
-                                this.ordenGateways.remove(o);
-                                
-                            }
-                        }*/
-                        
                         break;
                     }
-                    
+
                 }
                 //Aqui se verifica si al menos un antecesor del cierre es una compuerta OR, entonces no colocar este cierre para evitar la serializacion de estas compuertas
-                if(!orExists){
+                if (!orExists) {
                     System.out.println("\t\tJoin: " + orSymbol + " creado");
-                    for(String a:antecesores){
+                    for (String a : antecesores) {
                         WFG.remove(a + "," + cierre); //eliminar la antigua conexion
                         WFG.put(a + "," + orSymbol, 1); //nueva conexion a la compuerta
                     }
@@ -96,6 +91,10 @@ public class JoinsFinder {
         }
     }
 
+    
+    /*
+    Procedimiento de exploración, recibe la notación y el elemento a explorar
+    */
     public void continueExploring(StringBuilder notation, String actual) {
         if (cloneTask.contains(actual)) { //verificar que actual sea una tarea
             notation.append(" " + actual);
@@ -111,6 +110,12 @@ public class JoinsFinder {
         }
     }
 
+    
+    /*
+    
+    Función que reliza la creación de cierres homogeneos y guarda la información de los cierres heterogeneos (estos ultimos son creados al final)
+        Esta función también agrega la compuerta explorada a la notación así como el contenido de sus ramas
+    */
     public ArrayList<String> conectarCierres(HashMap<String, LinkedList<String>> cierres, StringBuilder notation, String gateway, LinkedList<String> ramas) {
         ArrayList<String> paraCierre = new ArrayList<>(); //Esta lista es retornada, obtiene el anterior del o de los cierres con las nuevas compuertas creadas  (es utilizado en exploreBranch)        
 
@@ -123,8 +128,9 @@ public class JoinsFinder {
         notation.append(" " + gateway + "{ ");
         //Agregar sus ramas a la notacion
         for (String rama : ramas) {
-            if(!rama.equals(""))
+            if (!rama.equals("")) {
                 notation.append(rama + ",");
+            }
         }
         notation.append("}");
 
@@ -163,6 +169,13 @@ public class JoinsFinder {
         return paraCierre;
     }
 
+    
+    /*
+    
+    Función que dada una compuerta obtiene el contenido de sus ramas para la notación y
+    guarda los cierres candidatos de cada rama para posteriormente verificar si es un cierre homogeneo o heterogeneo.
+    
+    */
     public HashMap<String, LinkedList<String>> resolveGateway(String gate, LinkedList<String> ramas) {
         HashSet<String> sigs = Utils.successors(gate, WFG);
         HashMap<String, LinkedList<String>> cierres = new HashMap<>();
@@ -246,8 +259,6 @@ public class JoinsFinder {
         return null;
     }
 
-    
-
     //Encontrar el numero de edges entrantes ( *a )
     public int getNumberEdges(String a, String type) { //types: To , From
         int i = 0;
@@ -256,7 +267,7 @@ public class JoinsFinder {
                 if (a.equals(entry.getKey().split(",")[1])) {
                     i++;
                 }
-            } else if(type.equals("from")) {
+            } else if (type.equals("from")) {
                 if (a.equals(entry.getKey().split(",")[0])) {
                     i++;
                 }

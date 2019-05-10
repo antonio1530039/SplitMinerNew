@@ -14,11 +14,14 @@ import org.camunda.bpm.model.bpmn.instance.Process;
 
 public class BPMNFiles {
 
+    //Instancia de modelo BPMN
     BpmnModelInstance modelInstance;
+    //Mapa de elementos BPMN, la clave representa el nombre del elemento, es decir tarea ej: a, compuerta ej: X1A, etc.
     HashMap<String, BpmnModelElementInstance> Elements;
     BPMNModel BPMN;
-    String Path;
+    String Path; //Ruta de almacenamiento (donde se guardará el archivo)
 
+    
     public BPMNFiles(LinkedHashMap<String, Integer> WFG, BPMNModel bpmn, String path) { //falta BPMNModel instance
         Elements = new HashMap<>();
         BPMN = bpmn;
@@ -27,8 +30,10 @@ public class BPMNFiles {
 
     }
 
+    
+    //Procedimiento que crea la instancia del modelo BPMN, se crea el proceso y se agregan los elementos al modelo, así como el flujo del modelo
     public void buildBPMNModel(LinkedHashMap<String, Integer> WFG) { //falta BPMNModel instance
-        // create an empty model
+        // Create an Empty Model
         modelInstance = Bpmn.createEmptyModel();
         Definitions definitions = modelInstance.newInstance(Definitions.class);
         //definitions.setTargetNamespace("http://camunda.org/examples");
@@ -60,8 +65,6 @@ public class BPMNFiles {
             //Crear elementos a y s (en caso de no existir en la lista) y agregarlos a la lista
             BpmnModelElementInstance actual = null;
             
-            
-            
             if (!Elements.containsKey(a)) {
                 actual = processElement(a, process);
             } else {
@@ -88,9 +91,10 @@ public class BPMNFiles {
         }
     }
 
+    
+    //Función que recibe un nombre de un nodo y crea el Elemento del BPMN según sea una tarea, o compuerta.
     public BpmnModelElementInstance processElement(String e, Process process) {
         if (BPMN.T.contains(e.trim().charAt(0))) { //Es una tarea
-
             UserTask task = createElement(process, e, UserTask.class);
             task.setName(e);
             Elements.put(e, task);
@@ -113,6 +117,7 @@ public class BPMNFiles {
         }
     }
 
+    //Función que valida el modelo BPMN y crea un archivo .bpmn del modelo.
     public boolean export(String fileName) {
         // validate and write model to file
         Bpmn.validateModel(modelInstance);
@@ -129,6 +134,7 @@ public class BPMNFiles {
         return false;
     }
 
+    //Función que dado un elemento padre, un id y una clase de elemento, crea el elemento BPMN y asigna sus propiedades, así como el elemento padre al que va conectado.
     protected <T extends BpmnModelElementInstance> T createElement(BpmnModelElementInstance parentElement, String id, Class<T> elementClass) {
         T element = modelInstance.newInstance(elementClass);
         element.setAttributeValue("id", id, true);
@@ -136,6 +142,8 @@ public class BPMNFiles {
         return element;
     }
 
+    
+    //Función que crea un flujo de secuencia desde un Elemento from hasta un elemento to
     public SequenceFlow createSequenceFlow(Process process, FlowNode from, FlowNode to) {
         String identifier = from.getId() + "-" + to.getId();
         SequenceFlow sequenceFlow = createElement(process, identifier, SequenceFlow.class);
