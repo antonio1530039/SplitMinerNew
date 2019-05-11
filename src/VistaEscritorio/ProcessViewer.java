@@ -46,9 +46,10 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.table.TableColumnModel;
 
-public class ProcessViewer extends JFrame{
+public class ProcessViewer extends JFrame {
 
-    private JFrame main_frm = new JFrame("Process Viewer");;
+    private JFrame main_frm = new JFrame("Process Viewer");
+    ;
     private File fileName;
     private JTextField epsilon_textField = new JTextField("0.3", 5), percentil_textField = new JTextField("0.4", 5);
     private JPanel loadFile_pnl, menu_pnl, viewer_pnl, raw_pnl;
@@ -61,16 +62,21 @@ public class ProcessViewer extends JFrame{
     Dimension screenSize;
     WFG wfg = new WFG(); //Modelo: grafo y modelo BPMN
     LinkedHashMap<Integer, ArrayList<Character>> tracesList = null;
-    
+
     String tasksDescription = "";
     int biggerTrace = 0;
+    int biggerActivity1 = 0;
+    int biggerActivity0 = 0;
+
+    int biggerModel0 = 0;
+    int biggerModel1 = 0;
 
     BPMNModel BPMN;
     LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
 
     public ProcessViewer() {
         main_frm = this;
-       
+
         Toolkit t = Toolkit.getDefaultToolkit();
         screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // Se consigue el tama�o de la ventana
         // Valores de inicio de porgrama
@@ -129,14 +135,13 @@ public class ProcessViewer extends JFrame{
 
         filtering_btn = new JButton("Filtering outliers");
         filtering_btn.addActionListener(filtering_btnAction);
-  
 
         if (fileName != null) {
             mine_btn.setVisible(true);
-            
-            if(!fileName.getName().endsWith(".repaired")){
+
+            if (!fileName.getName().endsWith(".repaired")) {
                 filtering_btn.setVisible(true);
-            }else{
+            } else {
                 filtering_btn.setVisible(false);
             }
             titulo_txt.setText(fileName.getName());
@@ -182,12 +187,12 @@ public class ProcessViewer extends JFrame{
         activities_btn = new JButton("Activities");
         deployment_btn = new JButton("Output Model");
         model_btn = new JButton("Model");
-        
-        if(!wasLoaded){
+
+        if (!wasLoaded) {
             activities_btn.setEnabled(false);
             traces_btn.setEnabled(false);
             information_btn.setEnabled(false);
-        }else{
+        } else {
             activities_btn.setEnabled(true);
             traces_btn.setEnabled(true);
             information_btn.setEnabled(true);
@@ -280,16 +285,14 @@ public class ProcessViewer extends JFrame{
         JLabel titleTable_txt = new JLabel(title);
         titleTable_txt.setFont(new Font("Tahoma", Font.BOLD, 18));
         JTable jtable = new JTable(dtb);
-        
+
         jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumnModel columnModel = jtable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(column0Size);
         columnModel.getColumn(1).setPreferredWidth(column1Size);
-        
-        
+
         JScrollPane tbl_sp = new JScrollPane(jtable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        
-        
+
         /* Se prepara el panel*/
         JPanel pnl = new JPanel(new BorderLayout());
         pnl.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -306,29 +309,38 @@ public class ProcessViewer extends JFrame{
 
         //JPanel north = new JPanel();
         JPanel south = new JPanel();
-        
+
         int sizeOfColumns = screenSize.width / 10;
-        
+
         if (informationSelected) {
-            JPanel j = buildTablePanel(information_dtm, "Description", sizeOfColumns ,sizeOfColumns);
+            int bigger0 = 0;
+            int bigger1 = 1;
+            for (int i = 0; i < information_dtm.getRowCount(); i++) {
+                if (information_dtm.getValueAt(i, 0).toString().length() > bigger0) {
+                    bigger0 = information_dtm.getValueAt(i, 0).toString().length();
+                }
+                if (information_dtm.getValueAt(i, 1).toString().length() > bigger1) {
+                    bigger1 = information_dtm.getValueAt(i, 1).toString().length();
+                }
+            }
+            JPanel j = buildTablePanel(information_dtm, "Description", bigger0 * 8, bigger1 * 8);
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         // north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
 
         if (activitiesSelected) {
-            JPanel j = buildTablePanel(activities_dtm, "Activities",sizeOfColumns,sizeOfColumns);
-            
+            JPanel j = buildTablePanel(activities_dtm, "Activities", ("Description".length() > biggerActivity0) ? "Description".length() * 8 : biggerActivity0 * 8, ("Item".length() > biggerActivity1) ? "Item".length() * 8 : biggerActivity1 * 8);
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         if (tracesSelected) {
-            JPanel j = buildTablePanel(traces_dtm, "Traces",sizeOfColumns/5, biggerTrace*10 );
+            JPanel j = buildTablePanel(traces_dtm, "Traces", traces_dtm.getValueAt(traces_dtm.getRowCount() - 1, 0).toString().length() * 10, biggerTrace * 8);
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         if (modelSelected) {
-            JPanel j = buildTablePanel(model_dtm, "BPMN Model",sizeOfColumns,sizeOfColumns);
+            JPanel j = buildTablePanel(model_dtm, "BPMN Model", ("Edge".length() > biggerModel0 ? "Edge".length() * 8 : biggerModel0 * 8), ("Frecuency".length() > biggerModel1 ? "Frecuency".length() * 8 : biggerModel1 * 8));
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
@@ -400,7 +412,7 @@ public class ProcessViewer extends JFrame{
         mine_btnAction = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (fileName != null) {
-                    execute(fileName.getAbsolutePath());
+                    execute();
                     refreshWindow();
                 } else {
                     JOptionPane.showMessageDialog(main_frm, "No file selected");
@@ -516,23 +528,22 @@ public class ProcessViewer extends JFrame{
                         System.out.println("Error en el archivo.");
 
                     } else {
-                        
+
                         if (!fileName.getName().toLowerCase().endsWith(".txt") && !fileName.getName().toLowerCase().endsWith(".csv") && !fileName.getName().toLowerCase().endsWith(".xes") && !fileName.getName().toLowerCase().endsWith(".repaired")) {
                             JOptionPane.showMessageDialog(main_frm, "El tipo de archivo de entrada no es valido");
                             refreshWindow();
                             return;
                         }
-                        
+
                         //Reiniciar contenedores
                         tracesList = null;
                         wfg = new WFG();
                         wasMined = false;
                         modelSelected = false;
                         deploymentSelected = false;
-                        
-                        
+
                         String filename = fileName.getAbsolutePath();
-                        FilesManagement f = new FilesManagement(wfg.BPMN, false,(fileName.getName().endsWith(".repaired")) ? true : false  , 0, 0, 0, 0.0, new StringBuilder());
+                        FilesManagement f = new FilesManagement(wfg.BPMN, false, (fileName.getName().endsWith(".repaired")) ? true : false, 0, 0, 0, 0.0, new StringBuilder());
                         ///////
                         System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
                         try {
@@ -546,22 +557,31 @@ public class ProcessViewer extends JFrame{
                                 return;
                             }
                         } catch (Exception e) {
-                            JOptionPane.showMessageDialog(main_frm, "El archivo '" + filename + "' no se puede abrir. Intente realizar alguna conversión a un formato válido." );
+                            JOptionPane.showMessageDialog(main_frm, "El archivo '" + filename + "' no se puede abrir. Intente realizar alguna conversión a un formato válido.");
                             refreshWindow();
                             return;
                         }
 
-                        
                         tasksDescription = "";
                         ///////
                         // Se prepara la tabla Actividades
                         String[] columnNames = new String[]{"Description", "Item"};
                         String[][] data = new String[f.ActivityList.size()][2];
                         int i = 0;
+                        biggerActivity1 = 0;
+                        biggerActivity0 = 0;
                         for (Map.Entry<String, Character> entry1 : f.ActivityList.entrySet()) {
                             data[i][0] = entry1.getKey();
                             data[i][1] = entry1.getValue().toString();
-                            tasksDescription += " " + data[i][1]  + " : " + data[i][0] + "\n";
+
+                            if (data[i][1].length() > biggerActivity1) {
+                                biggerActivity1 = data[i][1].length();
+                            }
+                            if (data[i][0].length() > biggerActivity0) {
+                                biggerActivity0 = data[i][0].length();
+                            }
+
+                            tasksDescription += " " + data[i][1] + " : " + data[i][0] + "\n";
                             i++;
                         }
                         // Modelo para la table activities
@@ -571,14 +591,14 @@ public class ProcessViewer extends JFrame{
                         String[] columnNamesTraces = new String[]{"ID", "Traces"};
                         String[][] dataTraces = new String[tracesList.size()][2];
                         i = 0;
-                        biggerTrace =0;
+                        biggerTrace = 0;
                         System.out.println("\t3. Mostrando TRAZAS IDENTIFICADAS  en el archivo '" + filename + "'.");
                         for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
                             System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
                             dataTraces[i][0] = entry.getKey().toString();
                             dataTraces[i][1] = entry.getValue().toString();
                             int length = dataTraces[i][1].length();
-                            if(length >= biggerTrace){
+                            if (length >= biggerTrace) {
                                 biggerTrace = length;
                             }
                             i++;
@@ -593,9 +613,9 @@ public class ProcessViewer extends JFrame{
                         information_dtm = new DefaultTableModel(columnNamesdataInfo, columnNamesInfo);
                         wasLoaded = true;
                         activitiesSelected = true;
-                        tracesSelected = true; 
+                        tracesSelected = true;
                         informationSelected = true;
-                        
+
                     }
                     refreshWindow();
                 }
@@ -704,19 +724,21 @@ public class ProcessViewer extends JFrame{
         };
 
     }
-    
-     
 
-    public void execute(String filename) {
+    /**
+     * Función ejecutar, realiza el minado del modelo seleccionado
+     *
+     * @param filename Nombre del archivo del modelo
+     */
+    public void execute() {
         double epsilon = 0.0, umbral = 0.0;
 
         //double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
         //double epsilon = 0.3;
-        
         wfg.WFG.clear();
         wfg.WFGSplits.clear();
         wfg.WFGantesSplits.clear();
-        
+
         if (!epsilon_textField.getText().equals("") || !percentil_textField.getText().equals("")) {
             try {
                 epsilon = Double.parseDouble(epsilon_textField.getText());
@@ -735,18 +757,15 @@ public class ProcessViewer extends JFrame{
 
         //P1.txt NOTATION: a AND{  XOR{  c, h}, b XOR{  e, g}} d f
         //final String filename = "P1.txt";
-       
-
         ///////
         System.out.println("\n");
         System.out.println("PASO2: INCIANDO LA CONSTRUCCION DEL GRAFO QUE MODELA EL CONJUNTO DE TRAZAS.\n");
 
         GenerarGrafo generarGrafo = new GenerarGrafo();
-        generarGrafo.computeGraph( tracesList,  wfg.WFG);
+        generarGrafo.computeGraph(tracesList, wfg.WFG);
 
         System.out.println("\nPASO 3: PREPROCESAMIENTO DEL GRAFO");
 
-        
         System.out.println("BPMN: " + wfg.BPMN.toString());
         System.out.println("tracesList: " + tracesList.toString());
         System.out.println("generarGrafo.firsts: " + generarGrafo.firsts.toString());
@@ -763,7 +782,7 @@ public class ProcessViewer extends JFrame{
         SplitsFinder crearModelo = new SplitsFinder(wfg.BPMN, generarGrafo.firsts, generarGrafo.lasts, wfg.WFG, preprocesarGrafo.parallelRelations);
 
         wfg.WFGSplits = (LinkedHashMap) wfg.WFG.clone();
-        
+
         /////////
         System.out.println("\nPASO 5: POST-PROCESAMIENTO");
 
@@ -771,25 +790,34 @@ public class ProcessViewer extends JFrame{
         PostProcesarGrafo postprocesamiento = new PostProcesarGrafo(wfg.BPMN, wfg.WFG);
 
         wfg.Notation = postprocesamiento.notation;
-        
+
         System.out.println("====================Loop detection===============");
-        
+
         String finalNotation = FindLoops.findLoops(wfg.BPMN, wfg.WFG, wfg.Notation, postprocesamiento.cierres);
-        
+
         wfg.Notation = finalNotation;
-        
 
         System.out.println("Notacion al final: " + wfg.Notation);
 
         deployment = wfg.Notation;
 
         // Se prepara la tabla Modelo
-        String[] columnNamesModel = new String[]{"Key", "Value"};
+        String[] columnNamesModel = new String[]{"Edge", "Frecuency"};
         String[][] dataModel = new String[wfg.WFG.size()][2];
         int i = 0;
+        biggerModel0 = 0;
+        biggerModel1 = 0;
         for (Map.Entry<String, Integer> entry : wfg.WFG.entrySet()) {
-            dataModel[i][0] = "[" + entry.getKey() + "]";
+            dataModel[i][0] = "   [ " + entry.getKey() + " ]";
             dataModel[i][1] = String.valueOf(entry.getValue());
+
+            if (dataModel[i][0].length() > biggerModel0) {
+                biggerModel0 = dataModel[i][0].length();
+            }
+            if (dataModel[i][1].length() > biggerModel1) {
+                biggerModel1 = dataModel[i][1].length();
+            }
+
             i++;
         }
 
@@ -803,16 +831,15 @@ public class ProcessViewer extends JFrame{
         this.WFG = wfg.WFG; //asignar el valor actual del grafo (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         this.BPMN = wfg.BPMN;//asignar el valor actual del modelo BPMN (motivos de exportacion de modelo a archivo XML BPMN 2.0)
         wfg.tasksDescription = this.tasksDescription;
-        
+
         wfg.autoLoops = preprocesarGrafo.autoLoops;
         wfg.shortLoops = preprocesarGrafo.shortLoops;
-       
-        
+
         wfg.notifyAction(); //notificar que el modelo tuvo cambios
         wasMined = true;
         modelSelected = true;
         deploymentSelected = true;
-        
+
         refreshWindow();
     }
 

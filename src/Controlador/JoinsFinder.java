@@ -41,7 +41,10 @@ public class JoinsFinder {
         this.WFG = wfg;//Para utilizar funciones y obtener el grafo
     }
 
-    //Función que realiza la creación de cierres y de la notación, retorna la notación
+    /**
+     * Función que realiza la creación de cierres y genera la notación
+     * @return Notación
+     */
     public String findNotation() {
         StringBuilder notation = new StringBuilder();
         continueExploring(notation, BPMN.i.toString());
@@ -49,12 +52,11 @@ public class JoinsFinder {
         return notation.toString().replace(",}", "}");
     }
 
-    
-    /*
-    Procedimiento que realiza la creación de compuertas de tipo OR, esto se realiza al final 
+    /**
+     *  Procedimiento que realiza la creación de compuertas de tipo OR, esto se realiza al final 
         (cuando se identifican todas las compuertas homogeneas)
         De forma paralela a la creación de las compuertas OR, se realiza la simplificación de estas compuertas.
-    */
+     */
     public void finishOrs() {
         System.out.println("Finishing Or joins...");
         numberGatewaysOr = 1;
@@ -92,9 +94,12 @@ public class JoinsFinder {
     }
 
     
-    /*
-    Procedimiento de exploración, recibe la notación y el elemento a explorar
-    */
+
+    /**
+     * Procedimiento de exploración de nodos
+     * @param notation Notación
+     * @param actual Nodo a explorar
+     */
     public void continueExploring(StringBuilder notation, String actual) {
         if (cloneTask.contains(actual)) { //verificar que actual sea una tarea
             notation.append(" " + actual);
@@ -110,12 +115,16 @@ public class JoinsFinder {
         }
     }
 
-    
-    /*
-    
-    Función que reliza la creación de cierres homogeneos y guarda la información de los cierres heterogeneos (estos ultimos son creados al final)
+
+    /**
+     * Función que reliza la creación de cierres homogeneos y guarda la información de los cierres heterogeneos (estos ultimos son creados al final)
         Esta función también agrega la compuerta explorada a la notación así como el contenido de sus ramas
-    */
+     * @param cierres Cierres candidatos
+     * @param notation Notación
+     * @param gateway Compuerta de apertura
+     * @param ramas Ramas de la compuerta (Notación)
+     * @return Siguientes nodos a explorar
+     */
     public ArrayList<String> conectarCierres(HashMap<String, LinkedList<String>> cierres, StringBuilder notation, String gateway, LinkedList<String> ramas) {
         ArrayList<String> paraCierre = new ArrayList<>(); //Esta lista es retornada, obtiene el anterior del o de los cierres con las nuevas compuertas creadas  (es utilizado en exploreBranch)        
 
@@ -169,16 +178,16 @@ public class JoinsFinder {
         return paraCierre;
     }
 
-    
-    /*
-    
-    Función que dada una compuerta obtiene el contenido de sus ramas para la notación y
-    guarda los cierres candidatos de cada rama para posteriormente verificar si es un cierre homogeneo o heterogeneo.
-    
-    */
+    /**
+     *  Función que dada una compuerta obtiene el contenido de sus ramas para la notación y
+    guarda los cierres candidatos de cada rama
+     * @param gate Compuerta
+     * @param ramas Lista que almacena la notación de las ramas de la compuerta
+     * @return Mapa con la información de los cierres
+     */
     public HashMap<String, LinkedList<String>> resolveGateway(String gate, LinkedList<String> ramas) {
         HashSet<String> sigs = Utils.successors(gate, WFG);
-        HashMap<String, LinkedList<String>> cierres = new HashMap<>();
+        HashMap<String, LinkedList<String>> cierres = new HashMap<>(); //Mapa de cierres : la llave representa el nodo de cierre candidato y el valor es la lista de nodos anteriores a este
         for (String s : sigs) {
             StringBuilder notationRama = new StringBuilder();
             ArrayList<String> cierreYanteriores = exploreBranch(s, notationRama, gate);
@@ -203,21 +212,28 @@ public class JoinsFinder {
         return cierres;
     }
 
+    /**
+     * Función que explora una rama y agrega a la notación el contenido de esta
+     * @param nodo Nodo siguiente a explorar
+     * @param notation Notación
+     * @param fromGateway Compuerta de la rama que que se esta explorando
+     * @return Cierre o cierres de la rama
+     */
     public ArrayList<String> exploreBranch(String nodo, StringBuilder notation, String fromGateway) {
-        ArrayList<String> cierres = new ArrayList<>();
+        ArrayList<String> cierres = new ArrayList<>(); //El cierre esta representado de la forma "cierre, nodo anterior al cierre"
         if (getNumberEdges(nodo, "to") > 1) {
             //si este nodo tiene como antecesor la compuerta de donde viene, entonces retornar como cierre: nodo,fromGateway
             HashSet<String> antecesores = Utils.sucesoresOAntecesores(nodo, 'a', WFG);
             if (antecesores.contains(fromGateway)) {
-                System.out.println("(getNumberEdgesToA(nodo) > 1)...nodo,FromGateway: '" + nodo + "'," + fromGateway + "' ");
+                //System.out.println("(getNumberEdgesToA(nodo) > 1)...nodo,FromGateway: '" + nodo + "'," + fromGateway + "' ");
                 cierres.add(nodo + "," + fromGateway);
             } else {
                 //Pendiente revisar esto!
-                System.out.println("(getNumberEdgesToA(nodo) > 1)...nodo: '" + nodo + "'");
+                //System.out.println("(getNumberEdgesToA(nodo) > 1)...nodo: '" + nodo + "'");
                 cierres.add(nodo + "," + getSucesorOantecesor(nodo, 'a')); //retornar el mismo nodo y el anterior de este
             }
         } else {
-            if ((BPMN.Gand.contains(nodo) || BPMN.Gxor.contains(nodo)) && !nodo.contains("C")) { //es compuerta... resolver
+            if ((BPMN.Gand.contains(nodo) || BPMN.Gxor.contains(nodo)) && !nodo.contains("C")) { //si es compuerta... resolver
                 LinkedList<String> ramas = new LinkedList<>();
                 HashMap<String, LinkedList<String>> cierresGateway = resolveGateway(nodo, ramas);
                 cierres.addAll(conectarCierres(cierresGateway, notation, nodo, ramas));
@@ -238,7 +254,12 @@ public class JoinsFinder {
         return cierres;
     }
 
-    //encuentra el sucesor o antecesor del nodo dado, la cual es una tarea y se espera que solo tenga un solo sucesor  
+    /**
+     * Función que encuentra el sucesor o antecesor del nodo dado, la cual es una tarea y se espera que solo tenga un solo sucesor 
+     * @param task
+     * @param type 's' o 'a' sucesor o antecesor de la tarea
+     * @return sucesor o antecesor
+     */
     public String getSucesorOantecesor(String task, Character type) {
         List<Map.Entry<String, Integer>> edges = new ArrayList(WFG.entrySet());
         for (Map.Entry<String, Integer> entry : edges) {
@@ -259,7 +280,12 @@ public class JoinsFinder {
         return null;
     }
 
-    //Encontrar el numero de edges entrantes ( *a )
+    /**
+     * Encontrar el numero de edges entrantes ( *a ) o (a*)
+     * @param a 
+     * @param type "to" ejes entrantes, "from" ejes salientes
+     * @return Número de arcos
+     */
     public int getNumberEdges(String a, String type) { //types: To , From
         int i = 0;
         for (Map.Entry<String, Integer> entry : WFG.entrySet()) {

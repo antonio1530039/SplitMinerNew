@@ -15,18 +15,27 @@ import java.util.Map;
 import javax.swing.JPanel;
 
 public class gJPanel extends JPanel {
+    /*
+        Canvas sobre el cual se dibuja el modelo BPMN
+    */
 
+    //Dimensiones de pantalla
     int ScreenWidth;
     int ScreenHeight;
+    
+    //Esta variable maneja un tamaño unitario obtenido de una división de la dimensión de la pantalla dividido sobre un cierto numero
+    //  de esta forma hacemos que el tamaño de los Elementos gráficos sea acorde a la dimensión de la pantalla
     int radio;
 
-    int[] breaks;
-    String ElementSelected = "";
-    public HashMap<String, Element> Elements = new HashMap<>();
-    HashMap<String, Color> gatewaysColors = new HashMap<>();
+    int[] breaks; //Número de quiebres en el modelo gráfico
+    String ElementSelected = ""; //Al arrastrar el mouse esta variable contiene el nombre del elemento que se esta arrastrando
+    public HashMap<String, Element> Elements = new HashMap<>(); //Mapa de los elementos gráficos a dibujar
+    HashMap<String, Color> gatewaysColors = new HashMap<>(); //Mapa que almacena una compuerta de apertura y dibujar sus cierrs del mismo color
     public BPMNModel BPMN;
 
+    // Constructor
     public gJPanel(int width, int height, HashMap<String, Element> elements, BPMNModel bpmn, int[] breaks) {
+         //Tomar dimensiones de la pantalla e inicializar variables
         Elements = elements;
         ScreenWidth = width;
         ScreenHeight = height;
@@ -38,6 +47,7 @@ public class gJPanel extends JPanel {
         setBackground(new Color(255, 255, 255));
         setSize(ScreenWidth, ScreenHeight);
 
+        //Se procesan los elementos gráficos para mostrarlos de forma correcta, esto para diferenciar de las tareas con autoloops de las tareas normales, etc.
         List<Map.Entry<String, Element>> elems = new ArrayList(Elements.entrySet());
         for (Map.Entry<String, Element> entry : elems) {
             Element e = entry.getValue();
@@ -72,14 +82,13 @@ public class gJPanel extends JPanel {
 
                             this.Elements.put(qName, q);
                         }
-
                     }
                 }
-
             }
 
         }
 
+        //Declaración de los eventos del mouse
         this.addMouseListener(new MouseListener() {
             @Override
             public void mousePressed(MouseEvent me) {
@@ -100,8 +109,9 @@ public class gJPanel extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent me) {
+                //Al dar clic con el mouse se identifica si se toco algún elemento
                 clickAt(me.getX(), me.getY());
-                if (me.getClickCount() == 2 && !me.isConsumed()) {
+                if (me.getClickCount() == 2 && !me.isConsumed()) { //Si se realizó un doble clic se verifica si se creo o eliminó un quiebre
                     me.consume();
                     doubleClick(me.getX(), me.getY());
                 } else {
@@ -114,10 +124,10 @@ public class gJPanel extends JPanel {
 
             }
         });
-
+        //Declaración de evento mouse
         this.addMouseMotionListener(new MouseMotionListener() {
             @Override
-            public void mouseDragged(MouseEvent e) {
+            public void mouseDragged(MouseEvent e) { //Al arrastrar
                 dragElementSelected(e.getX(), e.getY());
             }
 
@@ -128,13 +138,17 @@ public class gJPanel extends JPanel {
 
     }
 
+    /**
+     * Procedimiento que realiza el pintado de los Elementos gráficos
+     * @param g 
+     */
     @Override
     public void paint(Graphics g) {
         super.paint(g);
 
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue();
-
+            //En base al tipo del elemento se realizan diferentes pintados, ya sea evento o tarea o autoloop o incluso quiebres, o compuertas
             if (e.type.equals("Start")) {
                 g.setColor(Color.green);
                 g.drawOval(e.cPosX, e.cPosY, radio, radio);
@@ -196,7 +210,7 @@ public class gJPanel extends JPanel {
                  */
             }
 
-            //Dibujar lineas
+            //Dibujar arcos y quiebres
             if (!e.Antecesores.isEmpty()) {
                 g.setColor(Color.black);
 
@@ -208,33 +222,19 @@ public class gJPanel extends JPanel {
                     } else {
                         a = Elements.get(antecesor);
                     }
+                    
                     if (a != null) {
                         if (registro.getValue().size() > 0) { //verificar que existan quiebres
-
                             ArrayList<Element> quiebres = registro.getValue();
-                            //Collections.sort(quiebres, Collections.reverseOrder());
-
                             int x1 = a.cPosX + (2 * (radio / 2));
                             int y1 = a.cPosY + (radio / 2);
-
-                            /*for (int i = quiebres.size() - 1; i > -1; i--) {
-                                int x2 = quiebres.get(i).cPosX, y2 = quiebres.get(i).cPosY;
-                                //drawArrowLine(g, x1, y1, x2, y2, ScreenWidth / 300, ScreenWidth / 300);
-                                g.drawLine(x1, y1, x2, y2);
-                                x1 = x2;
-                                y1 = y2;
-                            }*/
-                            
+                            //Dibujado de quiebres
                             for (int i = 0; i < quiebres.size(); i++) {
                                 int x2 = quiebres.get(i).cPosX, y2 = quiebres.get(i).cPosY;
-                                //drawArrowLine(g, x1, y1, x2, y2, ScreenWidth / 300, ScreenWidth / 300);
                                 g.drawLine(x1, y1, x2, y2);
                                 x1 = x2;
                                 y1 = y2;
                             }
-                            
-                            
-                            
                             drawArrowLine(g, x1, y1, e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
                         } else {
                             drawArrowLine(g, a.cPosX + (2 * (radio / 2)), a.cPosY + (radio / 2), e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
@@ -246,6 +246,11 @@ public class gJPanel extends JPanel {
         }
     }
 
+    /**
+     * Procedimiento que se ejecuta cada que se da un clic, se verifica si se seleccionó un elemento del modelo gráfico
+     * @param x
+     * @param y 
+     */
     public void clickAt(int x, int y) { //Dada una posición x, y, verificar si se dio clic a dentro del radio de un elemento
         ElementSelected = "";
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
@@ -263,35 +268,37 @@ public class gJPanel extends JPanel {
 
     }
     
+    /**
+     * Procedimiento que se realiza al dar clic derecho
+     *  se verifica si se dio clic derecho en un quiebre, si es así, el quiebre se elimina
+     */
     public void rightClick(){
         if (ElementSelected.contains("break")) {
-
             Element elementSelected = Elements.get(ElementSelected);
-
-            //public HashMap<String, Element> Elements = new HashMap<>();
             for (Map.Entry<String, Element> entry : Elements.entrySet()) {
                 Element e = entry.getValue();
-                //public HashMap<String, ArrayList<Element>> Antecesores;
                 for (Map.Entry<String, ArrayList<Element>> ant : e.Antecesores.entrySet()) {
                     ant.getValue().remove(elementSelected);
                 }
             }
-
             Elements.remove(ElementSelected);
             repaint();
         }
     }
 
+    /**
+     * Procedimiento que se ejecuta al realizar doble clic
+     *  Se verifica si se dio doble clic en los límites de un arco, de ser así se crea un quiebre
+     *  Se verifica también si se dió doble clic en un quiebre, entonces el quiebre es ocultado
+     * @param x
+     * @param y 
+     */
     public void doubleClick(int x, int y) {
-
         if (ElementSelected.contains("break")) {
-
             Elements.remove(ElementSelected);
             repaint();
             return;
         }
-
-        //if (ElementSelected.equals("")) {
         //Verificar si es un quiebre
         boolean breakhappened = false;
         //Verificar si dio clic en una linea
@@ -407,12 +414,9 @@ public class gJPanel extends JPanel {
                             }
                         }
 
-                        //drawArrowLine(g, x1, y1, e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
                     } else {
 
                         //verificar limite
-                        // if(checkForLineInaPoint( Double.parseDouble((a.cPosX + (2 * (radio / 2))) + "") , Double.parseDouble( (a.cPosY + (radio / 2)) + "" ), Double.parseDouble((e.cPosX) + "") , Double.parseDouble((e.cPosY + (radio / 2))+ ""), Double.parseDouble(x + "" ), Double.parseDouble(y + "") )){
-                        // if (isPointInLine(x, y, a.cPosX + (2 * (radio / 2)), a.cPosY + (radio / 2), e.cPosX, e.cPosY + (radio / 2))) {
                         int x1 = a.cPosX + radio;
                         int y1 = a.cPosY + (radio / 2);
                         int x2 = e.cPosX;
@@ -466,10 +470,15 @@ public class gJPanel extends JPanel {
                 break;
             }
         }
-
-        //}
     }
 
+    /**
+     * Procedimiento que crea un Elemento que representa un quiebre, asigna sus propiedades y posiciones en el canvas
+     * @param eName Nombre del elemento 
+     * @param antecesor Nombre del antecesor al que pertenece el quiebre
+     * @param x
+     * @param y 
+     */
     public void realizarQuiebre(String eName, String antecesor, int x, int y) {
         Element elemento = new Element();
         elemento.Name = "break" + breaks[0];
@@ -478,11 +487,6 @@ public class gJPanel extends JPanel {
         elemento.cPosY = y;
         this.Elements.put("break" + breaks[0], elemento);
         ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
-
-        /*if(br.size() > 1){
-            this.Elements.remove("break" + breaks[0]);
-            return;
-        }*/
         if (br != null) {
             br.add(elemento);
         } else {
@@ -494,6 +498,11 @@ public class gJPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Procedimiento que se ejecuta al arrastrar un elemento, se actualiza su posición x y y, para visualizar un arrastre del mismo en la pantalla
+     * @param x
+     * @param y 
+     */
     public void dragElementSelected(int x, int y) {
         if (!ElementSelected.equals("")) {
             Element e = Elements.get(ElementSelected);
@@ -511,6 +520,12 @@ public class gJPanel extends JPanel {
         }
     }
 
+    /**
+     * Función que crea un diamante en la pos x,y
+     * @param x
+     * @param y
+     * @return 
+     */
     private Polygon drawDiamond(int x, int y) {
         Polygon p = new Polygon();
         p.addPoint(x, y - (radio / 2));
@@ -520,6 +535,12 @@ public class gJPanel extends JPanel {
         return p;
     }
 
+    /**
+     * Procedimiento que dibuja una compuerta Xor en la posicion dada
+     * @param g
+     * @param x
+     * @param y 
+     */
     private void drawXor(Graphics g, int x, int y) {
         Polygon p = drawDiamond(x, y);
         g.fillPolygon(p);
@@ -528,6 +549,12 @@ public class gJPanel extends JPanel {
         g.drawLine(x + (radio / 6), y - (radio / 6), x - (radio / 6), y + (radio / 6));
     }
 
+    /**
+     * Procedimiento que dibuja una compuerta OR en al posición dada
+     * @param g
+     * @param x
+     * @param y 
+     */
     private void drawOr(Graphics g, int x, int y) {
         Polygon p = drawDiamond(x, y);
         g.fillPolygon(p);
@@ -535,6 +562,12 @@ public class gJPanel extends JPanel {
         g.drawOval(x - (radio / 4), y - (radio / 4), radio / 2, radio / 2);
     }
 
+    /**
+     * Procedimiento que dibuja una compuerta And en la posición dada
+     * @param g
+     * @param x
+     * @param y 
+     */
     private void drawAnd(Graphics g, int x, int y) {
         Polygon p = drawDiamond(x, y);
         g.fillPolygon(p);

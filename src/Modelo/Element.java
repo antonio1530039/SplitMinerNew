@@ -3,16 +3,19 @@ package Modelo;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Element implements Comparable{
+public class Element{
     
-    public String Name;
-    public int cPosX;
-    public int cPosY;
-    //public LinkedHashSet<String> Antecesores; 
-    public HashMap<String, ArrayList<Element>> Antecesores;
+    /*
+        Esta clase representa un elemento gráfico y es utilizada para mostrar el modelo gráfico del BPMN
+    */
     
-    public String type;
     
+    public String Name; //Nombre del elemento
+    public int cPosX; //Posición X del elemento en el Canvas
+    public int cPosY; //Posición Y del elemento en el canvas
+    public HashMap<String, ArrayList<Element>> Antecesores; //Mapa de antecesores donde la clave es el antecesor de este elemento y el valor es la lista de quiebres que existen entre ese arco
+    public String type; //Tipo del elemento (tarea, compuerta, evento inicio, evento fin, etc)
+
     
     public Element(){
         this.Name = "";
@@ -28,11 +31,6 @@ public class Element implements Comparable{
         this.cPosY = 0;
         this.type="";
         Antecesores = new HashMap<>();
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        return (cPosX + "").compareTo( (((Element)o).cPosX + "") );
     }
     
     @Override

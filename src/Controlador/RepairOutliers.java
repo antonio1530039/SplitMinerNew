@@ -7,37 +7,47 @@ import java.util.Map;
 
 public class RepairOutliers {
 
+    /**
+     * Mapa de contextos significantes
+     * Llave: Lista de listas, donde la lista 0 es el contexto izquierdo y la lista con index 1 es el contexto derecho
+     * Valor: Mapa 'C' donde la clave de este es la subsecuencia del contexto significativo (llave del mapa V) 
+     *  y el valor del mapa C representa un arreglo de objetos, donde se guarda la frecuencia en la pos 0 del objeto 
+     *      y la probabilidad condicional empírica en la pos 1 del objeto PCE de la subsecuencia
+     */
     LinkedHashMap<ArrayList<ArrayList<Character>>, LinkedHashMap< ArrayList<Character>, Object[]>> V = new LinkedHashMap<>();
 
+    /**
+     * Procedimiento que realiza el filtrado de trazas
+     * 
+     * @param L Lista original de trazas
+     * @param l Número de actividades a la izquierda para los contextos significantes
+     * @param r Número de actividades a la derecha para los contextos significantes
+     * @param K Tamaño máximo de subsecuencia
+     * @param umbral Umbral del filtrado
+     * @param contextOutput Variable de cadena de texto a manera de log, se guardan los contextos significantes identificados
+     */
     public void Filtering(LinkedHashMap<Integer, ArrayList<Character>> L, int l, int r, int K, double umbral, StringBuilder contextOutput) {
-        for (Map.Entry<Integer, ArrayList<Character>> trace : L.entrySet()) {
-            ArrayList<Character> ti = trace.getValue();
-           // ti.add(0, 'I');
-           // ti.add('O');
-        }
-
         boolean activo = true;
-        int j = 0;
+        int j = 0; //Representa el índice de la tarea que estamos analizamos en la traza
         while (activo) {
             int contadorContextos = 0;
-
             for (Map.Entry<Integer, ArrayList<Character>> trace : L.entrySet()) {
                 ArrayList<Character> ti = trace.getValue();
-
-                for (int k = 0; k <= K; k++) {
-                    //Obtener contexto
+                for (int k = 0; k <= K; k++) { //Iniciando con un contexto de tamaño 0, hasta llegar al tamaño máximo de contextos
+                    //Obtener contexto de la traza
                     ArrayList<ArrayList<Character>> c = obtenerContexto(ti, j, l, r, k);
-                    if (c == null) {
+                    if (c == null) { //Si no hay contexto entonces terminar ciclo
                         break;
                     }
 
-                    if (V.containsKey(c)) {
+                    if (V.containsKey(c)) { 
                         continue;
                     }
 
+                    //Obtener coverturas del contexto
                     LinkedHashSet<ArrayList<Character>> cov = covertura(c, K, L);
+                    
                     contadorContextos++;
-
                     //Agregar contextos
                     V.put(c, new LinkedHashMap<>());
 
@@ -45,7 +55,7 @@ public class RepairOutliers {
                     int F = 0;
 
                     LinkedHashMap<ArrayList<Character>, Object[]> coverMap = new LinkedHashMap<>();
-
+                    //Para cada covertura identificada obtener su frecuencia
                     for (ArrayList<Character> subsequence : cov) {
                         int f = getFrecuency(c, subsequence, K, L);
                         Object[] frecAndPCE = new Object[2];
@@ -53,8 +63,10 @@ public class RepairOutliers {
                         coverMap.put(subsequence, frecAndPCE);
                         F += f;
                     }
+                    //Agregar covertura al mapa de contextos significantes
                     V.put(c, coverMap);
 
+                    //Obtener el máximo contexto hasta ahorita en el mapa para realizar remplazo en las trazas
                     double max = 0.0;
                     ArrayList<Character> maxCover = new ArrayList<>();
                     for (ArrayList<Character> subsequence : cov) {
@@ -69,7 +81,7 @@ public class RepairOutliers {
                     maxContextObject[0] = c;
                     maxContextObject[1] = maxCover.clone();
 
-                    remplazar(L, cov, maxContextObject, umbral);
+                    remplazar(L, cov, maxContextObject, umbral); //Realizar remplazo en las trazas con el contexto máximo identificado hasta ahorita
 
                 }
 
@@ -82,7 +94,7 @@ public class RepairOutliers {
             j += l;
         }
 
-        //Imprimir contextos
+        //Guardar contextos en la cadena de texto
         for (Map.Entry<ArrayList<ArrayList<Character>>, LinkedHashMap<ArrayList<Character>, Object[]>> entry : V.entrySet()) {
             contextOutput.append("=============================");
             contextOutput.append("\nContext: " + entry.getKey().toString() + "\nCovering:\n");
@@ -94,6 +106,14 @@ public class RepairOutliers {
         }
     }
 
+    /**
+     * Función que dado un contexto y una subsecuencia se obtiene la frecuencia de este
+     * @param c Contexto
+     * @param s2 Subsecuencia
+     * @param k Tamaño máximo de subsecuencia
+     * @param L Lista de trazas
+     * @return Frecuencia
+     */
     public int getFrecuency(ArrayList<ArrayList<Character>> c, ArrayList<Character> s2, int k, LinkedHashMap<Integer, ArrayList<Character>> L) {
         int F = 0;
         Character first = c.get(0).get(0);
@@ -129,6 +149,15 @@ public class RepairOutliers {
         return F;
     }
 
+    /**
+     * Función que obtiene un contexto dados los parámetros
+     * @param ti Traza
+     * @param j Índice de tarea que se esta analizando en la traza
+     * @param l Tamaño de contexto a la izquierda
+     * @param r Tamaño de contexto a la derecha
+     * @param k1 Tamaño máximo de subsecuencia de contexto
+     * @return Contexto
+     */
     public ArrayList<ArrayList<Character>> obtenerContexto(ArrayList<Character> ti, int j, int l, int r, int k1) {
         if ((j + l + k1 + r - 1) < ti.size()) {
             ArrayList<ArrayList<Character>> contexto = new ArrayList<>();
@@ -152,8 +181,15 @@ public class RepairOutliers {
         return null;
     }
 
+    
+    /**
+     * Función que obtiene coverturas
+     * @param c Contexto
+     * @param k Tamaño máximo de covertura o subsecuencia
+     * @param L Lista de trazas
+     * @return Coverturas
+     */
     public LinkedHashSet<ArrayList<Character>> covertura(ArrayList<ArrayList<Character>> c, int k, LinkedHashMap<Integer, ArrayList<Character>> L) {
-
         LinkedHashSet<ArrayList<Character>> cov = new LinkedHashSet();
         Character first = c.get(0).get(0);
         for (Map.Entry<Integer, ArrayList<Character>> trace : L.entrySet()) {
@@ -190,6 +226,13 @@ public class RepairOutliers {
         return cov;
     }
 
+    /**
+     * Función que realiza el remplazo según los contextos significantes identificados
+     * @param L Lista de trazas
+     * @param R Covertura
+     * @param maxContext Información del contexto mas frecuente identificado
+     * @param umbral  Umbral a tomar en cuenta, si la probabilidad condicional empirica del contexto analizado en la traza es menor a este umbral, se realiza el remplazo por el contexto mas frecuente
+     */
     public void remplazar(LinkedHashMap<Integer, ArrayList<Character>> L, LinkedHashSet<ArrayList<Character>> R, Object[] maxContext, double umbral) {
         ArrayList<ArrayList<Character>> c = (ArrayList<ArrayList<Character>>) maxContext[0];
         LinkedHashMap<ArrayList<Character>, Object[]> subs = V.get(c);//Obtenemos subsecuencias del contexto
@@ -243,7 +286,7 @@ public class RepairOutliers {
                         }
 
                     }
-
+                    //Se realiza el remplazo en la traza del contexto debajo del umbral por el contexto mas frecuente
                     if (existe) {
                        // System.out.println("Trace replacement...\n" + "\t\tSecuence: " + fullSecuence.toString() + " < umbral and exists in trace: " + trace.toString() + "\n" + "\t\tMaxContext: " + maxSecuence.toString() + "\n" + "\tTrace before change: " + trace.toString());
                         int iterator = 0;

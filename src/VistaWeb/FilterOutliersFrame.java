@@ -1,10 +1,7 @@
 package VistaWeb;
 
-import Controlador.BPMNFiles;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -19,7 +16,6 @@ import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -40,18 +36,17 @@ public class FilterOutliersFrame extends JPanel {
         int ScreenWidth = (int) screenSize.getWidth();
         int ScreenHeight = (int) screenSize.getHeight();
 
-        // Se prepara la tabla traces
-        // String[] columnNamesTraces = new String[]{"ID", "Original Traces", "Repaired Traces"};
+        // Se prepara la tabla de las trazas originales para mostrarse en la interfaz
         String[] columnNamesTraces = new String[]{"Original Traces", "Repaired Traces"};
         String[][] dataTraces = new String[originalTraces.size()][3];
         int i = 0;
         for (Map.Entry<Integer, ArrayList<Character>> entry : originalTraces.entrySet()) {
-            // dataTraces[i][0] = entry.getKey().toString();
             dataTraces[i][0] = entry.getValue().toString();
             i++;
         }
 
         i = 0;
+        // Se prepara la tabla de las trazas reparadas para mostrarse en la interfaz
         for (Map.Entry<Integer, ArrayList<Character>> entry : repairedTraces.entrySet()) {
             dataTraces[i][1] = entry.getValue().toString();
             i++;
@@ -76,7 +71,7 @@ public class FilterOutliersFrame extends JPanel {
         superior.add(jpanelComponentes);
         add(superior, BorderLayout.NORTH);
 
-        //contexts output
+        //Mostrar los contextos significantes y la descripción de las tareas en un TextArea
         JPanel middlePanel3 = new JPanel();
         middlePanel3.setBorder(new TitledBorder(new EtchedBorder(), "Significant contexts values and tasks description"));
 
@@ -103,7 +98,7 @@ public class FilterOutliersFrame extends JPanel {
         jpanelComponentes2.add(middlePanel3);
 
         JPanel main = this;
-
+        //Boton de guardado de log
         JButton save = new JButton("Save repaired log");
         ActionListener save_actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -159,6 +154,13 @@ public class FilterOutliersFrame extends JPanel {
         setVisible(true);
     }
 
+     /**
+     * Función que construye un panel y agrega la tabla
+     *
+     * @param dtb Tabla
+     * @param title Titulo del panel
+     * @return Retorna el panel
+     */
     JPanel buildTablePanel(DefaultTableModel dtb, String title) {
         /* Se inicializa la tablas*/
         JLabel titleTable_txt = new JLabel(title);

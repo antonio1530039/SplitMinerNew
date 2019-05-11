@@ -9,8 +9,15 @@ import java.util.Map;
 
 public class FindLoops {
 
-    //Función que recibe el modelo BPMN, el grafo dirigido, la notación y los cierres
-    //  * Detecta loops entre compuertas y los indica en la notación
+    /**
+     * Función que recibe el modelo BPMN, el grafo dirigido, la notación y los cierres
+     * Detecta loops entre compuertas y los indica en la notación
+     * @param BPMN
+     * @param WFG
+     * @param notation
+     * @param cierres
+     * @return 
+     */
     public static String findLoops(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG, String notation, LinkedHashSet<String> cierres) {
         LinkedHashSet<String> loops = new LinkedHashSet<>();
 
@@ -35,7 +42,12 @@ public class FindLoops {
         return formatNotation(loops, notation);
     }
 
-    //Función que dados los loops identificados y la notación original, se indica en la notación los loops de esta forma: @{ contenido del loop }
+    /**
+     * Función que dados los loops identificados y la notación original, se indica en la notación los loops de esta forma: @{ contenido del loop }
+     * @param loops
+     * @param notation
+     * @return 
+     */
     public static String formatNotation(LinkedHashSet<String> loops, String notation) {
         if (loops.size() == 0) {
             return notation;
@@ -84,7 +96,13 @@ public class FindLoops {
         return newNotation.toString();
     }
 
-    //Función que dado un nodo x y s se calcula si x va antes que s
+    /**
+     * Función que dado un nodo x y s se calcula si x va antes que s
+     * @param x 
+     * @param s
+     * @param WFG
+     * @return 
+     */
     public static boolean esMenorQue(String x, String s, LinkedHashMap<String, Integer> WFG) {
         LinkedHashSet<String> antecesores = getAllSucesores(WFG, s, new ArrayList<>(), 'a');
 
@@ -98,7 +116,14 @@ public class FindLoops {
         return antecesores.contains(x);
     }
 
-    //Función que obtiene todos los nodos hacia adelante de un target dado (nodo)
+    /**
+     * Función que obtiene todos los nodos hacia adelante de un target dado (nodo)
+     * @param WFG Grafo dirigido
+     * @param target Nodo a analizar
+     * @param visited Nodos visitados
+     * @param type 'a' o 's' antecesores o sucesores
+     * @return 
+     */
     public static LinkedHashSet<String> getAllSucesores(LinkedHashMap<String, Integer> WFG, String target, ArrayList<String> visited, Character type) {
         LinkedHashSet<String> adelante = new LinkedHashSet<>();
 
@@ -149,7 +174,11 @@ public class FindLoops {
     }
 
     
-    //Función que obtiene todas las compuertas de apertura del modelo BPMN
+    /**
+     * Función que obtiene todas las compuertas de apertura del modelo BPMN
+     * @param bpmn
+     * @return 
+     */
     public static LinkedHashSet<String> getAllSplits(BPMNModel bpmn) {
         LinkedHashSet<String> splits = new LinkedHashSet<>();
         for (String gateway : bpmn.Gand) {

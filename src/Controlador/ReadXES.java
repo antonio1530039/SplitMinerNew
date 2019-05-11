@@ -22,6 +22,17 @@ import org.xml.sax.SAXException;
 
 public class ReadXES {
 
+    
+    /**
+     * Función que convierte un archivo XES a uno TXT
+     * @param path Ruta del archivo
+     * @param newFileName Nombre del archivo
+     * @return Ruta donde se creo el nuevo archivo
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws XPathExpressionException 
+     */
     public static String XESTOTXT(String path, String newFileName) throws IOException, ParserConfigurationException, SAXException, XPathExpressionException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();

@@ -1,7 +1,5 @@
 package VistaWeb;
 
-import Controlador.ReadXES;
-import Controlador.Utils;
 import Controlador.WFG;
 import Modelo.BPMNModel;
 import Modelo.Element;
@@ -14,10 +12,8 @@ import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -28,7 +24,6 @@ import java.util.Observer;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -38,39 +33,36 @@ import javax.swing.JTextArea;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import javax.swing.JTextField;
-
 public class gBuildGraphicModel extends JPanel implements Observer, ActionListener {
 
+    /*
+        Ventana que muestra el modelo gráfico del BPMN creado
+    */
+    
     private JRadioButton antesSplitsRadio, splitsRadio, todoRadio;
     private ButtonGroup bg;
-
-    private LinkedHashMap<String, Integer> WFGantesSplits;
+    //Los siguientes tres mapas almacenan las versiones del grafo: antes de los splits, con los splits identificados y el grafo completo (con cierres identificados)
+    private LinkedHashMap<String, Integer> WFGantesSplits; 
     private LinkedHashMap<String, Integer> WFGSplits;
     private LinkedHashMap<String, Integer> WFG;
-
-    public List<Character> autoLoops = new LinkedList<Character>();
-    public LinkedHashSet<String> shortLoops = new LinkedHashSet<String>();
-
-    boolean autoloops = false;
-    boolean shortloops = false;
-
-    private LinkedList<String> showTasks;
-    
-    
+    public List<Character> autoLoops = new LinkedList<>(); //Lista de autoloops
+    public LinkedHashSet<String> shortLoops = new LinkedHashSet<>(); //lista de shortloops
+    boolean autoloops = false; //indica si se deben mostrar los autoloops
+    boolean shortloops = false;//indica si se deben mostrar los shortloops
+    private LinkedList<String> showTasks; //Tareas que deben ser mostradas en el modelo gráfico
     private HashMap<String, ArrayList<Element>> quiebres= new HashMap<>();
-    
-    public int[] breaks = {1};
-    
-    private HashMap<String, HashMap<String, Element>> ElementsSaved;
+    public int[] breaks = {1}; //Número de quiebres creados en el panel
+    private HashMap<String, HashMap<String, Element>> ElementsSaved; //Mapa de elementos gráficos guardados (para que las posiciones de los elementos no se reinicien)
 
     BPMNModel BPMN;
     String currentMode = "";
     String tasksDescription = "";
+    //Las siguientes dos variables almacenan las dimensiones de la pantalla
     int ScreenWidth;
     int ScreenHeight;
-    int PosX;
-    int PosY;
+    
+    int PosX; //Posición en X inicial de los elementos gráficos del BPMN
+    int PosY; // ..
 
     JPanel jpanelGrafica = new JPanel();
     JPanel jpanelComponentes = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -79,14 +71,13 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
     JPanel jpanelMenu = new JPanel(new BorderLayout());
 
     JTextArea notationTxt = new JTextArea();
-
     JTextArea tasksDescriptionTxt = new JTextArea(5, 20);
-
     JCheckBox autoloopsCheck = new JCheckBox("Autoloops");
     JCheckBox shortloopsCheck = new JCheckBox("Shortloops");
     ActionListener helpBtnAction;
 
     public gBuildGraphicModel(LinkedList<Character> tasks) {
+        //Tomar dimensiones de la pantalla e inicializar variables
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         ScreenWidth = (int) screenSize.getWidth();
         ScreenHeight = (int) screenSize.getHeight();
@@ -194,6 +185,13 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
         super.paint(g);
     }
 
+    
+    /**
+     * Procedimiento que construye el modelo BPMN, crea el mapa de elementos con las posiciones en el canvas
+     * @param BPMN Modelo BPMN
+     * @param WFG Grafo
+     * @param mode Versiones del grafo, las guarda en un mapa para conservar las posiciones en X y Y cada que se realizan modificaciones con el mouse
+     */
     public void buildModel(BPMNModel BPMN, LinkedHashMap<String, Integer> WFG, String mode) {
         this.remove(jpanelGrafica);
         currentMode = mode;
@@ -306,13 +304,21 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
             }
 
         }
-
-        jpanelGrafica = new gJPanel(ScreenWidth, ScreenHeight, elementsToPaint, BPMN, breaks);
-       jpanelGrafica.setPreferredSize(new Dimension(this.ScreenWidth, this.ScreenHeight));
-        add(jpanelGrafica);
-        revalidate();
+        //Crear panel con el modelo gráfico BPMN, envia como parametros las dimensiones de la pantalla y los elementos procesados a mostrar, así como el número de quiebres en la pantalla
+        jpanelGrafica = new VistaEscritorio.gJPanel(ScreenWidth, ScreenHeight, elementsToPaint, BPMN, breaks);
+        jpanelGrafica.setPreferredSize(new Dimension(this.ScreenWidth, this.ScreenHeight)); //Se asigna el tamaño al panel
+        add(jpanelGrafica); //Se agrega el modelo gráfico al panel
+        revalidate(); //Se realiza el repintado
     }
 
+     /**
+     * Función que dado un Elemento y sus posiciones lo procesa, asigna sus propiedades así como la posición en el canvas que tomará y el tipo (tarea, compuerta, autoloop, evento fin, evento inicio etc)
+     * @param e Elemento
+     * @param PosX
+     * @param PosY
+     * @param bpmn
+     * @param Elements Mapa de elementos
+     */
     public void processElement(Element e, int PosX, int PosY, BPMNModel bpmn, HashMap<String, Element> Elements) {
         e.cPosX = PosX;
         e.cPosY = PosY;
@@ -343,6 +349,11 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
 
     }
 
+    /**
+     * Función de la interfaz Observer, realiza la actualización tomando los valores del objeto WFG
+     * @param o Objeto
+     * @param arg 
+     */
     @Override
     public void update(Observable o, Object arg) {
         System.out.println("Actualización de Observable");
@@ -361,17 +372,20 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
         buildModel(BPMN, WFG, "All");
     }
 
+    
+    /**
+     * Listener de acciones
+     * @param e 
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
-
-        if (e.getSource().getClass().isInstance(new JCheckBox())) {
+        if (e.getSource().getClass().isInstance(new JCheckBox())) { //Se verifica si es un checkbox sobre el cual se realizo la acción
             JCheckBox c = (JCheckBox) e.getSource();
             String label = c.getText();
-
-            if (c.isSelected()) {
-                if (label.equals("Autoloops")) {
+            if (c.isSelected()) { //Se verifica si se da clic en activar autoloops
+                if (label.equals("Autoloops")) { 
                     autoloops = true;
-                } else if (label.equals("Shortloops")) {
+                } else if (label.equals("Shortloops")) {//Se verifica si se da clic en activar shortloops
                     shortloops = true;
                 }
             } else {
@@ -381,15 +395,14 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
                     shortloops = false;
                 }
             }
-
+            //Se agregan o remueven de las tareas a mostrar, segùn la selecciòn del usuario
             if (c.isSelected() && !showTasks.contains(label)) {
                 showTasks.add(label);
             } else if (!c.isSelected()) {
                 showTasks.remove(label);
             }
-
         }
-
+        //Construir el modelo según la versión que eligió el usuario
         if (antesSplitsRadio.isSelected()) {
             buildModel(BPMN, WFGantesSplits, "BeforeSplits");
         }

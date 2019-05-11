@@ -31,7 +31,10 @@ public class BPMNFiles {
     }
 
     
-    //Procedimiento que crea la instancia del modelo BPMN, se crea el proceso y se agregan los elementos al modelo, así como el flujo del modelo
+    /**
+     * Procedimiento que crea la instancia del modelo BPMN, se crea el proceso y se agregan los elementos al modelo, así como el flujo del modelo
+     * @param WFG Grafo
+     */
     public void buildBPMNModel(LinkedHashMap<String, Integer> WFG) { //falta BPMNModel instance
         // Create an Empty Model
         modelInstance = Bpmn.createEmptyModel();
@@ -91,8 +94,12 @@ public class BPMNFiles {
         }
     }
 
-    
-    //Función que recibe un nombre de un nodo y crea el Elemento del BPMN según sea una tarea, o compuerta.
+    /**
+     * Función que recibe un nombre de un nodo y crea el Elemento del BPMN según sea una tarea, o compuerta.
+     * @param e Nombre del nodo
+     * @param process Proceso BPMN
+     * @return 
+     */
     public BpmnModelElementInstance processElement(String e, Process process) {
         if (BPMN.T.contains(e.trim().charAt(0))) { //Es una tarea
             UserTask task = createElement(process, e, UserTask.class);
@@ -117,7 +124,11 @@ public class BPMNFiles {
         }
     }
 
-    //Función que valida el modelo BPMN y crea un archivo .bpmn del modelo.
+    /**
+     * Función que valida el modelo BPMN y crea un archivo .bpmn del modelo
+     * @param fileName Nombre de archivo
+     * @return 
+     */
     public boolean export(String fileName) {
         // validate and write model to file
         Bpmn.validateModel(modelInstance);
@@ -134,7 +145,14 @@ public class BPMNFiles {
         return false;
     }
 
-    //Función que dado un elemento padre, un id y una clase de elemento, crea el elemento BPMN y asigna sus propiedades, así como el elemento padre al que va conectado.
+    /**
+     * Función que dado un elemento padre, un id y una clase de elemento, crea el elemento BPMN y asigna sus propiedades, así como el elemento padre al que va conectado.
+     * @param <T>
+     * @param parentElement
+     * @param id
+     * @param elementClass
+     * @return 
+     */
     protected <T extends BpmnModelElementInstance> T createElement(BpmnModelElementInstance parentElement, String id, Class<T> elementClass) {
         T element = modelInstance.newInstance(elementClass);
         element.setAttributeValue("id", id, true);
@@ -142,8 +160,13 @@ public class BPMNFiles {
         return element;
     }
 
-    
-    //Función que crea un flujo de secuencia desde un Elemento from hasta un elemento to
+    /**
+     * Función que crea un flujo de secuencia desde un Elemento from hasta un elemento to
+     * @param process
+     * @param from
+     * @param to
+     * @return 
+     */
     public SequenceFlow createSequenceFlow(Process process, FlowNode from, FlowNode to) {
         String identifier = from.getId() + "-" + to.getId();
         SequenceFlow sequenceFlow = createElement(process, identifier, SequenceFlow.class);

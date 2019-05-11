@@ -65,21 +65,26 @@ public class ProcessViewer extends JApplet {
     Dimension screenSize;
     WFG wfg = new WFG(); //Modelo: grafo y modelo BPMN
     LinkedHashMap<Integer, ArrayList<Character>> tracesList = null;
-    
+
     JPanel Panel1 = new JPanel();
     JPanel Panel2 = new JPanel();
     JPanel Panel3 = new JPanel();
-    
+
     String tasksDescription = "";
+    //Longitud de texto de columna (para ajustar tamaño en las tablas)
     int biggerTrace = 0;
+    int biggerActivity1 = 0;
+    int biggerActivity0 = 0;
+
+    int biggerModel0 = 0;
+    int biggerModel1 = 0;
 
     BPMNModel BPMN;
     LinkedHashMap<String, Integer> WFG = new LinkedHashMap<>();
 
-    public ProcessViewer(){
+    public ProcessViewer() {
 
         screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
 
         Toolkit t = Toolkit.getDefaultToolkit();
         screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // Se consigue el tama�o de la ventana
@@ -145,7 +150,7 @@ public class ProcessViewer extends JApplet {
         filtering_btn = new JButton("Filtering outliers");
         filtering_btn.addActionListener(filtering_btnAction);
 
-        if (fileName!=null) {
+        if (fileName != null) {
             mine_btn.setVisible(true);
             if (!fileName.getName().endsWith(".repaired")) {
                 filtering_btn.setVisible(true);
@@ -321,25 +326,34 @@ public class ProcessViewer extends JApplet {
         int sizeOfColumns = screenSize.width / 10;
 
         if (informationSelected) {
-            JPanel j = buildTablePanel(information_dtm, "Description", sizeOfColumns, sizeOfColumns);
+            int bigger0 = 0;
+            int bigger1 = 1;
+            for (int i = 0; i < information_dtm.getRowCount(); i++) {
+                if (information_dtm.getValueAt(i, 0).toString().length() > bigger0) {
+                    bigger0 = information_dtm.getValueAt(i, 0).toString().length();
+                }
+                if (information_dtm.getValueAt(i, 1).toString().length() > bigger1) {
+                    bigger1 = information_dtm.getValueAt(i, 1).toString().length();
+                }
+            }
+            JPanel j = buildTablePanel(information_dtm, "Description", bigger0 * 8, bigger1 * 8);
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         // north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
 
         if (activitiesSelected) {
-            JPanel j = buildTablePanel(activities_dtm, "Activities", sizeOfColumns, sizeOfColumns);
-
+            JPanel j = buildTablePanel(activities_dtm, "Activities", ("Description".length() > biggerActivity0) ? "Description".length() * 8 : biggerActivity0 * 8, ("Item".length() > biggerActivity1) ? "Item".length() * 8 : biggerActivity1 * 8);
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         if (tracesSelected) {
-            JPanel j = buildTablePanel(traces_dtm, "Traces", sizeOfColumns / 5, biggerTrace * 10);
+            JPanel j = buildTablePanel(traces_dtm, "Traces", traces_dtm.getValueAt(traces_dtm.getRowCount() - 1, 0).toString().length() * 10, biggerTrace * 8);
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
         if (modelSelected) {
-            JPanel j = buildTablePanel(model_dtm, "BPMN Model", sizeOfColumns, sizeOfColumns);
+            JPanel j = buildTablePanel(model_dtm, "BPMN Model", ("Edge".length() > biggerModel0 ? "Edge".length() * 8 : biggerModel0 * 8), ("Frecuency".length() > biggerModel1 ? "Frecuency".length() * 8 : biggerModel1 * 8));
             j.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 2));
             south.add(j);
         }
@@ -401,30 +415,28 @@ public class ProcessViewer extends JApplet {
         
          */
         this.Panel2.setLayout(new BorderLayout());
-        
+
         this.Panel1.removeAll();
         this.Panel1.setLayout(new BorderLayout());
         this.Panel1.add(loadFile_pnl, BorderLayout.NORTH);
         this.Panel1.add(menu_pnl, BorderLayout.WEST);
         this.Panel1.add(viewer_pnl, BorderLayout.CENTER);
-        
-        
+
         this.add(Panel1, BorderLayout.NORTH);
-        
+
         this.Panel1.revalidate();
         this.Panel1.repaint();
 
         // this.pack();
-
         this.setVisible(true);
     }
 
-     private void initializeActions() {
+    private void initializeActions() {
 
         mine_btnAction = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (fileName != null) {
-                    execute(fileName.getAbsolutePath());
+                    execute();
                     refreshWindow();
                 } else {
                     JOptionPane.showMessageDialog(Panel1, "No file selected");
@@ -480,14 +492,12 @@ public class ProcessViewer extends JApplet {
 
                     remove(Panel2);
                     Panel3.removeAll();
-                    
+
                     Panel3.add(fof);
                     add(Panel3, BorderLayout.SOUTH);
                     Panel3.revalidate();
                     Panel3.repaint();
-                    
-                    
-                    
+
                 } else {
                     JOptionPane.showMessageDialog(Panel1, "Ingrese todos los parámetros para realizar el filtrado!");
                 }
@@ -550,23 +560,22 @@ public class ProcessViewer extends JApplet {
                         System.out.println("Error en el archivo.");
 
                     } else {
-                        
+
                         if (!fileName.getName().toLowerCase().endsWith(".txt") && !fileName.getName().toLowerCase().endsWith(".csv") && !fileName.getName().toLowerCase().endsWith(".xes") && !fileName.getName().toLowerCase().endsWith(".repaired")) {
                             JOptionPane.showMessageDialog(Panel1, "El tipo de archivo de entrada no es valido");
                             refreshWindow();
                             return;
                         }
-                        
+
                         //Reiniciar contenedores
                         tracesList = null;
                         wfg = new WFG();
                         wasMined = false;
                         modelSelected = false;
                         deploymentSelected = false;
-                        
-                        
+
                         String filename = fileName.getAbsolutePath();
-                        FilesManagement f = new FilesManagement(wfg.BPMN, false,(fileName.getName().endsWith(".repaired")) ? true : false  , 0, 0, 0, 0.0, new StringBuilder());
+                        FilesManagement f = new FilesManagement(wfg.BPMN, false, (fileName.getName().endsWith(".repaired")) ? true : false, 0, 0, 0, 0.0, new StringBuilder());
                         ///////
                         System.out.println("PASO 1: LEER TRAZAS DEL ARCHIVO DE ENTRADA '" + filename + "' E IDENTIFICAR TAREAS.");
                         try {
@@ -585,17 +594,26 @@ public class ProcessViewer extends JApplet {
                             return;
                         }
 
-                        
                         tasksDescription = "";
                         ///////
                         // Se prepara la tabla Actividades
                         String[] columnNames = new String[]{"Description", "Item"};
                         String[][] data = new String[f.ActivityList.size()][2];
                         int i = 0;
+                        biggerActivity1 = 0;
+                        biggerActivity0 = 0;
                         for (Map.Entry<String, Character> entry1 : f.ActivityList.entrySet()) {
                             data[i][0] = entry1.getKey();
                             data[i][1] = entry1.getValue().toString();
-                            tasksDescription += " " + data[i][1]  + " : " + data[i][0] + "\n";
+
+                            if (data[i][1].length() > biggerActivity1) {
+                                biggerActivity1 = data[i][1].length();
+                            }
+                            if (data[i][0].length() > biggerActivity0) {
+                                biggerActivity0 = data[i][0].length();
+                            }
+
+                            tasksDescription += " " + data[i][1] + " : " + data[i][0] + "\n";
                             i++;
                         }
                         // Modelo para la table activities
@@ -605,14 +623,14 @@ public class ProcessViewer extends JApplet {
                         String[] columnNamesTraces = new String[]{"ID", "Traces"};
                         String[][] dataTraces = new String[tracesList.size()][2];
                         i = 0;
-                        biggerTrace =0;
+                        biggerTrace = 0;
                         System.out.println("\t3. Mostrando TRAZAS IDENTIFICADAS  en el archivo '" + filename + "'.");
                         for (Map.Entry<Integer, ArrayList<Character>> entry : tracesList.entrySet()) {
                             System.out.println("\t\t" + entry.getKey() + " - " + entry.getValue());
                             dataTraces[i][0] = entry.getKey().toString();
                             dataTraces[i][1] = entry.getValue().toString();
                             int length = dataTraces[i][1].length();
-                            if(length >= biggerTrace){
+                            if (length >= biggerTrace) {
                                 biggerTrace = length;
                             }
                             i++;
@@ -627,15 +645,12 @@ public class ProcessViewer extends JApplet {
                         information_dtm = new DefaultTableModel(columnNamesdataInfo, columnNamesInfo);
                         wasLoaded = true;
                         activitiesSelected = true;
-                        tracesSelected = true; 
+                        tracesSelected = true;
                         informationSelected = true;
-                        
-                        
+
                         remove(Panel3);
                         remove(Panel2);
-                        
-                        
-                        
+
                     }
                     refreshWindow();
                 }
@@ -745,8 +760,12 @@ public class ProcessViewer extends JApplet {
 
     }
 
-
-    public void execute(String filename) {
+    /**
+     * Función ejecutar, realiza el minado del modelo seleccionado
+     *
+     * @param filename Nombre del archivo del modelo
+     */
+    public void execute() {
         double epsilon = 0.0, umbral = 0.0;
 
         //double umbral = 0.4; //descarta edges con frecuencia menor a este umbral he manejado hasta 25
@@ -821,9 +840,19 @@ public class ProcessViewer extends JApplet {
         String[] columnNamesModel = new String[]{"Key", "Value"};
         String[][] dataModel = new String[wfg.WFG.size()][2];
         int i = 0;
+        biggerModel0 = 0;
+        biggerModel1 = 0;
         for (Map.Entry<String, Integer> entry : wfg.WFG.entrySet()) {
-            dataModel[i][0] = "[" + entry.getKey() + "]";
+            dataModel[i][0] = "   [ " + entry.getKey() + " ]";
             dataModel[i][1] = String.valueOf(entry.getValue());
+
+            if (dataModel[i][0].length() > biggerModel0) {
+                biggerModel0 = dataModel[i][0].length();
+            }
+            if (dataModel[i][1].length() > biggerModel1) {
+                biggerModel1 = dataModel[i][1].length();
+            }
+
             i++;
         }
 
@@ -852,9 +881,8 @@ public class ProcessViewer extends JApplet {
         repaint();
         
          */
-        
         this.remove(Panel3);
-        
+
         this.Panel2.removeAll();
         this.Panel2.add(view);
         this.add(Panel2, BorderLayout.SOUTH);
@@ -867,8 +895,7 @@ public class ProcessViewer extends JApplet {
     }
 
     void refreshWindow() {
-        
-        
+
         this.Panel1.remove(loadFile_pnl);
         this.Panel1.remove(menu_pnl);
         this.Panel1.remove(viewer_pnl);
@@ -882,15 +909,13 @@ public class ProcessViewer extends JApplet {
         raw_pnl.validate();
         buildViewer();
         viewer_pnl.validate();
-        
-        
+
         this.Panel1.add(loadFile_pnl, BorderLayout.NORTH);
         this.Panel1.add(menu_pnl, BorderLayout.WEST);
         this.Panel1.add(viewer_pnl, BorderLayout.CENTER);
-        
-        
+
         this.add(Panel1, BorderLayout.NORTH);
-        
+
         this.Panel1.revalidate();
         this.Panel1.repaint();
 
