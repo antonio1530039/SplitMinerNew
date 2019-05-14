@@ -21,6 +21,9 @@ public class FilesManagement {
 
     public LinkedHashMap<String, Character> ActivityList;
 
+    //El parametro repaired indica si el log ya fue reparado
+    //El parametro filtering indica ssi  se va filtrar el log
+    // Los parametros l, r, k, umbral y contextOutput son requeridos para el algoritmo de filtrado
     public FilesManagement(BPMNModel bpmn, boolean filtering, boolean repaired, int l, int r, int k, double umbral, StringBuilder contextOutput) {
         BPMN = bpmn;
         Filtering = filtering;
