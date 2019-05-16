@@ -73,8 +73,11 @@ public class PanelBPMN extends JPanel {
                     ArrayList<Element> lista = e.Antecesores.get(registro.getKey());
                     if(lista!=null){
                         if(lista.size()>0)
-                            if(!lista.get(0).Name.equals("Start"))
+                            if(!lista.get(0).Name.equals("Start")){
+                                System.out.println("Antecesor: " + ant.Name + " se le agrego Start");
                                 lista.add(0, elem);
+                            }
+                                
                     }
                     
                     /*if (!e.Antecesores.get(registro.getKey()).get(0).Name.equals("Start")) {
@@ -294,13 +297,16 @@ public class PanelBPMN extends JPanel {
                         if(lista!=null)
                         if (lista.size() > 0) { //verificar que existan quiebres
                             ArrayList<Element> quiebres = registro.getValue();
+
                             /*int x1 = a.cPosX + (2 * (radio / 2));
                             int y1 = a.cPosY + (radio / 2);*/
                             int x1 = quiebres.get(0).cPosX;
                             int y1 = quiebres.get(0).cPosY;
+                            
                             //Dibujado de quiebres
                             for (int i = 1; i < quiebres.size(); i++) {
                                 int x2 = quiebres.get(i).cPosX, y2 = quiebres.get(i).cPosY;
+                                
                                 if (i == quiebres.size() - 1) {
                                     drawArrowLine(g2, x1, y1, x2, y2, ScreenWidth / 300, ScreenWidth / 300);
                                 } else {

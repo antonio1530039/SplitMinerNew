@@ -268,7 +268,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
             }
         }
 
-        for (String s : shortLoops) {
+         for (String s : shortLoops) {
             String[] edge = s.split(",");
 
             if (shortloops) {
@@ -276,33 +276,68 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 if(elementsToPaint.containsKey(edge[0])){
                     //Verificar si se tienen quiebres guardados
                     if(this.quiebres.containsKey(edge[1])){
-                        elementsToPaint.get(edge[0]).Antecesores.put(edge[1], this.quiebres.get(edge[1]) );
+                        
+                        ArrayList<Element> lista = this.quiebres.get(edge[1]);
+                        if(lista!=null){
+                            elementsToPaint.get(edge[0]).Antecesores.put(edge[1], lista );
+                        }else{
+                            Element el = elementsToPaint.get(edge[0]);
+                            Element finalLine = new Element("Final");
+                            finalLine.type = "Line";
+                            finalLine.cPosX = el.cPosX;
+                            finalLine.cPosY = el.cPosY + radio/2;
+                            ArrayList<Element> points = new ArrayList<>();
+                            points.add(finalLine);
+                            elementsToPaint.get(edge[0]).Antecesores.put(edge[1], points );
+                            this.quiebres.remove(edge[1]);
+                            this.quiebres.put(edge[1], points);
+                        }
+                        
+                        
                     }else{
                         Element el = elementsToPaint.get(edge[0]);
                         Element finalLine = new Element("Final");
                         finalLine.type = "Line";
                         finalLine.cPosX = el.cPosX;
-                        finalLine.cPosY = el.cPosY;
+                        finalLine.cPosY = el.cPosY + radio/2;
                         ArrayList<Element> points = new ArrayList<>();
                         points.add(finalLine);
-                       el.Antecesores.put(edge[1], points );
+                        el.Antecesores.put(edge[1], points );
                         
                     }
                 }
                 if(elementsToPaint.containsKey(edge[1])){
                     if(this.quiebres.containsKey(edge[0])){
-                        elementsToPaint.get(edge[1]).Antecesores.put(edge[0], this.quiebres.get(edge[0]) );
+                        
+                        ArrayList<Element> lista = this.quiebres.get(edge[0]);
+                        if(lista!=null){
+                            elementsToPaint.get(edge[1]).Antecesores.put(edge[0], this.quiebres.get(edge[0]) );
+                        }else{
+                            Element el = elementsToPaint.get(edge[1]);
+                            Element finalLine = new Element("Final");
+                            finalLine.type = "Line";
+                            finalLine.cPosX = el.cPosX;
+                            finalLine.cPosY = el.cPosY + radio/2;
+                            ArrayList<Element> points = new ArrayList<>();
+                            points.add(finalLine);
+                            elementsToPaint.get(edge[1]).Antecesores.put(edge[0], points );
+                            this.quiebres.remove(edge[0]);
+                            this.quiebres.put(edge[0], points);
+                        } 
+                        
+                        
+
                     }else{
                         
                         Element el = elementsToPaint.get(edge[1]);
                         Element finalLine = new Element("Final");
                         finalLine.type = "Line";
                         finalLine.cPosX = el.cPosX;
-                        finalLine.cPosY = el.cPosY;
+                        finalLine.cPosY = el.cPosY + radio/2;
                         ArrayList<Element> points = new ArrayList<>();
                         points.add(finalLine);
                         
-                       el.Antecesores.put(edge[0], new ArrayList<>() );
+                       el.Antecesores.put(edge[0], points );
                     }
                 }
                     
