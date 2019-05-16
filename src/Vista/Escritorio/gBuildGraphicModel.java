@@ -79,7 +79,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
     JCheckBox shortloopsCheck = new JCheckBox("Shortloops");
     
     ActionListener helpBtnAction;
-
+    int radio = 0;
     //Constructor
     public gBuildGraphicModel(LinkedList<Character> tasks) {
         //Tomar dimensiones de la pantalla e inicializar variables
@@ -93,7 +93,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         setSize(ScreenWidth, ScreenHeight);
         setVisible(true);
         breaks[0] = 0;
-
+         radio = ScreenWidth / 28;
         bg = new ButtonGroup();
         int widthComponent = (ScreenWidth / 15) - 10;
 
@@ -211,16 +211,33 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 String realSucesor = (sucesor.charAt(0) == '@') ? sucesor.charAt(1) + "" : sucesor;
                 //Procesar nodo actual
                 if (!Elements.containsKey(realActual)) {
-                    processElement(new Element(actual), PosX, PosY, BPMN, Elements);
+                    processElement(new Element(realActual), PosX, PosY, BPMN, Elements);
                 }
                 //procesar sucesor
                 if (!Elements.containsKey(realSucesor)) {
-                    Element Esucesor = new Element(sucesor);
-                    Esucesor.Antecesores.put(actual, new ArrayList<Element>());
+                    Element Esucesor = new Element(realSucesor);
+                    //Crear linea de fin
+                    Element lineaFinal = new Element("Final");
+                    lineaFinal.type="Line";
+                    lineaFinal.cPosX = PosX;
+                    lineaFinal.cPosY = PosY + (radio/2);
+                    ArrayList<Element> points = new ArrayList<>();
+                    points.add(lineaFinal);
+                    
+                    Esucesor.Antecesores.put(realActual, points);
                     processElement(Esucesor, PosX, PosY, BPMN, Elements);
 
                 } else {
-                    Elements.get(realSucesor).Antecesores.put(actual, new ArrayList<Element>());
+                    Element realSucesorE = Elements.get(realSucesor);
+                    //Crear linea de fin
+                    Element lineaFinal = new Element("Final");
+                    lineaFinal.type="Line";
+                    lineaFinal.cPosX = realSucesorE.cPosX;
+                    lineaFinal.cPosY = realSucesorE.cPosY + radio/2;
+                    ArrayList<Element> points = new ArrayList<>();
+                    points.add(lineaFinal);
+                    
+                    realSucesorE.Antecesores.put(realActual, points);
                 }
             }
             elementsToPaint = (HashMap<String, Element>) Elements.clone();
@@ -258,19 +275,34 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 
                 if(elementsToPaint.containsKey(edge[0])){
                     //Verificar si se tienen quiebres guardados
-                    ArrayList<Element> quiebres = this.quiebres.get(edge[1]);
-                    if(quiebres!=null){
+                    if(this.quiebres.containsKey(edge[1])){
                         elementsToPaint.get(edge[0]).Antecesores.put(edge[1], this.quiebres.get(edge[1]) );
                     }else{
-                        elementsToPaint.get(edge[0]).Antecesores.put(edge[1], new ArrayList<>() );
+                        Element el = elementsToPaint.get(edge[0]);
+                        Element finalLine = new Element("Final");
+                        finalLine.type = "Line";
+                        finalLine.cPosX = el.cPosX;
+                        finalLine.cPosY = el.cPosY;
+                        ArrayList<Element> points = new ArrayList<>();
+                        points.add(finalLine);
+                       el.Antecesores.put(edge[1], points );
+                        
                     }
                 }
                 if(elementsToPaint.containsKey(edge[1])){
-                    ArrayList<Element> quiebres = this.quiebres.get(edge[0]);
-                    if(quiebres!=null){
+                    if(this.quiebres.containsKey(edge[0])){
                         elementsToPaint.get(edge[1]).Antecesores.put(edge[0], this.quiebres.get(edge[0]) );
                     }else{
-                        elementsToPaint.get(edge[1]).Antecesores.put(edge[0], new ArrayList<>() );
+                        
+                        Element el = elementsToPaint.get(edge[1]);
+                        Element finalLine = new Element("Final");
+                        finalLine.type = "Line";
+                        finalLine.cPosX = el.cPosX;
+                        finalLine.cPosY = el.cPosY;
+                        ArrayList<Element> points = new ArrayList<>();
+                        points.add(finalLine);
+                        
+                       el.Antecesores.put(edge[0], new ArrayList<>() );
                     }
                 }
                     
@@ -325,7 +357,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 }
             }
         }
-        Elements.put((e.Name.charAt(0) == '@') ? e.Name.charAt(1) + "" : e.Name, e);
+        Elements.put(e.Name, e);
         this.PosX += this.ScreenWidth / 15;
         if (this.PosX >= this.ScreenWidth - (this.ScreenWidth / 15)) {
             this.PosY += this.ScreenHeight / 10; //salto en caso de exceder el limite del ancho de la pantalla
