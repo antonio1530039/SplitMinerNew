@@ -192,7 +192,8 @@ public class PanelBPMN extends JPanel {
 
             } else if (e.type.equals("Break")) {
                 g.setColor(Color.black);
-                g.fillOval(e.cPosX - (radio / 16), e.cPosY - (radio / 16), radio / 4, radio / 4);
+                //g.fillOval(e.cPosX - (radio / 16), e.cPosY - (radio / 16), radio / 4, radio / 4);
+                g.fillOval(e.cPosX- ((radio/4)/2), e.cPosY - ((radio/4)/2), radio / 4, radio / 4);
                 g.setColor(Color.white);
                 //g.drawString("", e.cPosX + (radio / 2), e.cPosY + (radio / 2));
 
@@ -377,9 +378,24 @@ public class PanelBPMN extends JPanel {
                 continue;
             }
             String eName = e.Name;
+            
             if (e.Name.charAt(0) == '@') {
                 eName = e.Name.charAt(1) + "";
             }
+            
+            if(e.type.equals("Break")){
+                if (x <= e.cPosX + ((radio/4)/2)
+                        && x >= e.cPosX - ((radio/4)/2) 
+                        && y >= e.cPosY - ((radio/4)/2)
+                        && y <= e.cPosY + ((radio/4)/2)){
+                    ElementSelected = eName;
+                    break;
+                    
+                }
+                
+                //g.fillOval(e.cPosX - ((radio/4)/2), e.cPosY - ((radio/4)/2), radio / 4, radio / 4);
+            }
+            
             if (x <= (e.cPosX + radio) && y <= (e.cPosY + radio) && x >= e.cPosX && y >= e.cPosY) {
                 ElementSelected = eName;
                 break;
