@@ -12,7 +12,7 @@ public class Element{
     public int cPosY; //Posición Y del elemento en el canvas
     public HashMap<String, ArrayList<Element>> Antecesores; //Mapa de antecesores donde la clave es el antecesor de este elemento y el valor es la lista de quiebres que existen entre ese arco
     public String type; //Tipo del elemento (tarea, compuerta, evento inicio, evento fin, etc)
-    
+    public boolean Hide = false;
     
     public Element(){
         this.Name = "";

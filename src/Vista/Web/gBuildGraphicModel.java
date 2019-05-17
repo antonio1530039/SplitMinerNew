@@ -52,8 +52,9 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
     private LinkedList<String> showTasks; //Tareas que deben ser mostradas en el modelo gráfico
     private HashMap<String, ArrayList<Element>> quiebres= new HashMap<>();
     public int[] breaks = {1}; //Número de quiebres creados en el panel
-    private HashMap<String, HashMap<String, Element>> ElementsSaved; //Mapa de elementos gráficos guardados (para que las posiciones de los elementos no se reinicien)
-
+    //private HashMap<String, HashMap<String, Element>> ElementsSaved; //Mapa de elementos gráficos guardados (para que las posiciones de los elementos no se reinicien)
+    private HashMap<String, Object[]> ElementsSaved; //Mapa de elementos gráficos guardados (para que las posiciones de los elementos no se reinicien)
+        //Valor: pos0 Elements, pos1 lineMode (posiciones de las flechas en cada nodo)
     BPMNModel BPMN;
     String currentMode = "";
     String tasksDescription = "";
@@ -196,13 +197,20 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
         this.remove(jpanelGrafica);
         currentMode = mode;
         HashMap<String, Element> elementsToPaint = null;
+        HashMap<String, String> lineMode = new HashMap<>(); //Mapa con el que se guarda el modo en el que un elemento,antecesor estan unidos mediante la linea; el modo 1 indica la union normal, el modo 2 indica la union en la parte de arriba del elemento, modo 3 parte derecha del elemento, modo 4 abajo del elemento, si el modo no es un numero entero, entonces son unas coordenadas separadas por ,
+        
         if (ElementsSaved.containsKey(mode)) {
-            elementsToPaint = (HashMap<String, Element>) ElementsSaved.get(mode).clone();
+            Object[] dataMap = this.ElementsSaved.get(mode).clone();
+            elementsToPaint = (HashMap<String, Element>) dataMap[0];
+            lineMode = (HashMap<String, String>) dataMap[1];
+            
             List<Map.Entry<String, Element>> elems = new ArrayList(elementsToPaint.entrySet());
             for (Map.Entry<String, Element> entry : elems) {
                 String key = entry.getKey();
                 if (!showTasks.contains(key) && key.length() == 1) {
-                    elementsToPaint.remove(entry.getKey());
+                    entry.getValue().Hide = true;
+                }else{
+                    entry.getValue().Hide = false;
                 }
             }
 
@@ -232,18 +240,26 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
                 } else {
                     Elements.get(realSucesor).Antecesores.put(actual, new ArrayList<Element>());
                 }
+                
+                lineMode.put(realSucesor + "," + realActual, "1"); //definir modo en el que se encuentra unido el antecesor al elemento eName por defecto
+                lineMode.put(realActual + "," + realSucesor, "3"); //definir modo en el que se encuentra unido Elemento  al elemento eName por defecto
+                
             }
             elementsToPaint = (HashMap<String, Element>) Elements.clone();
             List<Map.Entry<String, Element>> elems = new ArrayList(elementsToPaint.entrySet());
             for (Map.Entry<String, Element> entry : elems) {
                 String key = entry.getKey();
                 if (!showTasks.contains(key) && key.length() == 1) {
-                    elementsToPaint.remove(entry.getKey());
-
+                    entry.getValue().Hide = true;
+                }else{
+                    entry.getValue().Hide = false;
                 }
             }
 
-            ElementsSaved.put(mode, Elements);
+            Object[] dataMap = new Object[2];
+            dataMap[0] = elementsToPaint;
+            dataMap[1] = lineMode;
+            ElementsSaved.put(mode, dataMap);
         }
 
         //Verificar si los autoloops estan activados
@@ -265,7 +281,8 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
             String[] edge = s.split(",");
 
             if (shortloops) {
-                
+                lineMode.put(edge[0] + "," + edge[1], "1");
+                lineMode.put(edge[1] + "," + edge[0], "3");
                 if(elementsToPaint.containsKey(edge[0])){
                     //Verificar si se tienen quiebres guardados
                     ArrayList<Element> quiebres = this.quiebres.get(edge[1]);
@@ -286,6 +303,9 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
                     
 
             } else {
+                lineMode.remove(edge[0] + "," + edge[1], "1");
+                lineMode.remove(edge[1] + "," + edge[0], "3");
+                
                 if(elementsToPaint.containsKey(edge[0])){
                     //Antes de borrar, guardar quiebres
                     
@@ -305,7 +325,7 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
 
         }
         //Crear panel con el modelo gráfico BPMN, envia como parametros las dimensiones de la pantalla y los elementos procesados a mostrar, así como el número de quiebres en la pantalla
-        jpanelGrafica = new Vista.PanelBPMN(ScreenWidth, ScreenHeight, elementsToPaint, BPMN, breaks);
+        jpanelGrafica = new Vista.PanelBPMN(ScreenWidth, ScreenHeight, elementsToPaint, BPMN, breaks, lineMode);
         jpanelGrafica.setPreferredSize(new Dimension(this.ScreenWidth, this.ScreenHeight)); //Se asigna el tamaño al panel
         add(jpanelGrafica); //Se agrega el modelo gráfico al panel
         revalidate(); //Se realiza el repintado

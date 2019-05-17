@@ -39,7 +39,7 @@ public class PanelBPMN extends JPanel {
     String LineSelected = ""; //Al arrastrar el mouse esta variable contiene el flujo de la flecha que se esta moviendo: Elemento, antecesor o antecesor,Elemento
     // Constructor
 
-    public PanelBPMN(int width, int height, HashMap<String, Element> elements, BPMNModel bpmn, int[] breaks) {
+    public PanelBPMN(int width, int height, HashMap<String, Element> elements, BPMNModel bpmn, int[] breaks, HashMap<String, String> lineMode) {
         //Tomar dimensiones de la pantalla e inicializar variables
         Elements = elements;
         ScreenWidth = width;
@@ -52,7 +52,6 @@ public class PanelBPMN extends JPanel {
         gatewaysColors = new HashMap<>();
         setBackground(new Color(255, 255, 255));
         setSize(ScreenWidth, ScreenHeight);
-
         //Se procesan los elementos gráficos para mostrarlos de forma correcta, esto para diferenciar de las tareas con autoloops de las tareas normales, etc.
         List<Map.Entry<String, Element>> elems = new ArrayList(Elements.entrySet());
         for (Map.Entry<String, Element> entry : elems) {
@@ -69,8 +68,8 @@ public class PanelBPMN extends JPanel {
                 if (antecesor.charAt(0) == '@') {
                     antecesor = antecesor.charAt(1) + "";
                 }
-                lineMode.put(eName + "," + antecesor, "1"); //definir modo en el que se encuentra unido el antecesor al elemento eName por defecto
-                lineMode.put(antecesor + "," + eName, "3"); //definir modo en el que se encuentra unido Elemento  al elemento eName por defecto
+                // lineMode.put(eName + "," + antecesor, "1"); //definir modo en el que se encuentra unido el antecesor al elemento eName por defecto
+                //lineMode.put(antecesor + "," + eName, "3"); //definir modo en el que se encuentra unido Elemento  al elemento eName por defecto
                 Element a = Elements.get(antecesor);
                 if (a != null) {
                     if (registro.getValue().size() > 0) { //verificar que existan quiebres
@@ -160,6 +159,10 @@ public class PanelBPMN extends JPanel {
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue();
 
+            if (e.Hide) {
+                continue;
+            }
+
             String eName = e.Name;
             if (e.Name.charAt(0) == '@') {
                 eName = e.Name.charAt(1) + "";
@@ -241,6 +244,10 @@ public class PanelBPMN extends JPanel {
                     }
                     Element a = Elements.get(aName);
 
+                    if (a.Hide) {
+                        continue;
+                    }
+
                     if (a != null) {
 
                         //Aqui se realiza la flecha entre el antecesor,Elemento
@@ -254,18 +261,17 @@ public class PanelBPMN extends JPanel {
                         int derY = e.cPosY + (radio / 2);
                         int abaX = e.cPosX + (radio / 2);
                         int abaY = e.cPosY + radio;
-                         //Definimos en que lado debe dibujarse la linea
+                        //Definimos en que lado debe dibujarse la linea
                         int xFinal = 0, yFinal = 0;
-                        
+
                         //Obtenemos el modo en el que se encuentra unido el antecesor al elemento
                         String modeString = this.lineMode.get(eName + "," + aName);
-                        
+
                         String[] modeVals = modeString.split(",");
-                        if(modeVals.length == 1){ //Verificamos que no exista una coordenada, entonces es un modo, por lo que se selecciona su posicion
+                        if (modeVals.length == 1) { //Verificamos que no exista una coordenada, entonces es un modo, por lo que se selecciona su posicion
                             int modeAntecesorElemento = Integer.parseInt(modeString);
 
                             //Definimos en que lado debe dibujarse la linea
-
                             switch (modeAntecesorElemento) {
                                 case 1:
                                     xFinal = izqX;
@@ -284,7 +290,7 @@ public class PanelBPMN extends JPanel {
                                     yFinal = abaY;
                                     break;
                             }
-                        }else{ //Si el valor en lineMode es una coordenada entonces simplemente asignarla
+                        } else { //Si el valor en lineMode es una coordenada entonces simplemente asignarla
                             xFinal = Integer.parseInt(modeVals[0]);
                             yFinal = Integer.parseInt(modeVals[1]);
                         }
@@ -302,13 +308,13 @@ public class PanelBPMN extends JPanel {
                         int AabaY = a.cPosY + radio;
                         //Obtenemos el modo en el que se encuentra unido el antecesor al elemento
                         int x1 = 0, y1 = 0;
-                        
-                        String modeElementoAntecesorString =this.lineMode.get(aName + "," + eName);
+
+                        String modeElementoAntecesorString = this.lineMode.get(aName + "," + eName);
                         String[] modeElementoAntecesorVals = modeElementoAntecesorString.split(",");
-                        
-                        if(modeElementoAntecesorVals.length==1){
+
+                        if (modeElementoAntecesorVals.length == 1) {
                             int modeElementoAntecesor = Integer.parseInt(modeElementoAntecesorString);
-                        
+
                             switch (modeElementoAntecesor) {//Verificamos que no exista una coordenada, entonces es un modo, por lo que se selecciona su posicion
                                 case 1:
                                     x1 = AizqX;
@@ -327,7 +333,7 @@ public class PanelBPMN extends JPanel {
                                     y1 = AabaY;
                                     break;
                             }
-                        }else{//Si el valor en lineMode es una coordenada entonces simplemente asignarla
+                        } else {//Si el valor en lineMode es una coordenada entonces simplemente asignarla
                             x1 = Integer.parseInt(modeElementoAntecesorVals[0]);
                             y1 = Integer.parseInt(modeElementoAntecesorVals[1]);
                         }
@@ -367,6 +373,9 @@ public class PanelBPMN extends JPanel {
         ElementSelected = "";
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue(); //get the element
+            if (e.Hide) {
+                continue;
+            }
             String eName = e.Name;
             if (e.Name.charAt(0) == '@') {
                 eName = e.Name.charAt(1) + "";
@@ -389,8 +398,8 @@ public class PanelBPMN extends JPanel {
 
                     String modeAntecesorElementoString = this.lineMode.get(eName + "," + aName);
                     String[] modeAntecesorElementoVals = modeAntecesorElementoString.split(",");
-                    if(modeAntecesorElementoVals.length==1){
-                        
+                    if (modeAntecesorElementoVals.length == 1) {
+
                         //Primero calculamos los 4 puntos del Elemento
                         //Obtener los 4 puntos del Elemento, izq, arr, derech, abaj,
                         int izqX = e.cPosX;
@@ -401,8 +410,7 @@ public class PanelBPMN extends JPanel {
                         int derY = e.cPosY + (radio / 2);
                         int abaX = e.cPosX + (radio / 2);
                         int abaY = e.cPosY + radio;
-                        
-                        
+
                         //Obtenemos el modo en el que se encuentra unido el antecesor al elemento
                         int modeAntecesorElemento = Integer.parseInt(modeAntecesorElementoString);
 
@@ -432,9 +440,6 @@ public class PanelBPMN extends JPanel {
                             break;
                         }
                     }
-                    
-                    
-                    
 
                     //Aqui se realiza la flecha entre el Elemento,antecesor
                     //Primero calculamos los 4 puntos del Elemento
@@ -447,13 +452,12 @@ public class PanelBPMN extends JPanel {
                     int AderY = a.cPosY + (radio / 2);
                     int AabaX = a.cPosX + (radio / 2);
                     int AabaY = a.cPosY + radio;
-                    
-                    
+
                     String modeElementoAntecesorString = this.lineMode.get(aName + "," + eName);
-                    
+
                     String[] modeElementoAntecesorVals = modeElementoAntecesorString.split(",");
-                    
-                    if(modeElementoAntecesorVals.length == 1){
+
+                    if (modeElementoAntecesorVals.length == 1) {
                         //Obtenemos el modo en el que se encuentra unido el antecesor al elemento
                         int modeElementoAntecesor = Integer.parseInt(modeElementoAntecesorString);
                         int x1 = 0, y1 = 0;
@@ -482,7 +486,6 @@ public class PanelBPMN extends JPanel {
                         }
                     }
 
-                    
                 }
 
             }
@@ -776,9 +779,8 @@ public class PanelBPMN extends JPanel {
      * @param y
      */
     public void dragElementSelected(int x, int y) {
-        
-        
-        if(!LineSelected.equals("")){
+
+        if (!LineSelected.equals("")) {
             lineMode.put(LineSelected, x + "," + y);
             repaint();
             return;
