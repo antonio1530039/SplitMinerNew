@@ -221,16 +221,16 @@ public class gBuildGraphicModel extends JPanel implements Observer, ActionListen
                 String realSucesor = (sucesor.charAt(0) == '@') ? sucesor.charAt(1) + "" : sucesor;
                 //Procesar nodo actual
                 if (!Elements.containsKey(realActual)) {
-                    processElement(new Element(realActual), PosX, PosY, BPMN, Elements);
+                    processElement(new Element(actual), PosX, PosY, BPMN, Elements);
                 }
                 //procesar sucesor
                 if (!Elements.containsKey(realSucesor)) {
-                    Element Esucesor = new Element(realSucesor);
-                    Esucesor.Antecesores.put(realActual, new ArrayList<Element>());
+                    Element Esucesor = new Element(sucesor);
+                    Esucesor.Antecesores.put(actual, new ArrayList<Element>());
                     processElement(Esucesor, PosX, PosY, BPMN, Elements);
 
                 } else {
-                    Elements.get(realSucesor).Antecesores.put(realActual, new ArrayList<Element>());
+                    Elements.get(realSucesor).Antecesores.put(actual, new ArrayList<Element>());
                 }
             }
             elementsToPaint = (HashMap<String, Element>) Elements.clone();

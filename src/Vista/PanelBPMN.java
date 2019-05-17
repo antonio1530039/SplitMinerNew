@@ -35,13 +35,10 @@ public class PanelBPMN extends JPanel {
     HashMap<String, Color> gatewaysColors = new HashMap<>(); //Mapa que almacena una compuerta de apertura y dibujar sus cierrs del mismo color
     public BPMNModel BPMN;
 
-    HashMap<String, Integer> antecesoresMode = new HashMap<>(); //Mapa que almacena un antecesor y el modo en el que se encuentra de la forma; llave: elemento, antecesor // valor : modo
-    HashMap<String, Integer> actualMode = new HashMap<>(); //Mapa que almacena un antecesor y el modo en el que se encuentra de la forma; llave: elemento, antecesor // valor : modo
-
-    String AntecesorSelected = "";
-    String LineActualSelected = "";
-
+    HashMap<String, String> lineMode = new HashMap<>(); //Mapa con el que se guarda el modo en el que un elemento,antecesor estan unidos mediante la linea; el modo 1 indica la union normal, el modo 2 indica la union en la parte de arriba del elemento, modo 3 parte derecha del elemento, modo 4 abajo del elemento, si el modo no es un numero entero, entonces son unas coordenadas separadas por ,
+    String LineSelected = ""; //Al arrastrar el mouse esta variable contiene el flujo de la flecha que se esta moviendo: Elemento, antecesor o antecesor,Elemento
     // Constructor
+
     public PanelBPMN(int width, int height, HashMap<String, Element> elements, BPMNModel bpmn, int[] breaks) {
         //Tomar dimensiones de la pantalla e inicializar variables
         Elements = elements;
@@ -49,6 +46,7 @@ public class PanelBPMN extends JPanel {
         ScreenHeight = height;
         radio = ScreenWidth / 28;
         ElementSelected = "";
+        this.lineMode = lineMode;
         BPMN = bpmn;
         this.breaks = breaks;
         gatewaysColors = new HashMap<>();
@@ -58,74 +56,33 @@ public class PanelBPMN extends JPanel {
         //Se procesan los elementos gráficos para mostrarlos de forma correcta, esto para diferenciar de las tareas con autoloops de las tareas normales, etc.
         List<Map.Entry<String, Element>> elems = new ArrayList(Elements.entrySet());
         for (Map.Entry<String, Element> entry : elems) {
+
             Element e = entry.getValue();
-
-            List<Map.Entry<String, ArrayList<Element>>> antes = new ArrayList(e.Antecesores.entrySet());
-
-            for (Map.Entry<String, ArrayList<Element>> registro : antes) {  
-                Element ant = Elements.get(registro.getKey());
-                if(ant!=null){
-                    Element elem = new Element("Start");
-                    elem.type = "Line";
-                    elem.cPosX = ant.cPosX + radio;
-                    elem.cPosY = ant.cPosY + radio / 2;
-                    
-                    ArrayList<Element> lista = e.Antecesores.get(registro.getKey());
-                    if(lista!=null){
-                        if(lista.size()>0)
-                            if(!lista.get(0).Name.equals("Start")){
-                                System.out.println("Antecesor: " + ant.Name + " se le agrego Start");
-                                lista.add(0, elem);
-                            }
-                                
-                    }
-                    
-                    /*if (!e.Antecesores.get(registro.getKey()).get(0).Name.equals("Start")) {
-                        e.Antecesores.get(registro.getKey()).add(0, elem);
-                    }*/
-                }
-                
-                
-
+            String eName = e.Name;
+            if (e.Name.charAt(0) == '@') {
+                eName = e.Name.charAt(1) + "";
             }
 
-            antes = new ArrayList(e.Antecesores.entrySet());
+            List<Map.Entry<String, ArrayList<Element>>> antes = new ArrayList(e.Antecesores.entrySet());
             for (Map.Entry<String, ArrayList<Element>> registro : antes) {
                 String antecesor = registro.getKey();
-                Element a = null;
                 if (antecesor.charAt(0) == '@') {
-                    a = Elements.get(antecesor.charAt(1) + "");
-                } else {
-                    a = Elements.get(antecesor);
+                    antecesor = antecesor.charAt(1) + "";
                 }
+                lineMode.put(eName + "," + antecesor, "1"); //definir modo en el que se encuentra unido el antecesor al elemento eName por defecto
+                lineMode.put(antecesor + "," + eName, "3"); //definir modo en el que se encuentra unido Elemento  al elemento eName por defecto
+                Element a = Elements.get(antecesor);
                 if (a != null) {
-                    String aName = "";
-                    if (a.Name.charAt(0) == '@') {
-                        aName = a.Name.charAt(1) + "";
-                    } else {
-                        aName = a.Name;
-                    }
-                    String eName = "";
-                    if (e.Name.charAt(0) == '@') {
-                        eName = e.Name.charAt(1) + "";
-                    } else {
-                        eName = e.Name;
-                    }
-                    antecesoresMode.put(eName + "," + aName, 1); //poner en el mapa el modo en el que se encuentra
-                    actualMode.put(eName + "," + aName, 3); //poner en el mapa el modo en el que se encuentra
-                    
-                    ArrayList<Element> lista = registro.getValue();
-                    if(lista!=null)
-                    if (lista.size() > 0) { //verificar que existan quiebres
-
+                    if (registro.getValue().size() > 0) { //verificar que existan quiebres
+                        String aName = "";
+                        if (a.Name.charAt(0) == '@') {
+                            aName = a.Name.charAt(1) + "";
+                        } else {
+                            aName = a.Name;
+                        }
                         ArrayList<Element> quiebres = registro.getValue();
                         List<Element> quiebresList = new ArrayList(quiebres);
                         for (Element q : quiebresList) {
-
-                            if (q.type.equals("Line")) {
-                                continue;
-                            }
-
                             String qName = "";
                             if (q.Name.charAt(0) == '@') {
                                 qName = q.Name.charAt(1) + "";
@@ -140,8 +97,6 @@ public class PanelBPMN extends JPanel {
             }
 
         }
-        
-        System.out.println("actualMode: " + actualMode.toString());
 
         //Declaración de los eventos del mouse
         this.addMouseListener(new MouseListener() {
@@ -152,14 +107,8 @@ public class PanelBPMN extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent me) {
-                try {
-                    releaseMouse(me.getX(), me.getY());
-                } catch (Exception e) {
-                    ElementSelected = "";
-                    AntecesorSelected = "";
-                    LineActualSelected = "";
-                }
-
+                releaseMouse(me.getX(), me.getY());
+                ElementSelected = "";
             }
 
             @Override
@@ -211,8 +160,9 @@ public class PanelBPMN extends JPanel {
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue();
 
-            if (e.type.equals("Line")) {
-                continue;
+            String eName = e.Name;
+            if (e.Name.charAt(0) == '@') {
+                eName = e.Name.charAt(1) + "";
             }
 
             //En base al tipo del elemento se realizan diferentes pintados, ya sea evento o tarea o autoloop o incluso quiebres, o compuertas
@@ -284,38 +234,115 @@ public class PanelBPMN extends JPanel {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setStroke(new BasicStroke(2));
                 for (Map.Entry<String, ArrayList<Element>> registro : e.Antecesores.entrySet()) {
-                    String antecesor = registro.getKey();
-                    Element a = null;
-                    if (antecesor.charAt(0) == '@') {
-                        a = Elements.get(antecesor.charAt(1) + "");
-                    } else {
-                        a = Elements.get(antecesor);
+
+                    String aName = registro.getKey();
+                    if (aName.charAt(0) == '@') {
+                        aName = aName.charAt(1) + "";
                     }
+                    Element a = Elements.get(aName);
 
                     if (a != null) {
-                        ArrayList<Element> lista = registro.getValue();
-                        if(lista!=null)
-                        if (lista.size() > 0) { //verificar que existan quiebres
-                            ArrayList<Element> quiebres = registro.getValue();
 
-                            /*int x1 = a.cPosX + (2 * (radio / 2));
-                            int y1 = a.cPosY + (radio / 2);*/
-                            int x1 = quiebres.get(0).cPosX;
-                            int y1 = quiebres.get(0).cPosY;
-                            
+                        //Aqui se realiza la flecha entre el antecesor,Elemento
+                        //Primero calculamos los 4 puntos del Elemento
+                        //Obtener los 4 puntos del Elemento, izq, arr, derech, abaj,
+                        int izqX = e.cPosX;
+                        int izqY = e.cPosY + (radio / 2);
+                        int arrX = e.cPosX + (radio / 2);
+                        int arrY = e.cPosY;
+                        int derX = e.cPosX + radio;
+                        int derY = e.cPosY + (radio / 2);
+                        int abaX = e.cPosX + (radio / 2);
+                        int abaY = e.cPosY + radio;
+                         //Definimos en que lado debe dibujarse la linea
+                        int xFinal = 0, yFinal = 0;
+                        
+                        //Obtenemos el modo en el que se encuentra unido el antecesor al elemento
+                        String modeString = this.lineMode.get(eName + "," + aName);
+                        
+                        String[] modeVals = modeString.split(",");
+                        if(modeVals.length == 1){ //Verificamos que no exista una coordenada, entonces es un modo, por lo que se selecciona su posicion
+                            int modeAntecesorElemento = Integer.parseInt(modeString);
+
+                            //Definimos en que lado debe dibujarse la linea
+
+                            switch (modeAntecesorElemento) {
+                                case 1:
+                                    xFinal = izqX;
+                                    yFinal = izqY;
+                                    break;
+                                case 2:
+                                    xFinal = arrX;
+                                    yFinal = arrY;
+                                    break;
+                                case 3:
+                                    xFinal = derX;
+                                    yFinal = derY;
+                                    break;
+                                case 4:
+                                    xFinal = abaX;
+                                    yFinal = abaY;
+                                    break;
+                            }
+                        }else{ //Si el valor en lineMode es una coordenada entonces simplemente asignarla
+                            xFinal = Integer.parseInt(modeVals[0]);
+                            yFinal = Integer.parseInt(modeVals[1]);
+                        }
+
+                        //Aqui se realiza la flecha entre el Elemento,antecesor
+                        //Primero calculamos los 4 puntos del Elemento
+                        //Obtener los 4 puntos del Elemento, izq, arr, derech, abaj,
+                        int AizqX = a.cPosX;
+                        int AizqY = a.cPosY + (radio / 2);
+                        int AarrX = a.cPosX + (radio / 2);
+                        int AarrY = a.cPosY;
+                        int AderX = a.cPosX + radio;
+                        int AderY = a.cPosY + (radio / 2);
+                        int AabaX = a.cPosX + (radio / 2);
+                        int AabaY = a.cPosY + radio;
+                        //Obtenemos el modo en el que se encuentra unido el antecesor al elemento
+                        int x1 = 0, y1 = 0;
+                        
+                        String modeElementoAntecesorString =this.lineMode.get(aName + "," + eName);
+                        String[] modeElementoAntecesorVals = modeElementoAntecesorString.split(",");
+                        
+                        if(modeElementoAntecesorVals.length==1){
+                            int modeElementoAntecesor = Integer.parseInt(modeElementoAntecesorString);
+                        
+                            switch (modeElementoAntecesor) {//Verificamos que no exista una coordenada, entonces es un modo, por lo que se selecciona su posicion
+                                case 1:
+                                    x1 = AizqX;
+                                    y1 = AizqY;
+                                    break;
+                                case 2:
+                                    x1 = AarrX;
+                                    y1 = AarrY;
+                                    break;
+                                case 3:
+                                    x1 = AderX;
+                                    y1 = AderY;
+                                    break;
+                                case 4:
+                                    x1 = AabaX;
+                                    y1 = AabaY;
+                                    break;
+                            }
+                        }else{//Si el valor en lineMode es una coordenada entonces simplemente asignarla
+                            x1 = Integer.parseInt(modeElementoAntecesorVals[0]);
+                            y1 = Integer.parseInt(modeElementoAntecesorVals[1]);
+                        }
+                        if (registro.getValue().size() > 0) { //verificar que existan quiebres
+                            ArrayList<Element> quiebres = registro.getValue();
                             //Dibujado de quiebres
-                            for (int i = 1; i < quiebres.size(); i++) {
+                            for (int i = 0; i < quiebres.size(); i++) {
                                 int x2 = quiebres.get(i).cPosX, y2 = quiebres.get(i).cPosY;
-                                
-                                if (i == quiebres.size() - 1) {
-                                    drawArrowLine(g2, x1, y1, x2, y2, ScreenWidth / 300, ScreenWidth / 300);
-                                } else {
-                                    g2.drawLine(x1, y1, x2, y2);
-                                }
+                                g2.drawLine(x1, y1, x2, y2);
                                 x1 = x2;
                                 y1 = y2;
                             }
-                            //drawArrowLine(g2, x1, y1, e.cPosX, e.cPosY + (radio / 2), ScreenWidth / 300, ScreenWidth / 300);
+                            drawArrowLine(g2, x1, y1, xFinal, yFinal, ScreenWidth / 300, ScreenWidth / 300);
+                        } else {
+                            drawArrowLine(g2, x1, y1, xFinal, yFinal, ScreenWidth / 300, ScreenWidth / 300);
                         }
                     }
 
@@ -323,111 +350,6 @@ public class PanelBPMN extends JPanel {
                 g2.setStroke(new BasicStroke(0));
             }
         }
-    }
-
-    /**
-     * Procedimiento que verifica si se estaba moviendo una flecha del modelo
-     * para ajustar la union en el nodo
-     *
-     * @param x
-     * @param y
-     */
-    public void releaseMouse(int x, int y) {
-
-        if (!AntecesorSelected.equals("")) {
-            //Obtener Elemento al que pertenece el antecesor
-            Element e = Elements.get(ElementSelected);
-
-            //Obtener los 4 puntos del Elemento, izq, arr, derech, abaj,
-            int izqX = e.cPosX;
-            int izqY = e.cPosY + (radio / 2);
-            int arrX = e.cPosX + (radio / 2);
-            int arrY = e.cPosY;
-            int derX = e.cPosX + radio;
-            int derY = e.cPosY + (radio / 2);
-            int abaX = e.cPosX + (radio / 2);
-            int abaY = e.cPosY + radio;
-
-            //Obtener distancias entre dos puntos de x,y y los 4 puntos del elemento
-            double d1 = distancia(x, y, izqX, izqY);
-            double d2 = distancia(x, y, arrX, arrY);
-            double d3 = distancia(x, y, derX, derY);
-            double d4 = distancia(x, y, abaX, abaY);
-
-            if (d1 < d2 && d1 < d3 && d1 < d4) {
-                //d1 menor
-                e.Antecesores.get(AntecesorSelected).get(e.Antecesores.get(AntecesorSelected).size() - 1).cPosX = izqX;
-                e.Antecesores.get(AntecesorSelected).get(e.Antecesores.get(AntecesorSelected).size() - 1).cPosY = izqY;
-                antecesoresMode.put(ElementSelected + "," + AntecesorSelected, 1); //poner en el mapa el modo en el que se encuentra
-            } else if (d2 < d1 && d2 < d3 && d2 < d4) {
-                //d2 menor
-                e.Antecesores.get(AntecesorSelected).get(e.Antecesores.get(AntecesorSelected).size() - 1).cPosX = arrX;
-                e.Antecesores.get(AntecesorSelected).get(e.Antecesores.get(AntecesorSelected).size() - 1).cPosY = arrY;
-                antecesoresMode.put(ElementSelected + "," + AntecesorSelected, 2); //poner en el mapa el modo en el que se encuentra
-            } else if (d3 < d1 && d3 < d2 && d3 < d4) {
-                //d3 menor
-                e.Antecesores.get(AntecesorSelected).get(e.Antecesores.get(AntecesorSelected).size() - 1).cPosX = derX;
-                e.Antecesores.get(AntecesorSelected).get(e.Antecesores.get(AntecesorSelected).size() - 1).cPosY = derY;
-                antecesoresMode.put(ElementSelected + "," + AntecesorSelected, 3); //poner en el mapa el modo en el que se encuentra
-            } else {
-                //d4 menor
-                e.Antecesores.get(AntecesorSelected).get(e.Antecesores.get(AntecesorSelected).size() - 1).cPosX = abaX;
-                e.Antecesores.get(AntecesorSelected).get(e.Antecesores.get(AntecesorSelected).size() - 1).cPosY = abaY;
-                antecesoresMode.put(ElementSelected + "," + AntecesorSelected, 4); //poner en el mapa el modo en el que se encuentra
-            }
-            repaint();
-            AntecesorSelected = "";
-            ElementSelected = "";
-            return;
-        }
-
-        if (!LineActualSelected.equals("")) {
-            //Obtener Elemento al que pertenece el antecesor
-            Element e = Elements.get(ElementSelected);
-            Element actual = Elements.get(LineActualSelected);
-            //Obtener los 4 puntos del Elemento, izq, arr, derech, abaj,
-            int izqX = actual.cPosX;
-            int izqY = actual.cPosY + (radio / 2);
-            int arrX = actual.cPosX + (radio / 2);
-            int arrY = actual.cPosY;
-            int derX = actual.cPosX + radio;
-            int derY = actual.cPosY + (radio / 2);
-            int abaX = actual.cPosX + (radio / 2);
-            int abaY = actual.cPosY + radio;
-
-            //Obtener distancias entre dos puntos de x,y y los 4 puntos del elemento
-            double d1 = distancia(x, y, izqX, izqY);
-            double d2 = distancia(x, y, arrX, arrY);
-            double d3 = distancia(x, y, derX, derY);
-            double d4 = distancia(x, y, abaX, abaY);
-
-            if (d1 < d2 && d1 < d3 && d1 < d4) {
-                //d1 menor
-                e.Antecesores.get(LineActualSelected).get(0).cPosX = izqX;
-                e.Antecesores.get(LineActualSelected).get(0).cPosY = izqY;
-                actualMode.put(ElementSelected + "," + LineActualSelected, 1); //poner en el mapa el modo en el que se encuentra
-            } else if (d2 < d1 && d2 < d3 && d2 < d4) {
-                //d2 menor
-                e.Antecesores.get(LineActualSelected).get(0).cPosX = arrX;
-                e.Antecesores.get(LineActualSelected).get(0).cPosY = arrY;
-                actualMode.put(ElementSelected + "," + LineActualSelected, 2); //poner en el mapa el modo en el que se encuentra
-            } else if (d3 < d1 && d3 < d2 && d3 < d4) {
-                //d3 menor
-                e.Antecesores.get(LineActualSelected).get(0).cPosX = derX;
-                e.Antecesores.get(LineActualSelected).get(0).cPosY = derY;
-                actualMode.put(ElementSelected + "," + LineActualSelected, 3); //poner en el mapa el modo en el que se encuentra
-            } else {
-                //d4 menor
-                e.Antecesores.get(LineActualSelected).get(0).cPosX = abaX;
-                e.Antecesores.get(LineActualSelected).get(0).cPosY = abaY;
-                actualMode.put(ElementSelected + "," + LineActualSelected, 4); //poner en el mapa el modo en el que se encuentra
-            }
-            repaint();
-            LineActualSelected = "";
-            ElementSelected = "";
-            return;
-        }
-
     }
 
     public double distancia(int x1, int y1, int x2, int y2) {
@@ -445,48 +367,127 @@ public class PanelBPMN extends JPanel {
         ElementSelected = "";
         for (Map.Entry<String, Element> entry : Elements.entrySet()) {
             Element e = entry.getValue(); //get the element
+            String eName = e.Name;
+            if (e.Name.charAt(0) == '@') {
+                eName = e.Name.charAt(1) + "";
+            }
             if (x <= (e.cPosX + radio) && y <= (e.cPosY + radio) && x >= e.cPosX && y >= e.cPosY) {
-                if (e.Name.charAt(0) == '@') {
-                    ElementSelected = e.Name.charAt(1) + "";
-                } else {
-                    ElementSelected = e.Name;
-                }
-
+                ElementSelected = eName;
                 break;
             }
 
-            List<Map.Entry<String, ArrayList<Element>>> ants = new ArrayList(e.Antecesores.entrySet());
-            for (Map.Entry<String, ArrayList<Element>> reg : ants) {
-                ArrayList<Element> list = reg.getValue();
-                if(list==null)
-                    continue;
-                if (x <= (list.get(list.size() - 1).cPosX + radio / 4) && y <= (list.get(list.size() - 1).cPosY + radio / 4) && x >= list.get(list.size() - 1).cPosX - radio / 2 && y >= list.get(list.size() - 1).cPosY - radio / 4) {
-                    if (e.Name.charAt(0) == '@') {
-                        ElementSelected = e.Name.charAt(1) + "";
-                    } else {
-                        ElementSelected = e.Name;
-                    }
-                    AntecesorSelected = reg.getKey();
-                    LineActualSelected = "";
-                    System.out.println("Line Antecesor selected: " + AntecesorSelected);
-                    break;
+            //Verificar si se dio clic en una Flecha
+            //Recorrer los antecesores de este elemento
+            for (Map.Entry<String, ArrayList<Element>> registro : e.Antecesores.entrySet()) {
+                String aName = registro.getKey();
+                if (aName.charAt(0) == '@') {
+                    aName = aName.charAt(1) + "";
                 }
+                Element a = Elements.get(aName);
 
-                if (x <= (list.get(0).cPosX + radio / 4) && y <= (list.get(0).cPosY + radio / 4) && x >= list.get(0).cPosX - radio / 4 && y >= list.get(0).cPosY - radio / 4) {
-                    if (e.Name.charAt(0) == '@') {
-                        ElementSelected = e.Name.charAt(1) + "";
-                    } else {
-                        ElementSelected = e.Name;
+                if (a != null) {
+
+                    String modeAntecesorElementoString = this.lineMode.get(eName + "," + aName);
+                    String[] modeAntecesorElementoVals = modeAntecesorElementoString.split(",");
+                    if(modeAntecesorElementoVals.length==1){
+                        
+                        //Primero calculamos los 4 puntos del Elemento
+                        //Obtener los 4 puntos del Elemento, izq, arr, derech, abaj,
+                        int izqX = e.cPosX;
+                        int izqY = e.cPosY + (radio / 2);
+                        int arrX = e.cPosX + (radio / 2);
+                        int arrY = e.cPosY;
+                        int derX = e.cPosX + radio;
+                        int derY = e.cPosY + (radio / 2);
+                        int abaX = e.cPosX + (radio / 2);
+                        int abaY = e.cPosY + radio;
+                        
+                        
+                        //Obtenemos el modo en el que se encuentra unido el antecesor al elemento
+                        int modeAntecesorElemento = Integer.parseInt(modeAntecesorElementoString);
+
+                        //Definimos en que lado debe dibujarse la linea
+                        int xFinal = 0, yFinal = 0;
+                        switch (modeAntecesorElemento) {
+                            case 1:
+                                xFinal = izqX;
+                                yFinal = izqY;
+                                break;
+                            case 2:
+                                xFinal = arrX;
+                                yFinal = arrY;
+                                break;
+                            case 3:
+                                xFinal = derX;
+                                yFinal = derY;
+                                break;
+                            case 4:
+                                xFinal = abaX;
+                                yFinal = abaY;
+                                break;
+                        }
+
+                        if (x <= (xFinal + radio / 4) && y <= (yFinal + radio / 4) && x >= xFinal - (radio / 4) && y >= yFinal - (radio / 4)) {
+                            LineSelected = eName + "," + aName;
+                            break;
+                        }
                     }
-                    LineActualSelected = reg.getKey();
-                    AntecesorSelected = "";
-                    System.out.println("LineActual selected: " + LineActualSelected);
-                    break;
+                    
+                    
+                    
+
+                    //Aqui se realiza la flecha entre el Elemento,antecesor
+                    //Primero calculamos los 4 puntos del Elemento
+                    //Obtener los 4 puntos del Elemento, izq, arr, derech, abaj,
+                    int AizqX = a.cPosX;
+                    int AizqY = a.cPosY + (radio / 2);
+                    int AarrX = a.cPosX + (radio / 2);
+                    int AarrY = a.cPosY;
+                    int AderX = a.cPosX + radio;
+                    int AderY = a.cPosY + (radio / 2);
+                    int AabaX = a.cPosX + (radio / 2);
+                    int AabaY = a.cPosY + radio;
+                    
+                    
+                    String modeElementoAntecesorString = this.lineMode.get(aName + "," + eName);
+                    
+                    String[] modeElementoAntecesorVals = modeElementoAntecesorString.split(",");
+                    
+                    if(modeElementoAntecesorVals.length == 1){
+                        //Obtenemos el modo en el que se encuentra unido el antecesor al elemento
+                        int modeElementoAntecesor = Integer.parseInt(modeElementoAntecesorString);
+                        int x1 = 0, y1 = 0;
+                        switch (modeElementoAntecesor) {
+                            case 1:
+                                x1 = AizqX;
+                                y1 = AizqY;
+                                break;
+                            case 2:
+                                x1 = AarrX;
+                                y1 = AarrY;
+                                break;
+                            case 3:
+                                x1 = AderX;
+                                y1 = AderY;
+                                break;
+                            case 4:
+                                x1 = AabaX;
+                                y1 = AabaY;
+                                break;
+                        }
+
+                        if (x <= (x1 + radio / 4) && y <= (y1 + radio / 4) && x >= x1 - radio / 4 && y >= y1 - radio / 4) {
+                            LineSelected = aName + "," + eName;
+                            break;
+                        }
+                    }
+
+                    
                 }
 
             }
-        }
 
+        }
     }
 
     /**
@@ -695,6 +696,50 @@ public class PanelBPMN extends JPanel {
         }
     }
 
+    public void releaseMouse(int x, int y) {
+        if (!LineSelected.equals("")) { //Mover flecha
+            String[] vals = LineSelected.split(",");
+            Element e = Elements.get(vals[0]);
+            Element a = Elements.get(vals[1]);
+
+            //Aqui se realiza la flecha entre el antecesor,Elemento
+            //Primero calculamos los 4 puntos del Elemento
+            //Obtener los 4 puntos del Elemento, izq, arr, derech, abaj,
+            int izqX = e.cPosX;
+            int izqY = e.cPosY + (radio / 2);
+            int arrX = e.cPosX + (radio / 2);
+            int arrY = e.cPosY;
+            int derX = e.cPosX + radio;
+            int derY = e.cPosY + (radio / 2);
+            int abaX = e.cPosX + (radio / 2);
+            int abaY = e.cPosY + radio;
+
+            //Obtener distancias entre dos puntos de x,y y los 4 puntos del elemento
+            double d1 = distancia(x, y, izqX, izqY);
+            double d2 = distancia(x, y, arrX, arrY);
+            double d3 = distancia(x, y, derX, derY);
+            double d4 = distancia(x, y, abaX, abaY);
+
+            if (d1 < d2 && d1 < d3 && d1 < d4) {
+                //d1 menor
+                lineMode.put(LineSelected, "1");
+            } else if (d2 < d1 && d2 < d3 && d2 < d4) {
+                //d2 menor
+                lineMode.put(LineSelected, "2");
+            } else if (d3 < d1 && d3 < d2 && d3 < d4) {
+                //d3 menor
+                lineMode.put(LineSelected, "3");
+            } else {
+                //d4 menor
+                lineMode.put(LineSelected, "4");
+            }
+            repaint();
+
+            LineSelected = "";
+        }
+
+    }
+
     /**
      * Procedimiento que crea un Elemento que representa un quiebre, asigna sus
      * propiedades y posiciones en el canvas
@@ -711,14 +756,16 @@ public class PanelBPMN extends JPanel {
         elemento.cPosX = x;
         elemento.cPosY = y;
         this.Elements.put("break" + breaks[0], elemento);
-        System.out.println("Break: " + elemento.Name);
         ArrayList<Element> br = Elements.get(eName).Antecesores.get(antecesor);
         if (br != null) {
-            br.add(br.size() - 1, elemento);
-            breaks[0]++;
-            repaint();
+            br.add(elemento);
+        } else {
+            ArrayList<Element> br2 = new ArrayList<>();
+            br2.add(elemento);
+            Elements.get(eName).Antecesores.put(antecesor, br2);
         }
-
+        breaks[0]++;
+        repaint();
     }
 
     /**
@@ -729,38 +776,11 @@ public class PanelBPMN extends JPanel {
      * @param y
      */
     public void dragElementSelected(int x, int y) {
-
-        if (!AntecesorSelected.equals("")) {
-            Element e = Elements.get(ElementSelected);
-            if (e != null) {
-                ArrayList<Element> lista = e.Antecesores.get(AntecesorSelected);
-                if (lista != null) {
-                    Element a = lista.get(e.Antecesores.get(AntecesorSelected).size() - 1);
-                    if (a != null) {
-                        a.cPosX = x;
-                        a.cPosY = y;
-                        repaint();
-                    }
-                }
-
-            }
-            return;
-        }
-
-        if (!LineActualSelected.equals("")) {
-            Element e = Elements.get(ElementSelected);
-            if (e != null) {
-                ArrayList<Element> lista = e.Antecesores.get(LineActualSelected);
-                if (lista != null) {
-                    Element a = lista.get(0);
-                    if (a != null) {
-                        a.cPosX = x;
-                        a.cPosY = y;
-                        repaint();
-                    }
-                }
-
-            }
+        
+        
+        if(!LineSelected.equals("")){
+            lineMode.put(LineSelected, x + "," + y);
+            repaint();
             return;
         }
 
@@ -773,206 +793,6 @@ public class PanelBPMN extends JPanel {
                 } else {
                     Elements.get(ElementSelected).cPosX = x - (radio / 2); //reasignar posicion al arrastrar mouse, para que el elemento quede en el centro del cursor
                     Elements.get(ElementSelected).cPosY = y - (radio / 2);
-
-                    List<Map.Entry<String, ArrayList<Element>>> ants = new ArrayList(Elements.get(ElementSelected).Antecesores.entrySet());
-                    for (Map.Entry<String, ArrayList<Element>> entry : ants) {
-                        ArrayList<Element> list = entry.getValue();
-
-                        String eName = "";
-                        if (e.Name.charAt(0) == '@') {
-                            eName = e.Name.charAt(1) + "";
-                        } else {
-                            eName = e.Name;
-                        }
-
-                        String aName = "";
-                        String antecesor = entry.getKey();
-                        if (antecesor.charAt(0) == '@') {
-                            aName = antecesor.charAt(1) + "";
-                        } else {
-                            aName = antecesor;
-                        }
-
-                        //Obtener los 4 puntos del Elemento, izq (modo1), arr (modo2), derech(modo3), abaj(modo4),
-                        int izqX = e.cPosX;
-                        int izqY = e.cPosY + (radio / 2);
-                        int arrX = e.cPosX + (radio / 2);
-                        int arrY = e.cPosY;
-                        int derX = e.cPosX + radio;
-                        int derY = e.cPosY + (radio / 2);
-                        int abaX = e.cPosX + (radio / 2);
-                        int abaY = e.cPosY + radio;
-
-                        if (antecesoresMode.containsKey(eName + "," + aName)) {
-                            int mode = antecesoresMode.get(eName + "," + aName);
-                            switch (mode) {
-                                case 1:
-                                    list.get(list.size() - 1).cPosX = izqX;
-                                    list.get(list.size() - 1).cPosY = izqY;
-                                    break;
-                                case 2:
-                                    list.get(list.size() - 1).cPosX = arrX;
-                                    list.get(list.size() - 1).cPosY = arrY;
-                                    break;
-                                case 3:
-                                    list.get(list.size() - 1).cPosX = derX;
-                                    list.get(list.size() - 1).cPosY = derY;
-                                    break;
-                                case 4:
-                                    list.get(list.size() - 1).cPosX = abaX;
-                                    list.get(list.size() - 1).cPosY = abaY;
-                                    break;
-                            }
-                        }
-                    }
-                    
-                    
-                    
-                    
-                    for (Map.Entry<String, Element> elements : Elements.entrySet()) {
-                        Element element = elements.getValue();
-                        String eName = "";
-                        if (e.Name.charAt(0) == '@') {
-                            eName = element.Name.charAt(1) + "";
-                        } else {
-                            eName = element.Name;
-                        }
-                        if(element.Antecesores.containsKey(ElementSelected)){
-                            String aName = "";
-                            if (ElementSelected.charAt(0) == '@') {
-                                aName = ElementSelected.charAt(1) + "";
-                            } else {
-                                aName = ElementSelected;
-                            }
-                            
-                            //Obtener los 4 puntos del Elemento, izq (modo1), arr (modo2), derech(modo3), abaj(modo4),
-                            int izqX = e.cPosX;
-                            int izqY = e.cPosY + (radio / 2);
-                            int arrX = e.cPosX + (radio / 2);
-                            int arrY = e.cPosY;
-                            int derX = e.cPosX + radio;
-                            int derY = e.cPosY + (radio / 2);
-                            int abaX = e.cPosX + (radio / 2);
-                            int abaY = e.cPosY + radio;
-                            
-                            if (actualMode.containsKey(eName + "," + aName)) {
-                                int mode = actualMode.get(eName + "," + aName);
-                                switch (mode) {
-                                    case 1:
-                                        element.Antecesores.get(ElementSelected).get(0).cPosX = izqX;
-                                        element.Antecesores.get(ElementSelected).get(0).cPosY = izqY;
-                                        break;
-                                    case 2:
-                                        element.Antecesores.get(ElementSelected).get(0).cPosX = arrX;
-                                        element.Antecesores.get(ElementSelected).get(0).cPosY = arrY;
-                                        break;
-                                    case 3:
-                                        element.Antecesores.get(ElementSelected).get(0).cPosX = derX;
-                                        element.Antecesores.get(ElementSelected).get(0).cPosY = derY;
-                                        break;
-                                    case 4:
-                                        element.Antecesores.get(ElementSelected).get(0).cPosX = abaX;
-                                        element.Antecesores.get(ElementSelected).get(0).cPosY = abaY;
-                                        break;
-                                }
-                            }
-                            
-                            
-                            
-                        }
-                    }
-                    
-
-                   /* for (Map.Entry<String, ArrayList<Element>> entry : ants) {
-                        ArrayList<Element> list = entry.getValue();
-
-                        String eName = "";
-                        if (e.Name.charAt(0) == '@') {
-                            eName = e.Name.charAt(1) + "";
-                        } else {
-                            eName = e.Name;
-                        }
-
-                        String aName = "";
-                        String antecesor = entry.getKey();
-                        if (antecesor.charAt(0) == '@') {
-                            aName = antecesor.charAt(1) + "";
-                        } else {
-                            aName = antecesor;
-                        }
-
-                        //Obtener los 4 puntos del Elemento, izq (modo1), arr (modo2), derech(modo3), abaj(modo4),
-                        int izqX = e.cPosX;
-                        int izqY = e.cPosY + (radio / 2);
-                        int arrX = e.cPosX + (radio / 2);
-                        int arrY = e.cPosY;
-                        int derX = e.cPosX + radio;
-                        int derY = e.cPosY + (radio / 2);
-                        int abaX = e.cPosX + (radio / 2);
-                        int abaY = e.cPosY + radio;
-
-                        if (antecesoresMode.containsKey(eName + "," + aName)) {
-                            int mode = antecesoresMode.get(eName + "," + aName);
-                            switch (mode) {
-                                case 1:
-                                    list.get(list.size() - 1).cPosX = izqX;
-                                    list.get(list.size() - 1).cPosY = izqY;
-                                    break;
-                                case 2:
-                                    list.get(list.size() - 1).cPosX = arrX;
-                                    list.get(list.size() - 1).cPosY = arrY;
-                                    break;
-                                case 3:
-                                    list.get(list.size() - 1).cPosX = derX;
-                                    list.get(list.size() - 1).cPosY = derY;
-                                    break;
-                                case 4:
-                                    list.get(list.size() - 1).cPosX = abaX;
-                                    list.get(list.size() - 1).cPosY = abaY;
-                                    break;
-                            }
-                        }
-
-                        for (Map.Entry<String, Element> elements : Elements.entrySet()) {
-                            List<Map.Entry<String, ArrayList<Element>>> antecesores = new ArrayList(elements.getValue().Antecesores.entrySet());
-                            for (Map.Entry<String, ArrayList<Element>> registro : antecesores) {
-                                if (registro.getKey().equals(ElementSelected)) {
-                                    String EName = "";
-                                    if (elements.getKey().charAt(0) == '@') {
-                                        EName = elements.getKey().charAt(1) + "";
-                                    } else {
-                                        EName = elements.getKey();
-                                    }
-                                    if (actualMode.containsKey(EName + "," + ElementSelected)) {
-                                        int mode = actualMode.get(EName + "," + ElementSelected);
-                                        switch (mode) {
-                                            case 1:
-                                                registro.getValue().get(0).cPosX = izqX;
-                                                registro.getValue().get(0).cPosY = izqY;
-                                                break;
-                                            case 2:
-                                                registro.getValue().get(0).cPosX = arrX;
-                                                registro.getValue().get(0).cPosY = arrY;
-                                                break;
-                                            case 3:
-                                                registro.getValue().get(0).cPosX = derX;
-                                                registro.getValue().get(0).cPosY = derY;
-                                                break;
-                                            case 4:
-                                                registro.getValue().get(0).cPosX = abaX;
-                                                registro.getValue().get(0).cPosY = abaY;
-                                                break;
-                                        }
-                                    }
-
-                                }
-
-                            }
-
-                        }
-                       
-
-                    }*/
                 }
                 repaint();
             }

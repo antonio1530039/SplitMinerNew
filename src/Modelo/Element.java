@@ -32,7 +32,7 @@ public class Element{
     
     @Override
     public String toString(){
-        return "Name: " + Name + " - X, Y: " + cPosX + ", " + cPosY;
+        return "Name: " + Name;
     }
     
     

@@ -31,8 +31,6 @@ import javax.swing.JTextArea;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import javax.swing.JTextField;
-
 public class gBuildGraphicModel extends JFrame implements Observer, ActionListener {
 
     /*
@@ -52,6 +50,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
     private LinkedList<String> showTasks; //Tareas que deben ser mostradas en el modelo gráfico
     private HashMap<String, ArrayList<Element>> quiebres= new HashMap<>();
     public int[] breaks = {1}; //Número de quiebres creados en el panel
+    //private HashMap<String, HashMap<String, Element>> ElementsSaved; //Mapa de elementos gráficos guardados (para que las posiciones de los elementos no se reinicien)
     private HashMap<String, HashMap<String, Element>> ElementsSaved; //Mapa de elementos gráficos guardados (para que las posiciones de los elementos no se reinicien)
 
     BPMNModel BPMN;
@@ -79,7 +78,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
     JCheckBox shortloopsCheck = new JCheckBox("Shortloops");
     
     ActionListener helpBtnAction;
-    int radio = 0;
+
     //Constructor
     public gBuildGraphicModel(LinkedList<Character> tasks) {
         //Tomar dimensiones de la pantalla e inicializar variables
@@ -93,7 +92,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         setSize(ScreenWidth, ScreenHeight);
         setVisible(true);
         breaks[0] = 0;
-         radio = ScreenWidth / 28;
+
         bg = new ButtonGroup();
         int widthComponent = (ScreenWidth / 15) - 10;
 
@@ -160,9 +159,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         JFrame main = this;
         helpBtnAction = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                
                 JOptionPane.showMessageDialog(main, "* Double click on a line: creates a break\n * Double click on a break: hides the break\n * Right click in a break: deletes the break");
-
             }
         };
         
@@ -175,7 +172,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         add(jpanelMenu, BorderLayout.NORTH);
 
     }
-
+   
     /**
      * Procedimiento que construye el modelo BPMN, crea el mapa de elementos con las posiciones en el canvas
      * @param BPMN Modelo BPMN
@@ -188,6 +185,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
         HashMap<String, Element> elementsToPaint = null;
         if (ElementsSaved.containsKey(mode)) {
             elementsToPaint = (HashMap<String, Element>) ElementsSaved.get(mode).clone();
+
             List<Map.Entry<String, Element>> elems = new ArrayList(elementsToPaint.entrySet());
             for (Map.Entry<String, Element> entry : elems) {
                 String key = entry.getKey();
@@ -211,34 +209,18 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 String realSucesor = (sucesor.charAt(0) == '@') ? sucesor.charAt(1) + "" : sucesor;
                 //Procesar nodo actual
                 if (!Elements.containsKey(realActual)) {
-                    processElement(new Element(realActual), PosX, PosY, BPMN, Elements);
+                    processElement(new Element(actual), PosX, PosY, BPMN, Elements);
                 }
                 //procesar sucesor
                 if (!Elements.containsKey(realSucesor)) {
-                    Element Esucesor = new Element(realSucesor);
-                    //Crear linea de fin
-                    Element lineaFinal = new Element("Final");
-                    lineaFinal.type="Line";
-                    lineaFinal.cPosX = PosX;
-                    lineaFinal.cPosY = PosY + (radio/2);
-                    ArrayList<Element> points = new ArrayList<>();
-                    points.add(lineaFinal);
-                    
-                    Esucesor.Antecesores.put(realActual, points);
+                    Element Esucesor = new Element(sucesor);
+                    Esucesor.Antecesores.put(actual, new ArrayList<Element>());
                     processElement(Esucesor, PosX, PosY, BPMN, Elements);
 
                 } else {
-                    Element realSucesorE = Elements.get(realSucesor);
-                    //Crear linea de fin
-                    Element lineaFinal = new Element("Final");
-                    lineaFinal.type="Line";
-                    lineaFinal.cPosX = realSucesorE.cPosX;
-                    lineaFinal.cPosY = realSucesorE.cPosY + radio/2;
-                    ArrayList<Element> points = new ArrayList<>();
-                    points.add(lineaFinal);
-                    
-                    realSucesorE.Antecesores.put(realActual, points);
+                    Elements.get(realSucesor).Antecesores.put(actual, new ArrayList<Element>());
                 }
+                
             }
             elementsToPaint = (HashMap<String, Element>) Elements.clone();
             List<Map.Entry<String, Element>> elems = new ArrayList(elementsToPaint.entrySet());
@@ -249,8 +231,8 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
 
                 }
             }
-
-            ElementsSaved.put(mode, Elements);
+            
+            ElementsSaved.put(mode, elementsToPaint);
         }
 
         //Verificar si los autoloops estan activados
@@ -268,76 +250,26 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
             }
         }
 
-         for (String s : shortLoops) {
+        for (String s : shortLoops) {
             String[] edge = s.split(",");
 
             if (shortloops) {
                 
                 if(elementsToPaint.containsKey(edge[0])){
                     //Verificar si se tienen quiebres guardados
-                    if(this.quiebres.containsKey(edge[1])){
-                        
-                        ArrayList<Element> lista = this.quiebres.get(edge[1]);
-                        if(lista!=null){
-                            elementsToPaint.get(edge[0]).Antecesores.put(edge[1], lista );
-                        }else{
-                            Element el = elementsToPaint.get(edge[0]);
-                            Element finalLine = new Element("Final");
-                            finalLine.type = "Line";
-                            finalLine.cPosX = el.cPosX;
-                            finalLine.cPosY = el.cPosY + radio/2;
-                            ArrayList<Element> points = new ArrayList<>();
-                            points.add(finalLine);
-                            elementsToPaint.get(edge[0]).Antecesores.put(edge[1], points );
-                            this.quiebres.remove(edge[1]);
-                            this.quiebres.put(edge[1], points);
-                        }
-                        
-                        
+                    ArrayList<Element> quiebres = this.quiebres.get(edge[1]);
+                    if(quiebres!=null){
+                        elementsToPaint.get(edge[0]).Antecesores.put(edge[1], this.quiebres.get(edge[1]) );
                     }else{
-                        Element el = elementsToPaint.get(edge[0]);
-                        Element finalLine = new Element("Final");
-                        finalLine.type = "Line";
-                        finalLine.cPosX = el.cPosX;
-                        finalLine.cPosY = el.cPosY + radio/2;
-                        ArrayList<Element> points = new ArrayList<>();
-                        points.add(finalLine);
-                        el.Antecesores.put(edge[1], points );
-                        
+                        elementsToPaint.get(edge[0]).Antecesores.put(edge[1], new ArrayList<>() );
                     }
                 }
                 if(elementsToPaint.containsKey(edge[1])){
-                    if(this.quiebres.containsKey(edge[0])){
-                        
-                        ArrayList<Element> lista = this.quiebres.get(edge[0]);
-                        if(lista!=null){
-                            elementsToPaint.get(edge[1]).Antecesores.put(edge[0], this.quiebres.get(edge[0]) );
-                        }else{
-                            Element el = elementsToPaint.get(edge[1]);
-                            Element finalLine = new Element("Final");
-                            finalLine.type = "Line";
-                            finalLine.cPosX = el.cPosX;
-                            finalLine.cPosY = el.cPosY + radio/2;
-                            ArrayList<Element> points = new ArrayList<>();
-                            points.add(finalLine);
-                            elementsToPaint.get(edge[1]).Antecesores.put(edge[0], points );
-                            this.quiebres.remove(edge[0]);
-                            this.quiebres.put(edge[0], points);
-                        } 
-                        
-                        
-
+                    ArrayList<Element> quiebres = this.quiebres.get(edge[0]);
+                    if(quiebres!=null){
+                        elementsToPaint.get(edge[1]).Antecesores.put(edge[0], this.quiebres.get(edge[0]) );
                     }else{
-                        
-                        Element el = elementsToPaint.get(edge[1]);
-                        Element finalLine = new Element("Final");
-                        finalLine.type = "Line";
-                        finalLine.cPosX = el.cPosX;
-                        finalLine.cPosY = el.cPosY + radio/2;
-                        ArrayList<Element> points = new ArrayList<>();
-                        points.add(finalLine);
-                        
-                       el.Antecesores.put(edge[0], points );
+                        elementsToPaint.get(edge[1]).Antecesores.put(edge[0], new ArrayList<>() );
                     }
                 }
                     
@@ -392,7 +324,7 @@ public class gBuildGraphicModel extends JFrame implements Observer, ActionListen
                 }
             }
         }
-        Elements.put(e.Name, e);
+        Elements.put((e.Name.charAt(0) == '@') ? e.Name.charAt(1) + "" : e.Name, e);
         this.PosX += this.ScreenWidth / 15;
         if (this.PosX >= this.ScreenWidth - (this.ScreenWidth / 15)) {
             this.PosY += this.ScreenHeight / 10; //salto en caso de exceder el limite del ancho de la pantalla
