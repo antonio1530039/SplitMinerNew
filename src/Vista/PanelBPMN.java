@@ -244,13 +244,11 @@ public class PanelBPMN extends JPanel {
                         aName = aName.charAt(1) + "";
                     }
                     Element a = Elements.get(aName);
-
-                    if (a.Hide) {
-                        continue;
-                    }
-
+                    
                     if (a != null) {
-
+                        if (a.Hide) {
+                            continue;
+                        }
                         //Aqui se realiza la flecha entre el antecesor,Elemento
                         //Primero calculamos los 4 puntos del Elemento
                         //Obtener los 4 puntos del Elemento, izq, arr, derech, abaj,
@@ -795,7 +793,6 @@ public class PanelBPMN extends JPanel {
      * @param y
      */
     public void dragElementSelected(int x, int y) {
-
         if (!LineSelected.equals("")) {
             lineMode.put(LineSelected, x + "," + y);
             repaint();
