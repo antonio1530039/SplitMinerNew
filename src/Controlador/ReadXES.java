@@ -72,11 +72,11 @@ public class ReadXES {
                         Element esl = (Element) asd1;
                         //System.out.println(esl.getAttribute("key") + " " + esl.getAttribute("value"));
                         if (esl.getAttribute("key").equals("concept:name")) {
-                            writer.write(esl.getAttribute("value") + "; ");
+                            writer.write(esl.getAttribute("value") + ";");
                         }
                     }
                 } else if (sCurrentLine.contains("</trace>")) {
-                    writer.write("\n\n");
+                    writer.write("\n");
                     bandera = 0;
                 } else {
                     if (bandera == 1 && bandera2 == 1) {
