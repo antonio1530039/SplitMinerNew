@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.BorderFactory;
@@ -30,7 +31,7 @@ public class FilterOutliersFrame extends JPanel {
 
     JPanel jpanelComponentes = new JPanel();
 
-    public FilterOutliersFrame(LinkedHashMap<Integer, ArrayList<Character>> originalTraces, LinkedHashMap<Integer, ArrayList<Character>> repairedTraces, String contextOutput, String fileName, String tasksDescription) {
+    public FilterOutliersFrame(LinkedHashMap<Integer, ArrayList<Character>> originalTraces, LinkedHashMap<Integer, ArrayList<Character>> repairedTraces, String contextOutput, String fileName, String tasksDescription, LinkedHashMap<String, Character> activityList) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLayout(new BorderLayout());
         int ScreenWidth = (int) screenSize.getWidth();
@@ -122,10 +123,23 @@ public class FilterOutliersFrame extends JPanel {
                     System.out.println("Exporting log to: " + filePath.getAbsolutePath() + "/" + fileName + ".repaired");
 
                     String toSave = "";
+                    
+                    //Crear nuevo mapa
+                    HashMap<Character, String> newActivityList = new HashMap<>();
+                    for(Map.Entry<String, Character> entry : activityList.entrySet()){
+                            Character value = entry.getValue();
+                            if(value != 'I' && value != 'O'){
+                                newActivityList.put(value, entry.getKey());
+                            }
+                        }
 
                     for (Map.Entry<Integer, ArrayList<Character>> entry : repairedTraces.entrySet()) {
                         for (Character c : entry.getValue()) {
-                            toSave += c + ";";
+                            if(c != 'I' && c != 'O'){
+                                toSave += newActivityList.get(c) + ";";
+                            }else{
+                                toSave += c + ";";
+                            }
                         }
                         toSave = toSave.substring(0, toSave.lastIndexOf(";"));
                         toSave += "\n";

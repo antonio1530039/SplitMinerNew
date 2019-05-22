@@ -170,6 +170,19 @@ public class FilesManagement {
         }
 
         tracesList.put(ID, traces);  //la ultima
+        /*
+        if(activityList.get("I") == 'a'){
+            activityList.remove("I");
+            activityList.remove("O");
+            
+            for(Map.Entry<String, Character> entry : activityList.entrySet()){
+                activityList.put(entry.getKey(), (char) (entry.getValue()-1) );
+            }
+            
+            activityList.put("Start", 'I');
+            activityList.put("End", 'O');
+        }*/
+        
         this.ActivityList = activityList;
         System.out.println("\n\t1. Trazas detectadas: '" + tracesList.size() + "' trazas");
 
@@ -252,6 +265,8 @@ public class FilesManagement {
 
         LinkedHashMap<Integer, ArrayList<Character>> tracesList = new LinkedHashMap<Integer, ArrayList<Character>>();
         LinkedHashMap<String, Character> activityList = new LinkedHashMap<String, Character>();
+        activityList.put("I", 'I');
+        activityList.put("O", 'O');
 
         int ID = 0;
 
@@ -305,11 +320,8 @@ public class FilesManagement {
             ID++;
 
         }
-        if (!Repaired) {
-            activityList.put("Start", 'I');
-            activityList.put("End", 'O');
-        }
-
+        
+        
         this.ActivityList = activityList;
         rd.close();
 
@@ -339,9 +351,10 @@ public class FilesManagement {
             }
             showDataInfo(tracesList);
 
-            Object[] all = new Object[2];
+            Object[] all = new Object[3];
             all[0] = originalTraces;
             all[1] = tracesList;
+            all[2] = activityList;
             return all;
         }
 

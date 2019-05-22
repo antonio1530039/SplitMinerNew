@@ -453,7 +453,7 @@ public class ProcessViewer extends JFrame {
                     FilesManagement f = new FilesManagement(bpmn, true, false, left, right, K, u, contextOutput); //boolean Filtering, int l, int r, int k, double umbral
                     LinkedHashMap<Integer, ArrayList<Character>> originalTraces; //lista de trazas
                     LinkedHashMap<Integer, ArrayList<Character>> repairedTraces; //lista de trazas
-                    Object[] traces = new Object[2];
+                    Object[] traces = new Object[3];
                     try {
                         if (fileName.getAbsolutePath().endsWith(".txt")) {
                             traces = f.readDataInputTrazas(fileName.getAbsolutePath());
@@ -469,8 +469,8 @@ public class ProcessViewer extends JFrame {
                     }
                     originalTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[0];
                     repairedTraces = (LinkedHashMap<Integer, ArrayList<Character>>) traces[1];
-
-                    FilterOutliersFrame fof = new FilterOutliersFrame(originalTraces, repairedTraces, contextOutput.toString(), fileName.getName().substring(0, fileName.getName().indexOf(".")), tasksDescription);
+                    LinkedHashMap<String, Character> activityList = (LinkedHashMap<String, Character>) traces[2]; 
+                    FilterOutliersFrame fof = new FilterOutliersFrame(originalTraces, repairedTraces, contextOutput.toString(), fileName.getName().substring(0, fileName.getName().indexOf(".")), tasksDescription, activityList);
 
                 } else {
                     JOptionPane.showMessageDialog(main_frm, "Ingrese todos los parámetros para realizar el filtrado!");
